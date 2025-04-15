@@ -20,6 +20,7 @@ function App() {
   return (
     <>
       <Routes>
+          <Route path="/dashboard" element={<Dashboard/>}/>
           <Route path="/" element={<LandingPage/>} />
           <Route path="*" element={<Navigate to="/" replace />} />
           <Route path="/login" element={<Login/>} />
