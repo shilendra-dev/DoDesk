@@ -1,0 +1,29 @@
+{
+  "name": "employee-task-manager",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "NODE_ENV=development nodemon src/index.js",
+    "db:migrate": "env-cmd -f ./.env knex migrate:up",
+    "db:migrate:down": "env-cmd -f ./.env knex migrate:down"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "env-cmd": "^10.1.0",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "knex": "^3.1.0",
+    "pg": "^8.14.1",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}
