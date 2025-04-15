@@ -15,7 +15,7 @@ function CreateUserForm() {
         e.preventDefault();
         try{
             const token = localStorage.getItem('token');
-            await axios.post('http://localhost:5033/api/admin/create-user', formData, {
+            await axios.post('http://localhost:5033/api/admin/', formData, {
                 headers: {
                     Authorization: token,
                 },

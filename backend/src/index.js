@@ -20,7 +20,6 @@ app.use("/", authRoutes);
 app.use("/api/auth", me);
 app.use("/api/admin", adminUserRoutes);
 
-
 //test db connection
 app.get("/test-db", async(req, res) => {
     try{
