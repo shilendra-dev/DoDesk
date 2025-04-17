@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import dashboardMockup from '../assets/dashboardMockup.png';
 import Login from './Login';
+import SignUpForm from '../components/SignUpForm';
 
 export default function LandingPage() {
 
@@ -67,7 +68,8 @@ export default function LandingPage() {
 
                 <div className='flex w-full items-center justify-center'>
                 <div className='relative z-10 w-[40vw] rounded-lg shadow-2xl  '>
-                    <Login/>
+                    {/*<Login/>*/}
+                    <SignUpForm/>
                     
                 </div>
                 </div>

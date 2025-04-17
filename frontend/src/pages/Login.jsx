@@ -17,12 +17,12 @@ function Login() {
         e.preventDefault();
         const {email, password} = data
         try {
-            const {data} = await axios.post('http://localhost:5033/login', {
+            const {data} = await axios.post('http://localhost:5033/api/auth/login', {
             email, password
         });
 
         //storing token in local storage using login function
-        login({token: data.token, role: data.role, id: data.id});
+        login({token: data.token, id: data.id});
 
         }
         catch(error) {
@@ -33,11 +33,7 @@ function Login() {
     useEffect(() => {
         //wait for the user to be set in context then nevigate
         if (user) {
-            if (user.role === "admin") {
-                navigate("/admin");  // Redirect to Admin page
-            } else if (user.role === "member") {
-                navigate("/member");  // Redirect to Member page
-            }
+            navigate("/user");  // Redirect to Admin page
         }
     },[user, navigate])
 

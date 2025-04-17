@@ -11,7 +11,6 @@ function AuthProvider({children}){
     const login = (userData) => {
         setUser(userData);
         localStorage.setItem("token", userData.token);
-        localStorage.setItem("role", userData.role);
         localStorage.setItem("id", userData.id);
         
     };
@@ -20,6 +19,7 @@ function AuthProvider({children}){
     const logout = (userData) => {
         setUser(null);
         localStorage.removeItem("token");
+        localStorage.removeItem("id");
     };
 
     const [loading, setLoading] = useState(true);

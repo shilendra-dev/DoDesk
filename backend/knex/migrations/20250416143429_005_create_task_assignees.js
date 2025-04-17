@@ -6,7 +6,7 @@ exports.up = async function(knex) {
     return await knex.raw(`
         CREATE TABLE task_assignees(
         id UUID PRIMARY KEY,
-        tasks_id UUID REFERENCES tasks(id) ON DELETE CASCADE,
+        task_id UUID REFERENCES tasks(id) ON DELETE CASCADE,
         user_id UUID REFERENCES users(id) ON DELETE CASCADE,
         assigned_at TIMESTAMP DEFAULT now()
     );

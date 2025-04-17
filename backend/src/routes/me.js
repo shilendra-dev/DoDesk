@@ -23,7 +23,7 @@ router.get('/me', verifyToken , async (req, res) => {
     try{
         const {id} = req.user;
         
-        const user = await pool.query(`SELECT id, email, role FROM users WHERE id = $1`,[id]);
+        const user = await pool.query(`SELECT id, email, name FROM users WHERE id = $1`,[id]);
     
         if(user.rows.length === 0) return res.status(404).json({message: "user not found!"});
 

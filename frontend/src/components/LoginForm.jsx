@@ -8,8 +8,6 @@ function LoginForm() {
     });
     const navigate = useNavigate();
 
-
-
     const loginUser = async (e) => {
         e.preventDefault();
         const {email, password} = data
@@ -52,7 +50,7 @@ function LoginForm() {
                         
                     </form>
                 </div>
-            </div>
+    </div>
   )
 }
 
