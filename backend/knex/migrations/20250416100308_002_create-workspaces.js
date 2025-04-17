@@ -6,7 +6,7 @@ exports.up = async function(knex) {
     await knex.raw(`
         CREATE TABLE workspaces
         (
-            id SERIAL PRIMARY KEY,
+            id UUID PRIMARY KEY,
             name TEXT NOT NULL,
             created_by UUID REFERENCES users(id) ON DELETE CASCADE,
             created_at TIMESTAMP DEFAULT now()

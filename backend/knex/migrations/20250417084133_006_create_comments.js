@@ -4,12 +4,13 @@
  */
 exports.up = async function(knex) {
     return await knex.raw(`
-        CREATE TABLE task_assignees(
+        CREATE TABLE comments(
         id UUID PRIMARY KEY,
-        tasks_id UUID REFERENCES tasks(id) ON DELETE CASCADE,
-        user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-        assigned_at TIMESTAMP DEFAULT now()
-    );
+        task_id UUID REFERENCES tasks(id) ON DELETE CASCADE,
+        user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+        content TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT now()
+        );
     `)
 };
 
@@ -18,6 +19,5 @@ exports.up = async function(knex) {
  * @returns { Promise<void> }
  */
 exports.down = async function(knex) {
-    return await knex.raw(`DROP TABLE IF EXISTS task_assignees;`)
-  
+    return await knex.raw(`DROP TABLE IF EXISTS comments;`)
 };
