@@ -5,7 +5,8 @@ require("dotenv").config();
 const bcrypt = require("bcryptjs");
 const authRoutes = require("./routes/authRoutes")
 const me = require("./routes/me")
-const userRoutes = require("./routes/userRoutes")
+const userRoutes = require("./routes/userRoutes");
+const createWorkspace = require("./routes/workspaceRoutes");
 
 const app = express();
 
@@ -16,9 +17,12 @@ app.use(cors({
   }));
 
 app.use(express.json());
+
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", me);
 app.use("/api/users", userRoutes);
+app.use("/api/workspaces", createWorkspace);
+
 
 //test db connection
 app.get("/test-db", async(req, res) => {

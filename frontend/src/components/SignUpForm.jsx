@@ -3,7 +3,7 @@ import {React, useState} from 'react'
 import { useNavigate } from 'react-router-dom'
 
 function SignUpForm() {
-    const nevigate = useNavigate();
+    const navigate = useNavigate();
     const [data, setData] = useState({
         name: "",
         email: "",
@@ -38,27 +38,76 @@ function SignUpForm() {
 
     return (
     <>
-        <div className="max-w-sm p-6 content-right bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700 w-full h-100">
-                <h2 className="font-extrabold text-4xl mb-2 mt-2">Login</h2>
-                <div className="flex w-full pt-5">
-                    <form onSubmit={handleSubmit} className=" w-full">
-                        <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-100">Full Name:</label>
-                        <input type="text" name="name" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={data.name} placeholder='Dev Malik' id='name' onChange={handleChange}></input><br/>
 
-                        <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-100">Email Address:</label>
-                        <input type="text" name="email" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={data.email} placeholder='johndoe@email.com' id='email' onChange={handleChange}></input><br/>
-                        
-                        <label htmlFor="password" className="block mb-2 text-sm font-medium text-gray-100">Password:</label>
-                        <input type="password" name="password" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={data.password} placeholder='********' id='password' onChange={handleChange}></input><br/>
+        <div className="rounded-2xl flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+            <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg dark:bg-gray-800">
+            <h2 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-6">Create an Account</h2>
 
-                        <label htmlFor="confirmPassword" className="block mb-2 text-sm font-medium text-gray-100">Confirm Password:</label>
-                        <input type="password" name="confirmPassword" className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value={data.confirmPassword} placeholder='********' id='confirmPassword' onChange={handleChange}></input><br/>
-
-                        <input type='submit' value='Login' className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-2 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 mt-"/>
-                        
-                    </form>
+            {error && (
+                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-2 rounded mb-4">
+                {error}
                 </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                <label htmlFor="name" className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Full Name</label>
+                <input
+                    type="text"
+                    name="name"
+                    value={data.name}
+                    onChange={handleChange}
+                    placeholder="Dev Malik"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                />
+                </div>
+
+                <div>
+                <label htmlFor="email" className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                <input
+                    type="email"
+                    name="email"
+                    value={data.email}
+                    onChange={handleChange}
+                    placeholder="you@example.com"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                />
+                </div>
+
+                <div>
+                <label htmlFor="password" className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Password</label>
+                <input
+                    type="password"
+                    name="password"
+                    value={data.password}
+                    onChange={handleChange}
+                    placeholder="********"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                />
+                </div>
+
+                <div>
+                <label htmlFor="confirmPassword" className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Confirm Password</label>
+                <input
+                    type="password"
+                    name="confirmPassword"
+                    value={data.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="********"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                />
+                </div>
+
+                <button
+                type="submit"
+                className="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                Sign Up
+                </button>
+            </form>
+            </div>
         </div>
+
     </>
   )
 }

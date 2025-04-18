@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import dashboardMockup from '../assets/dashboardMockup.png';
 import Login from './Login';
 import SignUpForm from '../components/SignUpForm';
+import LoginForm from '../components/LoginForm';
 
 export default function LandingPage() {
 
-    const [showLogin, setShowLogin] = useState(false);
+    const [showSignup, setShowSignup] = useState(false);
+    const [showLogin, setShowLogin] = useState(false)
+    
 
   return (
     <div className="min-h-screen  text-gray-950">
@@ -14,8 +17,11 @@ export default function LandingPage() {
         <nav className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
             <div className="text-2xl font-bold"> <img src="/assets/DoDeskLogo.png" alr="DoDesk Dashboard" className="w-[120px] h-fit "/></div>
             <div className="space-x-4 hidden md:block">
-            <button onClick={()=> setShowLogin(true)}className="bg-white text-blue-600 font-semibold px-4 py-1.5 rounded hover:bg-blue-100">
-                Login
+            <button onClick={()=> setShowSignup(true)}className="bg-white text-blue-600 font-semibold px-4 py-1.5 rounded hover:bg-blue-100">
+                Sign Up
+            </button>
+            <button onClick={()=> setShowLogin(true)}className="bg-yellow-400 text-black font-semibold px-4 py-1.5 rounded hover:bg-blue-100">
+                Log In
             </button>
             </div>
         </nav>
@@ -61,21 +67,23 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/*conditional rendering */}
-        {showLogin && (
-          <div className=' inset-0  flex items-center justify-center h-screen'>
-            <div className="absolute inset-0 backdrop-blur-sm bg-black/40 h-screen">
-
-                <div className='flex w-full items-center justify-center'>
-                <div className='relative z-10 w-[40vw] rounded-lg shadow-2xl  '>
-                    {/*<Login/>*/}
-                    <SignUpForm/>
-                    
-                </div>
-                </div>
-            </div>
+      {/*conditional rendering signup */}
+      {showSignup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800  rounded-xl shadow-2xl w-[90%] max-w-md">
+            <SignUpForm />
           </div>
-        )}
+        </div>
+      )}  
+
+      {/*conditional rendering login */}
+      {showLogin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800  rounded-xl shadow-2xl w-[90%] max-w-md">
+            <LoginForm />
+          </div>
+        </div>
+      )} 
 
     </div>
   );

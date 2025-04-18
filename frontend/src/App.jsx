@@ -1,4 +1,4 @@
-import { useState } from 'react'
+
 import './App.css'
 import Login from './pages/Login'
 import axios from 'axios';
@@ -17,7 +17,7 @@ function App() {
   return (
     <>
       <Routes>
-          <Route path="/dashboard" element={<Dashboard/>}/>
+          <Route path="/dashboard" element={<PrivateRoute><Dashboard/></PrivateRoute>}/>
           <Route path="/" element={<LandingPage/>} />
           <Route path="*" element={<Navigate to="/" replace />} />
           <Route path="/login" element={<Login/>} />
