@@ -12,7 +12,6 @@ const protect = async (req, res, next) => {
 
     try{
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log("Decoded token:", decoded);
         //CHECKING IF USER EXIST IN DB
         const userResult = await pool.query(`SELECT * FROM users WHERE id = $1`, [decoded.id]);
 

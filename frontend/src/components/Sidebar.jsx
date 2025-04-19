@@ -1,5 +1,7 @@
 import { Home, ListTodo, CalendarDays, BarChart2, Users, Settings, HelpCircle, LogOut, Smartphone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Avatar from '@mui/material/Avatar';
+import MenuIcon from '@mui/icons-material/Menu';
 
 const menuItems = [
   { icon: <Home size={20} />, label: 'Dashboard', active: true },
@@ -29,11 +31,16 @@ export default function Sidebar() {
   ];
 
   return (
-      <aside className='w-64 min-h-screen bg-[#f4f7f6] p-6 flex flex-col  shadow-md'>
+      <aside className='w-64 min-h-screen bg-[#202020] p-6 flex flex-col  shadow-md'>
         {/*Logo*/}
-        <div className='mb-10'>
-          <h1 className='text-2xl font-bold text-green-700'>DoDesk</h1>
+        <div className='mb-10 flex justify-between items-center'>
+          <h1 className='text-2xl font-bold text-gray-100 '>DoD</h1>
+          <div className='flex justify-between items-center'>
+            <Avatar />
+            <MenuIcon className='ml-2'/>
+          </div>
         </div>
+        
 
         {/*Menu*/}
         <nav className='space-y-6'>
