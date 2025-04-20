@@ -2,7 +2,7 @@ import axios from 'axios';
 import {React, useState} from 'react'
 import { useNavigate } from 'react-router-dom'
 
-function CreateWorkspace() {
+function CreateWorkspace({onClose}) {
     const navigate = useNavigate();
     const [name, setName] = useState('');
     const [message, setMessage] = useState('');
@@ -18,12 +18,22 @@ function CreateWorkspace() {
     
         try{
             const token = localStorage.getItem("token");
-            await axios.post("http://localhost:5033/api/workspaces/create-workspace", {name} ,
+            const res = await axios.post("http://localhost:5033/api/workspaces/create-workspace", {name} ,
                 {headers:{
                     Authorization: `Bearer ${token}`
                 }}
             );
+
+            const {workspace: newWorkspace} = res.data;
+
             setMessage('Workspace susccessfully created');
+            const existing = JSON.parse(localStorage.getItem("workspaces")) || [];
+            const updated = [...existing, newWorkspace];
+            localStorage.setItem("workspaces", JSON.stringify(updated));
+
+            // 🔔 Also trigger update to notify dropdown
+            window.dispatchEvent(new Event("workspace-updated"));
+
             setName('')
             navigate("/dashboard");
         }catch(err){
@@ -39,13 +49,19 @@ function CreateWorkspace() {
 
         <div className="rounded-2xl flex items-center justify-center bg-gray-100 dark:bg-gray-900">
             <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg dark:bg-gray-800">
-            <h2 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-6">Create Workspace</h2>
 
+            <button
+            onClick={onClose}
+            className="absolute top-2 right-2 text-gray-500 hover:text-red-600"
+            >
+            ✕
+            </button>
+            
 
             <form onSubmit={handleSubmit} className="space-y-4">
 
                 <div>
-                <label htmlFor="name" className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300">Workspace Name</label>
+                <label htmlFor="name" className="block mb-1 text-[15px] font-medium text-gray-700 dark:text-gray-300">Workspace name:</label>
                 <input
                     type="text"
                     name="name"
@@ -58,9 +74,9 @@ function CreateWorkspace() {
 
                 <button
                 type="submit"
-                className="w-full bg-blue-600 text-white font-semibold py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                className="w-full bg-blue-600 text-white text-[12px] font-semibold py-2 rounded-lg hover:bg-blue-700 transition-colors"
                 >
-                Create Workspace
+                Create
                 </button>
             </form>
             </div>

@@ -31,8 +31,28 @@ const loginUser = async(req, res) =>{
             process.env.JWT_SECRET,
             {expiresIn:"2h"}
         );
+
+        // for storing user workspaces at login
+        const userWorkspaces = await pool.query(
+            `SELECT w.id, w.name
+            FROM workspaces w
+            JOIN workspace_members wm ON w.id = wm.workspace_id
+            WHERE wm.user_id = $1`,
+            [user.rows[0].id]
+        );
+        console.log("User ID:", user.rows[0].id);
+        console.log("User Workspaces:", userWorkspaces.rows);
+
+        res.status(200).json({
+            token,
+            user: {
+              id: user.id,
+              name: user.name, // add more fields if needed
+              email: user.email,
+            },
+            workspaces: userWorkspaces.rows,
+          });
         console.log("login sucessfull")
-        res.status(200).json({token, id: user.rows[0].id});
 
     }catch(err){
         res.status(500).json({message: err.message});

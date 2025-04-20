@@ -26,8 +26,10 @@ function LoginForm() {
             const res = await axios.post("http://localhost:5033/api/auth/login", data);
             localStorage.setItem("token", res.data.token);
             localStorage.setItem("user", JSON.stringify(res.data.user));
+            localStorage.setItem("workspaces", JSON.stringify(res.data.workspaces));
             console.log(res.data);
             navigate("/dashboard");
+
         }catch(err){
             setError(err.response?.data?.message || "Something went wrong")
         }

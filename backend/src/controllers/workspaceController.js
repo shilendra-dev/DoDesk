@@ -19,7 +19,7 @@ const createWorkspace = async(req, res) =>{
         await pool.query(
             `INSERT INTO workspace_members (id, workspace_id, user_id, role) VALUES ($1, $2, $3, $4)`, [memberId, id, userId, 'admin']
         );
-        res.status(201).json({message: "Workspace Successfully Created"})
+        res.status(201).json({message: "Workspace Successfully Created", workspace: newWorkspace.rows[0]})
     }catch(err){
         console.error(err)
         res.status(500).json({message: "Error creating workspace"})
