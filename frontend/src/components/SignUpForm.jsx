@@ -30,7 +30,9 @@ function SignUpForm() {
         try{
             const res = await axios.post("http://localhost:5033/api/users/signup", data);
             console.log(res.data);
-            navigate("/login");
+
+            navigate(`/`);
+            window.location.reload();
         }catch(err){
             setError(err.response?.data?.message || "Something went wrong")
         }

@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const pool = require("../config/db");
 require("dotenv").config();
+const axios = require("axios")
 
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
@@ -29,6 +30,7 @@ const loginUser = async (req, res) => {
        WHERE workspace_members.user_id = $1`,
       [user.id]
     );
+    
     const workspaces = workspacesResult.rows;
 
     const validPassword = await bcrypt.compare(password, user.password);
@@ -44,7 +46,16 @@ const loginUser = async (req, res) => {
     console.log("Login successful");
 
     //res.status(200).json({ token, id: user.id, workspaces });
+    if(!user.default_workspace_id){
+      await axios.get('http://localhost:5033/api/users', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    }
 
+    console.log(user.default_workspace_id);
+    
     res.status(200).json({
       token,
 

@@ -1,6 +1,8 @@
 const express = require('express');
 const pool = require('../config/db')
 const { v4: uuidv4 } = require('uuid');
+const axios = require('axios');
+const jwt = require("jsonwebtoken");
 
 
 //create workspace api
@@ -21,6 +23,20 @@ const createWorkspace = async(req, res) =>{
         await pool.query(
             `INSERT INTO workspace_members (id, workspace_id, user_id, role) VALUES ($1, $2, $3, $4)`, [memberId, id, userId, 'admin']
         );
+        
+        //setting up default_workspace_id
+        const {user} = req.body;
+        const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, {
+            expiresIn: "2h",
+          });
+        
+            await axios.get('http://localhost:5033/api/users', {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+          
+
         res.status(201).json({message: "Workspace Successfully Created", workspace: newWorkspace.rows[0]})
     }catch(err){
         console.error(err)

@@ -46,6 +46,7 @@ function LoginForm() {
       const user = res.data.user; // Assuming user info is in res.data.user
       console.log('User:', user); // Log user to check its structure
       redirectUser(user);
+      //console.log(user.default_workspace_id);
      
     } catch (err) {
       console.error("Login error:", err);

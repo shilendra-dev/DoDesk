@@ -46,7 +46,7 @@ function CreateWorkspace({onClose}) {
     <>
         {message && <p className="mb-4 text-sm text-blue-600">{message}</p>}
 
-
+        <h1>asdfasdfa</h1>
         <div className="rounded-2xl flex items-center justify-center bg-gray-100 dark:bg-gray-900">
             <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg dark:bg-gray-800">
 

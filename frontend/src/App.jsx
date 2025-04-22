@@ -23,8 +23,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
           <Route path="/login" element={<Login/>} />
           <Route path="/unauthorized" element={<h1>Your dumb ass is not authorized to view this page</h1>} />
-          <Route path="/:userId/:workspaceId" element={<Dashboard />} />
-        <Route path="/:userId/createworkspace" element={<CreateWorkspace />} />
+          <Route path="/:userId/*" element={<Dashboard />} />
       </Routes>
       
     </>
