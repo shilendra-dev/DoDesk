@@ -7,6 +7,7 @@ import PrivateRoute from './components/PrivateRoute';
 import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './pages/LandingPage';
 import { Navigate } from 'react-router-dom';
+import CreateWorkspace from './components/CreateWorkspace';
 
 axios.defaults.baseURL = 'http://localhost:5033';
 axios.defaults.withCredentials = true;
@@ -16,12 +17,14 @@ function App() {
   return (
     <>
       <Routes>
+          
           <Route path="/dashboard" element={<PrivateRoute><Dashboard/></PrivateRoute>}/>
           <Route path="/" element={<LandingPage/>} />
           <Route path="*" element={<Navigate to="/" replace />} />
           <Route path="/login" element={<Login/>} />
           <Route path="/unauthorized" element={<h1>Your dumb ass is not authorized to view this page</h1>} />
-          
+          <Route path="/:userId/:workspaceId" element={<Dashboard />} />
+        <Route path="/:userId/createworkspace" element={<CreateWorkspace />} />
       </Routes>
       
     </>

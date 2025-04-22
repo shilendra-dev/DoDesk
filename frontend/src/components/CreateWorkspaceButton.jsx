@@ -6,6 +6,7 @@ function CreateWorkspaceButton() {
     const toggleCreateTaskVisiblity = () => {
     setCreateTaskVisible((prevState) => !prevState);
   };
+  
 
     return (
         <div className="relative mt-4"> {/* This makes positioning relative to this div */}

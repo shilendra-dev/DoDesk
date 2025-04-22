@@ -2,6 +2,8 @@ const express = require('express');
 const pool = require('../config/db')
 const { v4: uuidv4 } = require('uuid');
 
+
+//create workspace api
 const createWorkspace = async(req, res) =>{
     const {name} = req.body;
     const userId = req.user.id;
@@ -25,4 +27,25 @@ const createWorkspace = async(req, res) =>{
         res.status(500).json({message: "Error creating workspace"})
     }
 };
-module.exports = {createWorkspace};
+
+const getUserWorkspaces = async (req, res) =>{
+    try{
+        const userId = req.user.id;
+
+        const workspaceResult = await pool.query(`SELECT w.id, w.name, w.created_at 
+            FROM workspaces w
+            JOIN workspace_members wm ON w.id = wm.workspace_id
+            WHERE wm.user_id = $1`, 
+            [userId]
+        );
+        if(workspaceResult.rows.length ===0){
+            return res.status(404).json({ message: 'No workspaces found for this user' });
+        }
+         // Respond with the workspaces
+        res.json(workspaceResult.rows);
+    }catch(err){
+        console.error("Error fetching workspaces:", err);
+        res.status(500).json({ message: "Server error" });
+    }
+}
+module.exports = {createWorkspace, getUserWorkspaces};
