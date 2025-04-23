@@ -1,13 +1,26 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useWorkspace } from "../context/WorkspaceContext"; // adjust path as needed
+import { useNavigate, useParams } from 'react-router-dom'
 
-function WorkspaceDropdown({ onSelect }) {
+function WorkspaceDropdown() {
   const { workspaces, selectedWorkspace, setSelectedWorkspace } = useWorkspace();
   const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const {workspaceId} = useParams();
 
+  useEffect(() => {
+    if(workspaceId){
+      const workspace = workspaces.find(ws => ws.id === workspaceId);
+      if (workspace) {
+        setSelectedWorkspace(workspace);
+      }
+    }
+  
+  }, [workspaceId, workspaces, setSelectedWorkspace])
+  
   const handleSelect = (workspace) => {
     setSelectedWorkspace(workspace);
-    onSelect?.(workspace);
+    navigate(`/${workspace.id}`)
     setIsOpen(false);
   };
 

@@ -35,7 +35,9 @@ function CreateWorkspace({onClose}) {
             window.dispatchEvent(new Event("workspace-updated"));
 
             setName('')
-            navigate("/dashboard");
+            
+            navigate(`/${newWorkspace.id}`);
+            
         }catch(err){
             console.error(err);
             setMessage(err.response?.data?.message || 'error creating workspace');
@@ -46,8 +48,8 @@ function CreateWorkspace({onClose}) {
     <>
         {message && <p className="mb-4 text-sm text-blue-600">{message}</p>}
 
-        <h1>asdfasdfa</h1>
-        <div className="rounded-2xl flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+        
+        <div className="rounded-2xl flex h-full w-full items-center justify-center bg-gray-100 dark:bg-gray-900">
             <div className="w-full max-w-md p-8 bg-white rounded-2xl shadow-lg dark:bg-gray-800">
 
             <button
@@ -57,9 +59,9 @@ function CreateWorkspace({onClose}) {
             ✕
             </button>
             
-
+            
             <form onSubmit={handleSubmit} className="space-y-4">
-
+                <h1 className="font-sans text-2xl font-extrabold align">Create Workspace</h1>
                 <div>
                 <label htmlFor="name" className="block mb-1 text-[15px] font-medium text-gray-700 dark:text-gray-300">Workspace name:</label>
                 <input

@@ -15,9 +15,9 @@ function LoginForm() {
 
   const redirectUser = (user) =>{
     if (user && user.default_workspace_id) {
-      navigate(`/${user.id}/${user.default_workspace_id}`);
+      navigate(`/${user.default_workspace_id}`);
     } else if (user) {
-      navigate(`/${user.id}/createworkspace`);
+      navigate(`/createworkspace`);
     } else {
       setError('User data is missing or incorrect');
     }

@@ -1,30 +1,31 @@
-import Sidebar from '../components/Sidebar'
-import Popup from 'reactjs-popup'
-import CreateTask from '../components/CreateTask'
-import CreateWorkspace from '../components/CreateWorkspace';
-import { Route, Routes, Link } from 'react-router-dom';
-//import { useWorkspace } from '../context/WorkspaceContext';
-
+import Sidebar from '../components/Sidebar';
+import { Outlet, useParams, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useWorkspace } from '../context/WorkspaceContext';
 
 function Dashboard() {
-  //useWorkspace();
+  const { defaultWorkspaceId } = useWorkspace(); // use your default workspace logic here
+  const { workspaceId } = useParams();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!workspaceId) {
+      if (defaultWorkspaceId) {
+        navigate(`/${defaultWorkspaceId}`, { replace: true });
+      } else {
+        navigate('/createworkspace', { replace: true });
+      }
+    }
+  }, [workspaceId, defaultWorkspaceId, navigate]);
 
   return (
-    <>
-      <div className='flex bg-[#090D11]'>
-      <Sidebar/>
-      
-      
-
-      <Routes>
-        <Route path="createworkspace" element={<CreateWorkspace/>}/>
-      </Routes>
-      
+    <div className="flex bg-[#090D11] min-h-screen">
+      <Sidebar />
+      <div className="flex-1 p-4 text-white">
+        <Outlet />
       </div>
-      
-      
-    </>
-  )
+    </div>
+  );
 }
 
-export default Dashboard
+export default Dashboard;

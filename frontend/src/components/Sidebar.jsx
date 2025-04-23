@@ -14,17 +14,26 @@ import Avatar from "@mui/material/Avatar";
 import MenuIcon from "@mui/icons-material/Menu";
 import WorkspaceDropdown from "./WorkspaceDropdown";
 import CreateWorkspaceButton from "./CreateWorkspaceButton";
+import {useWorkspace} from "../context/WorkspaceContext"
 
-const menuItems = [
-  { icon: <Home size={20} />, label: "Overview", active: true },
-  { icon: <ListTodo size={20} />, label: "Tasks", badge: "" },
-  { icon: <CalendarDays size={20} />, label: "Calendar" },
-  { icon: <BarChart2 size={20} />, label: "Analytics" },
-  { icon: <Users size={20} />, label: "Team" },
-];
+
+
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const {selectedWorkspace} = useWorkspace();
+  
+  const menuItems = [
+    { icon: <Home size={20} />, label: "Overview", active: true , path:"overview"},
+    { icon: <ListTodo size={20} />, label: "Tasks", badge: "" , path:"tasks"},
+    { icon: <CalendarDays size={20} />, label: "Calendar", path:""},
+    { icon: <BarChart2 size={20} />, label: "Analytics" , path:""},
+    { icon: <Users size={20} />, label: "Team" , path:"team", },
+  ];
+
+  const handleMenuClick = (path) => {
+    navigate(`/${selectedWorkspace.id}/${path}`)
+  }
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -36,9 +45,9 @@ export default function Sidebar() {
   };
 
   const generalItems = [
-    { icon: <Settings size={20} />, label: "Settings" },
-    { icon: <HelpCircle size={20} />, label: "Help" },
-    { icon: <LogOut size={20} />, label: "Logout", onClick: handleLogout },
+    { icon: <Settings size={20} />, label: "Settings" , path:""},
+    { icon: <HelpCircle size={20} />, label: "Help" , path:""},
+    { icon: <LogOut size={20} />, label: "Logout", onClick: handleLogout},
   ];
 
   return (
@@ -57,9 +66,10 @@ export default function Sidebar() {
       <nav className="space-y-6">
         <div>
           <ul className="space-y-2">
-            {menuItems.map(({ icon, label, active, badge }) => (
+            {menuItems.map(({ icon, label, active, badge, path }) => (
               <li
                 key={label}
+                onClick={()=> handleMenuClick(path)}
                 className={`flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-green-500 ${
                   active
                     ? "bg-green-700 font-semibold text-gray-100"
