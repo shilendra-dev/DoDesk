@@ -9,7 +9,7 @@ exports.up = async function(knex) {
             title TEXT NOT NULL,
             description TEXT,
             status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'in-progress', 'completed')),
-            priority TEXT DEFAULT 'mid' CHECK (status IN ('low', 'mid', 'high')),
+            priority TEXT DEFAULT 'mid' CHECK (priority IN ('low', 'mid', 'high')),
             due_date DATE,
             workspace_id UUID REFERENCES workspaces(id) ON DELETE CASCADE,
             created_by UUID REFERENCES users(id) ON DELETE SET NULL,

@@ -37,6 +37,8 @@ function App() {
             <Route path="overview" element={<Overview/>}/>
             <Route path="tasks" element={<Tasks/>}/>
             <Route path="team" element={<Team/>}/>
+            <Route path="analytics" element={<Team/>}/>
+            <Route path="calender" element={<Team/>}/>
           </Route>
       </Routes>
 

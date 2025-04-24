@@ -9,7 +9,7 @@ import {
   LogOut,
   Smartphone,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import Avatar from "@mui/material/Avatar";
 import MenuIcon from "@mui/icons-material/Menu";
 import WorkspaceDropdown from "./WorkspaceDropdown";
@@ -22,12 +22,13 @@ import {useWorkspace} from "../context/WorkspaceContext"
 export default function Sidebar() {
   const navigate = useNavigate();
   const {selectedWorkspace} = useWorkspace();
+  const location = useLocation();
   
   const menuItems = [
-    { icon: <Home size={20} />, label: "Overview", active: true , path:"overview"},
+    { icon: <Home size={20} />, label: "Overview", path:"overview"},
     { icon: <ListTodo size={20} />, label: "Tasks", badge: "" , path:"tasks"},
-    { icon: <CalendarDays size={20} />, label: "Calendar", path:""},
-    { icon: <BarChart2 size={20} />, label: "Analytics" , path:""},
+    { icon: <CalendarDays size={20} />, label: "Calendar", path:"calender"},
+    { icon: <BarChart2 size={20} />, label: "Analytics" , path:"analytics"},
     { icon: <Users size={20} />, label: "Team" , path:"team", },
   ];
 
@@ -66,12 +67,15 @@ export default function Sidebar() {
       <nav className="space-y-6">
         <div>
           <ul className="space-y-2">
-            {menuItems.map(({ icon, label, active, badge, path }) => (
+            {menuItems.map(({ icon, label, badge, path }) => {
+              const isActive = location.pathname.includes(`/${path}`)
+
+            return (
               <li
                 key={label}
                 onClick={()=> handleMenuClick(path)}
                 className={`flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-green-500 ${
-                  active
+                  isActive
                     ? "bg-green-700 font-semibold text-gray-100"
                     : "text-gray-300"
                 }`}
@@ -86,7 +90,7 @@ export default function Sidebar() {
                   </span>
                 )}
               </li>
-            ))}
+            )})}
           </ul>
         </div>
 

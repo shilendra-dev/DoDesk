@@ -37,7 +37,7 @@ function CreateWorkspace({onClose}) {
             setName('')
             
             navigate(`/${newWorkspace.id}`);
-            
+            window.location.reload();
         }catch(err){
             console.error(err);
             setMessage(err.response?.data?.message || 'error creating workspace');

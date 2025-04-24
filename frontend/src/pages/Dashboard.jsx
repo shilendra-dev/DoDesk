@@ -2,6 +2,7 @@ import Sidebar from '../components/Sidebar';
 import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useWorkspace } from '../context/WorkspaceContext';
+import Header from '../components/Header';
 
 function Dashboard() {
   const { defaultWorkspaceId } = useWorkspace(); // use your default workspace logic here
@@ -21,8 +22,12 @@ function Dashboard() {
   return (
     <div className="flex bg-[#090D11] min-h-screen">
       <Sidebar />
-      <div className="flex-1 p-4 text-white">
-        <Outlet />
+      <div className='flex flex-col flex-1'>
+        <div className='w-full'><Header /></div>
+        
+        <div className="flex-1 p-4 text-white">
+          <Outlet />
+        </div>
       </div>
     </div>
   );

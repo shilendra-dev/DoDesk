@@ -8,6 +8,7 @@ const me = require("./routes/me")
 const userRoutes = require("./routes/userRoutes");
 const createWorkspace = require("./routes/workspaceRoutes");
 const { getUserWorkspaces } = require("./controllers/workspaceController");
+const taskRoutes = require("./routes/taskRoutes")
 
 const app = express();
 
@@ -24,6 +25,7 @@ app.use("/api/auth", me);
 app.use("/api/users", userRoutes);
 app.use("/api/workspaces", createWorkspace);
 app.use("/api/workspaces", getUserWorkspaces);
+app.use("/api/tasks", taskRoutes);
 
 
 //test db connection
