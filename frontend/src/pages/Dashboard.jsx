@@ -23,7 +23,7 @@ function Dashboard() {
     <div className="flex bg-[#090D11] min-h-screen">
       <Sidebar />
       <div className='flex flex-col flex-1'>
-        <div className='w-full'><Header /></div>
+        <Header />
         
         <div className="flex-1 p-4 text-white">
           <Outlet />
