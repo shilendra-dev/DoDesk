@@ -8,9 +8,9 @@ import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './pages/LandingPage';
 import { Navigate } from 'react-router-dom';
 import CreateWorkspace from './components/CreateWorkspace';
-import Overview from './components/Overview'
-import Tasks from './components/Tasks'
-import Team from './components/Team'
+import Overview from './components/overview/Overview'
+import Tasks from './components/tasks/tasks'
+import Team from './components/team/Team'
 
 axios.defaults.baseURL = 'http://localhost:5033';
 axios.defaults.withCredentials = true;

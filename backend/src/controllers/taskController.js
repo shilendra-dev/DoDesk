@@ -1,4 +1,4 @@
-const { v4: uuidv4 } = require('uuid');
+const { v4: uuidv4 , validate} = require('uuid');
 const pool = require('../config/db');
 
 //create task or CREATE
@@ -25,13 +25,22 @@ const createTask = async(req, res) => {
 
 //fetch task or READ
 const getTasksByWorkspace = async(req, res) => {
+    
     const {workspace_id} =  req.params;
-    console.log(workspace_id)
+    const isValidUuid = validate(workspace_id);
+
+    if(!isValidUuid) return res.status(401).json({message: "invalid uuid"})
+
     try{
         const result = await pool.query(
-            `SELECT * FROM tasks WHERE workspace_id = $1 ORDER BY created_at DESC`, [workspace_id]
+            `SELECT 
+            tasks.*, 
+            users.name AS created_by_name 
+            FROM tasks 
+            JOIN users ON tasks.created_by = users.id 
+            WHERE tasks.workspace_id = $1 
+            ORDER BY tasks.created_at DESC`, [workspace_id]
         );
-        console.log(result.rows)
         res.json(result.rows)
     }catch(error){
         console.log("Error fetching tasks: ", error);

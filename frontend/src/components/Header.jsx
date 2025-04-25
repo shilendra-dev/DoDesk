@@ -1,5 +1,6 @@
 import React from 'react'
 import SearchBar from './SearchBar'
+import AddMemberButton from './AddMemberButton'
 
 function Header() {
   return (
@@ -7,6 +8,7 @@ function Header() {
         <div className='w-2xl flex '>
             <SearchBar/>
         </div>
+            <AddMemberButton/>
     </div>
   )
 }
