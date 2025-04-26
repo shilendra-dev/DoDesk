@@ -74,7 +74,7 @@ export default function Sidebar() {
               <li
                 key={label}
                 onClick={()=> handleMenuClick(path)}
-                className={`flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-green-500 ${
+                className={`flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer hover:bg-green-600 ${
                   isActive
                     ? "bg-green-700 font-semibold text-gray-100"
                     : "text-gray-300"
@@ -101,7 +101,7 @@ export default function Sidebar() {
               <li
                 key={label}
                 onClick={onClick}
-                className="flex items-center gap-3 px-3 py-2 text-gray-300 rounded-lg cursor-pointer hover:bg-green-100"
+                className="flex items-center gap-3 px-3 py-2 text-gray-300 rounded-lg cursor-pointer hover:text-gray-950 hover:bg-green-100"
               >
                 {icon}
                 <span>{label}</span>
