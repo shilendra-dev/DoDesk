@@ -21,7 +21,9 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "knex": "^3.1.0",
+    "nodemailer": "^6.10.1",
     "pg": "^8.14.1",
+    "resend": "^4.4.1",
     "uuid": "^11.1.0"
   },
   "devDependencies": {

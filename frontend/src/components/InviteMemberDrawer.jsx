@@ -33,16 +33,27 @@ function InviteMemberDrawer({ isOpen, onClose, workspaceId }) {
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-end z-50">
-      <div className="bg-[#101221] w-96 h-full p-6 shadow-lg">
-        <h2 className="text-white text-2xl mb-4">Invite Member</h2>
+    <>
+      {/* Overlay */}
+      <div
+        className={`fixed inset-0 bg-opacity-20 z-40 transition-opacity duration-300 ${
+          isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={onClose}
+      />
+
+      {/* Drawer */}
+      <div
+        className={`fixed top-0 right-0 h-full w-96 bg-[#101221] border-gray- shadow-2xl p-6 z-50 transform transition-transform duration-300 border-l border-gray-700 ${
+          isOpen ? "translate-x-0" : "translate-x-full border-gray-50"
+        }`}
+      >
+        <h2 className="text-white text-2xl mb-6">Invite Member</h2>
 
         <input
           type="email"
-          className="w-full p-2 rounded-md mb-4 bg-gray-800 text-white"
+          className="w-full p-3 rounded-md mb-6 bg-gray-800 text-white outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Enter user's email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -51,23 +62,23 @@ function InviteMemberDrawer({ isOpen, onClose, workspaceId }) {
         <button
           onClick={handleInvite}
           disabled={loading}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-md"
+          className="w-full bg-blue-600 hover:bg-blue-700 transition-colors py-2 rounded-md text-white font-semibold"
         >
           {loading ? "Inviting..." : "Invite"}
         </button>
 
         {message && (
-          <p className="text-green-400 mt-4 text-center">{message}</p>
+          <p className="text-green-400 mt-6 text-center text-sm">{message}</p>
         )}
 
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-white text-xl"
+          className="absolute top-4 right-4 text-white text-2xl hover:text-gray-300"
         >
           ✖
         </button>
       </div>
-    </div>
+    </>
   );
 }
 

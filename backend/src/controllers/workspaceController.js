@@ -3,6 +3,8 @@ const pool = require("../config/db");
 const { v4: uuidv4 } = require("uuid");
 const axios = require("axios");
 const jwt = require("jsonwebtoken");
+const {Resend} = require('resend')
+const sendEmail = require('../utils/sendEmail')
 
 //create workspace api
 const createWorkspace = async (req, res) => {
@@ -73,44 +75,82 @@ const getUserWorkspaces = async (req, res) => {
   }
 };
 
+//INVITE MEMBERS TO WORKSPACE
 const inviteMember = async (req, res) => {
-    const { workspaceId } = req.params;
+    const { workspace_id } = req.params;
     const { email } = req.body;
+    const userId = req.user.id;
+
+    console.log("workspace id: ", workspace_id)
   
     try {
-      // Correct the query
+      
       const userResult = await pool.query(
         `SELECT id FROM users WHERE email = $1`,
         [email]
       );
   
-      if (userResult.rows.length === 0) {
-        return res.status(404).json({ message: "No user found with this email" });
+      if (userResult.rows.length > 0) {
+        //THE USER ALREADY EXISTS IN users --> DIRECTLY ADD THEM
+        const userId = userResult.rows[0].id;
+
+        //checking if already a member of workspace
+        const existingMember = await pool.query(`SELECT * FROM workspace_members WHERE workspace_id = $1 AND user_id = $2`,
+        [workspace_id, userId]);
+        
+        if(existingMember.rows.length > 0){
+          return res.status(400).json({message: "User is already a member"})
+        }
+
+        const memberId = uuidv4();
+        await pool.query(
+          `INSERT INTO workspace_members (id, workspace_id, user_id, role, joined_at)
+           VALUES ($1, $2, $3, $4, NOW())`,
+          [memberId, workspace_id, userId, "member"]
+        );
+
+        const workspace_name = await pool.query(
+          `SELECT name FROM workspaces WHERE id = $1`,
+          [workspace_id]
+        );
+
+        const user_name = await pool.query(
+          `SELECT name FROM users WHERE id = $1`, [userId]
+        );
+
+        await sendEmail({
+          to: email,
+          subject: `You have joined the workspace - ${workspace_name} by ${user_name}!`,
+          html: `<p>Hello!</p><p>You have been added to a workspace. -DODESK</p>`,
+        });
+
+        return res.status(200).json({message: "User added to workspace"});
       }
-  
-      const userId = userResult.rows[0].id;
-  
-      // Check if already a member
-      const membershipCheck = await pool.query(
-        `SELECT * FROM workspace_members WHERE workspace_id = $1 AND user_id = $2`,
-        [workspaceId, userId]
-      );
-  
-      if (membershipCheck.rows.length > 0) {
-        return res
-          .status(400)
-          .json({ message: "User is already a member of this workspace" });
+      else{//USER DOES NOT EXIST ---> SAVE AN INVITATION
+        const invitationID = uuidv4();
+        await pool.query(
+          `INSERT INTO workspace_invitations (id, workspace_id, email) VALUES ($1, $2, $3)`, [invitationID, workspace_id, email]
+        );
+        
+        //SENDING EMAIL
+        const workspace_name = await pool.query(
+          `SELECT name FROM workspaces WHERE id = $1`,
+          [workspace_id]
+        );
+
+        const user_name = await pool.query(
+          `SELECT name FROM users WHERE id = $1`, [userId]
+        );
+
+        await sendEmail({
+          to: email,
+          subject: `You are invited to join the workspace - ${workspace_name} by ${user_name}!`,
+          html: `<p>Hello!</p><p>You have been invited to join the workspace. Click <a href="http://localhost:5173/">here</a> to accept the invite!</p>`,
+        });
+
+        return res.status(200).json({message: "Invitation Successfully Sent"});
       }
-  
-      // Insert into workspace_members
-      const memberId = uuidv4(); // generate unique id
-      await pool.query(
-        `INSERT INTO workspace_members (id, workspace_id, user_id, role, joined_at)
-         VALUES ($1, $2, $3, $4, NOW())`,
-        [memberId, workspaceId, userId, "member"]
-      );
-  
-      res.status(200).json({ message: "User invited successfully" });
+      
     } catch (error) {
       console.error("Error inviting member:", error);
       res.status(500).json({ message: "Server error" });
