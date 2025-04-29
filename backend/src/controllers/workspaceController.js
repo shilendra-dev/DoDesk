@@ -3,6 +3,8 @@ const pool = require("../config/db");
 const { v4: uuidv4 } = require("uuid");
 const axios = require("axios");
 const jwt = require("jsonwebtoken");
+const {sendEmail} = require('../utils/sendEmail');
+const isValidEmail = require("../utils/isValidEmail");
 
 
 //create workspace api
@@ -77,13 +79,20 @@ const getUserWorkspaces = async (req, res) => {
 //INVITE MEMBERS TO WORKSPACE
 const inviteMember = async (req, res) => {
     const { workspace_id } = req.params;
-    const { email } = req.body;
+    let { email } = req.body;
     const userId = req.user.id;
+    email = email.trim().toLowerCase();
 
-    console.log("workspace id: ", workspace_id)
-  
+    
+    //if email is not valid
+    
+    if(!isValidEmail(email)){
+      return res.status(400).json({ message: "Invalid email address" });
+    }
+
     try {
       
+
       const userResult = await pool.query(
         `SELECT id FROM users WHERE email = $1`,
         [email]
@@ -116,7 +125,9 @@ const inviteMember = async (req, res) => {
         const user_name = await pool.query(
           `SELECT name FROM users WHERE id = $1`, [userId]
         );
-//
+        
+        sendEmail(`${email}`, `You have been added to the ${workspace_name}`, 'Hey Message from dodesk, you have been added to a new workspace.');
+
         return res.status(200).json({message: "User added to workspace"});
       }
       else{//USER DOES NOT EXIST ---> SAVE AN INVITATION
@@ -135,7 +146,8 @@ const inviteMember = async (req, res) => {
           `SELECT name FROM users WHERE id = $1`, [userId]
         );
 
-//
+        sendEmail(`${email}`, `You have been invited to a workspace`, `Hey Message from dodesk, you have been invited to a new workspace ${workspace_name}, please signup to join http://localhost:5173/`);
+
         return res.status(200).json({message: "Invitation Successfully Sent"});
       }
       

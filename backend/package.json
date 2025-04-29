@@ -19,9 +19,11 @@
     "dotenv": "^16.4.7",
     "env-cmd": "^10.1.0",
     "express": "^5.1.0",
+    "googleapis": "^148.0.0",
     "jsonwebtoken": "^9.0.2",
     "knex": "^3.1.0",
     "nodemailer": "^6.10.1",
+    "open": "^10.1.1",
     "pg": "^8.14.1",
     "resend": "^4.4.1",
     "uuid": "^11.1.0"
