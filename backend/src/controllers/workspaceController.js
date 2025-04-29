@@ -3,8 +3,7 @@ const pool = require("../config/db");
 const { v4: uuidv4 } = require("uuid");
 const axios = require("axios");
 const jwt = require("jsonwebtoken");
-const {Resend} = require('resend')
-const sendEmail = require('../utils/sendEmail')
+
 
 //create workspace api
 const createWorkspace = async (req, res) => {
@@ -117,13 +116,7 @@ const inviteMember = async (req, res) => {
         const user_name = await pool.query(
           `SELECT name FROM users WHERE id = $1`, [userId]
         );
-
-        await sendEmail({
-          to: email,
-          subject: `You have joined the workspace - ${workspace_name} by ${user_name}!`,
-          html: `<p>Hello!</p><p>You have been added to a workspace. -DODESK</p>`,
-        });
-
+//
         return res.status(200).json({message: "User added to workspace"});
       }
       else{//USER DOES NOT EXIST ---> SAVE AN INVITATION
@@ -142,12 +135,7 @@ const inviteMember = async (req, res) => {
           `SELECT name FROM users WHERE id = $1`, [userId]
         );
 
-        await sendEmail({
-          to: email,
-          subject: `You are invited to join the workspace - ${workspace_name} by ${user_name}!`,
-          html: `<p>Hello!</p><p>You have been invited to join the workspace. Click <a href="http://localhost:5173/">here</a> to accept the invite!</p>`,
-        });
-
+//
         return res.status(200).json({message: "Invitation Successfully Sent"});
       }
       
