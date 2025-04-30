@@ -73,7 +73,7 @@ const updateTask = async(req, res) => {
 //delete task or DELETE
 const deleteTask = async(req, res) => {
     const {taskId} = req.params;
-
+      
     try{
         const result = await pool.query(
             `DELETE FROM tasks WHERE id = $1 RETURNING *`, [taskId]
@@ -88,4 +88,59 @@ const deleteTask = async(req, res) => {
     }
 }
 
-module.exports = {createTask, getTasksByWorkspace, updateTask, deleteTask}
+const assignTask = async(req, res) => {
+    const {taskId} = req.params;
+    const {assignees} =  req.body;
+    const {userId} = req.user.id;
+
+    if (!Array.isArray(assignees) || assignees.length === 0) {
+        return res.status(400).json({ error: 'Assignees list required' });
+    }
+
+    try{
+        //check if user is the part of workspace
+        const taskResult = await pool.query(
+            `SELECT workspace_id FROM tasks WHERE id=$1`,[taskId]
+        )
+        if(taskResult.rows.length === 0){
+            return res.status(404).json({message: "task not found"});
+        }
+
+        const workspace_id = taskResult.rows[0].workspace_id;
+
+        //filter assignees to only those who exist in workspace
+        const validUsersResult = await pool.query(
+            `SELECT user_id FROM workspace_members WHERE workspace_id = $1 AND user_id = ANY($2::int[])`,[workspace_id, assignees]
+        )
+        const validUserIds = validUsersResult.rows.map(row => row.user_id);
+
+        if (validUserIds.length === 0) {
+            return res.status(400).json({ error: 'No valid assignees in workspace' });
+        }
+
+        //Avoiding duplicates : checking if already assigned
+        const alreadyAssignedResult = await pool.query(
+            `SELECT user_id FROM task_assignees WHERE task_id = $1 AND user_id = $2`, [taskId, validUserIds]
+        );
+        const alreadyAssignedIds = alreadyAssignedResult.rows.map(row => row.user_id);
+
+        const newAssignees = validUserIds.filter(id => !alreadyAssignedIds.includes(id));
+
+        if (newAssignees.length === 0) {
+            return res.status(200).json({ message: 'All users already assigned' });
+        }
+
+        //Inserting new assignees
+        const insertQuery = `INSERT INTO task_assignees (task_id, user_id) VALUES 
+            ${newAssignees.map((_, idx) => `($1, $${idx + 2})`).join(', ')}
+        `;
+        await pool.query(insertQuery, [taskId, ...newAssignees]);
+        res.json({ message: 'New assignees added', newAssignees });
+
+    }catch(error){
+        console.error('Error assigning task:', err);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+module.exports = {createTask, getTasksByWorkspace, updateTask, deleteTask, assignTask}

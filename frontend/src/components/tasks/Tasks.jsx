@@ -74,7 +74,7 @@ function Tasks() {
           {view === "board" ? (
             <TaskBoardView onTaskSelect={setSelectedTask} />
           ) : (
-            <TaskListView onTaskSelect={setSelectedTask} tasks={tasks}/>
+            <TaskListView onTaskSelect={setSelectedTask} tasks={tasks} />
           )}
         </div>
 
