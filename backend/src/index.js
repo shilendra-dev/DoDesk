@@ -7,8 +7,9 @@ const authRoutes = require("./routes/authRoutes")
 const me = require("./routes/me")
 const userRoutes = require("./routes/userRoutes");
 const createWorkspace = require("./routes/workspaceRoutes");
-const { getUserWorkspaces, inviteMember } = require("./controllers/workspaceController");
-const taskRoutes = require("./routes/taskRoutes")
+const { getUserWorkspaces, inviteMember, getWorkspaceMembers } = require("./controllers/workspaceController");
+const taskRoutes = require("./routes/taskRoutes");
+const { assignTask } = require("./controllers/taskController");
 
 const app = express();
 
@@ -25,9 +26,10 @@ app.use("/api/auth", me);
 app.use("/api/users", userRoutes);
 app.use("/api/workspaces", createWorkspace);
 app.use("/api/workspaces", getUserWorkspaces);
+app.use("/api/workspaces", getWorkspaceMembers);
 app.use("/api/workspaces", inviteMember);
 app.use("/api/tasks", taskRoutes);
-
+app.use("/api/tasks", assignTask)
 
 
 //test db connection

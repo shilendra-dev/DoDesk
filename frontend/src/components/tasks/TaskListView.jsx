@@ -2,10 +2,13 @@ import React, {useState} from "react";
 import BadgeLabel from "../atoms/BadgeLabel";
 import AssignModal from "../modals/AssignModal";
 import { assignTaskToMembers } from "../../api/taskApi";
+import { useWorkspaceMembers } from "../../context/WorkspaceMembers";
+
 
 
 function TaskListView({ tasks }) {
   const [selectedTask, setSelectedTask] = useState(null);
+  const { members } = useWorkspaceMembers();
 
   const handleAssign = async (taskId, assigneeIds) => {
     try {
@@ -31,7 +34,6 @@ function TaskListView({ tasks }) {
           </tr>
         </thead>
         <tbody>
-          {console.log(tasks)}
           {Array.isArray(tasks) && tasks.length > 0 ? (
             tasks.map((task) => (
               <tr
@@ -96,8 +98,8 @@ function TaskListView({ tasks }) {
         isOpen={!!selectedTask}
         onClose={() => setSelectedTask(null)}
         taskId={selectedTask?.id}
-        
         onAssign={handleAssign}
+        members={members}
       />
     </div>
   );
