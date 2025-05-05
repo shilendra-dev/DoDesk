@@ -8,7 +8,7 @@ function CreateTask({ isOpen, onClose, onTaskCreated, workspaceId }) {
         description: '',
         status: 'pending',
         priority: 'mid',
-        due_date: ''
+        due_date: '',
     });
 
     const handleChange = (e) => {

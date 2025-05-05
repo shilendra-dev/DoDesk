@@ -22,7 +22,7 @@ function AssignModal({ isOpen, onClose, taskId, members = [], onAssign }) {
     setLoading(true);
     try {
       await assignTaskToMembers(taskId, selectedIds);
-      if (onAssign) onAssign(taskId, selectedIds);
+      if (onAssign) onAssign(taskId, selectedIds); // Trigger the callback to reload the component
     } catch (error) {
       console.error("Failed to assign members:", error);
     } finally {

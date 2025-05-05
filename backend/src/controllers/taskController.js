@@ -32,7 +32,17 @@ const createTask = async (req, res) => {
         created_by,
       ]
     );
-    res.status(201).json(result.rows[0]);
+
+    const createdTask = result.rows[0];
+
+    const userResult = await pool.query(
+      `SELECT name FROM users WHERE id = $1`,
+      [created_by]
+    );
+
+    const created_by_name = userResult.rows[0]?.name || null;
+
+    res.status(201).json({ ...createdTask, created_by_name });
   } catch (error) {
     console.error("Error creating task: ", error);
     res.status(500).json({ message: "Faied to create task" });
@@ -49,15 +59,47 @@ const getTasksByWorkspace = async (req, res) => {
   try {
     const result = await pool.query(
       `SELECT 
-            tasks.*, 
-            users.name AS created_by_name 
-            FROM tasks 
-            JOIN users ON tasks.created_by = users.id 
-            WHERE tasks.workspace_id = $1 
-            ORDER BY tasks.created_at DESC`,
+        tasks.*, 
+        users.name AS created_by_name 
+      FROM tasks 
+      JOIN users ON tasks.created_by = users.id 
+      WHERE tasks.workspace_id = $1 
+      ORDER BY tasks.created_at DESC`,
       [workspace_id]
     );
-    res.json(result.rows);
+
+    const tasks = result.rows;
+
+    // Fetch assignees for all tasks in a single query
+    const taskIds = tasks.map(task => task.id);
+    let assigneeMap = {};
+
+    if (taskIds.length > 0) {
+      const assigneesResult = await pool.query(
+        `SELECT 
+          ta.task_id, 
+          u.id AS user_id, 
+          u.name 
+        FROM task_assignees ta
+        JOIN users u ON ta.user_id = u.id
+        WHERE ta.task_id = ANY($1::uuid[])`,
+        [taskIds]
+      );
+
+      assigneeMap = assigneesResult.rows.reduce((map, row) => {
+        if (!map[row.task_id]) map[row.task_id] = [];
+        map[row.task_id].push({ id: row.user_id, name: row.name });
+        return map;
+      }, {});
+    }
+
+    // Add assignees to each task
+    const tasksWithAssignees = tasks.map(task => ({
+      ...task,
+      assignees: assigneeMap[task.id] || [],
+    }));
+
+    res.json(tasksWithAssignees);
   } catch (error) {
     console.log("Error fetching tasks: ", error);
     res.status(500).json({ message: "Failed fetching tasks" });
@@ -107,75 +149,82 @@ const deleteTask = async (req, res) => {
 };
 
 const assignTask = async (req, res) => {
-    const { taskId } = req.params;
-    const { assignees } = req.body;
+  const { taskId } = req.params;
+  const { assignees } = req.body;
 
-    if (!Array.isArray(assignees) || assignees.length === 0) {
-        return res.status(400).json({ error: 'Assignees list required' });
+  if (!Array.isArray(assignees) || assignees.length === 0) {
+    return res.status(400).json({ error: "Assignees list required" });
+  }
+
+  try {
+    // Check if task exists
+    const taskResult = await pool.query(
+      `SELECT workspace_id FROM tasks WHERE id=$1`,
+      [taskId]
+    );
+    if (taskResult.rows.length === 0) {
+      return res.status(404).json({ message: "Task not found" });
     }
 
-    try {
-        // Check if task exists
-        const taskResult = await pool.query(
-            `SELECT workspace_id FROM tasks WHERE id=$1`, [taskId]
-        );
-        if (taskResult.rows.length === 0) {
-            return res.status(404).json({ message: "Task not found" });
-        }
+    const workspace_id = taskResult.rows[0].workspace_id;
 
-        const workspace_id = taskResult.rows[0].workspace_id;
-        
-        // Validate if assignees exist in the users table
-        const validAssigneesResult = await pool.query(
-            `SELECT id FROM users WHERE id = ANY($1::uuid[])`, [assignees]
-        );
+    // Validate if assignees exist in the users table
+    const validAssigneesResult = await pool.query(
+      `SELECT id FROM users WHERE id = ANY($1::uuid[])`,
+      [assignees]
+    );
 
-        const validAssignees = validAssigneesResult.rows.map(row => row.id);
-        const invalidAssignees = assignees.filter(id => !validAssignees.includes(id));
+    const validAssignees = validAssigneesResult.rows.map((row) => row.id);
+    const invalidAssignees = assignees.filter(
+      (id) => !validAssignees.includes(id)
+    );
 
-        if (invalidAssignees.length > 0) {
-            return res.status(400).json({
-                error: `Invalid assignees: ${invalidAssignees.join(', ')}`
-            });
-        }
+    if (invalidAssignees.length > 0) {
+      return res.status(400).json({
+        error: `Invalid assignees: ${invalidAssignees.join(", ")}`,
+      });
+    }
 
-        // Avoid duplicates: checking if already assigned
-        const alreadyAssignedResult = await pool.query(
-            `SELECT user_id FROM task_assignees WHERE task_id = $1 AND user_id = ANY($2::uuid[])`, [taskId, assignees]
-        );
-        const alreadyAssignedIds = alreadyAssignedResult.rows.map(row => row.user_id);
+    // Avoid duplicates: checking if already assigned
+    const alreadyAssignedResult = await pool.query(
+      `SELECT user_id FROM task_assignees WHERE task_id = $1 AND user_id = ANY($2::uuid[])`,
+      [taskId, assignees]
+    );
+    const alreadyAssignedIds = alreadyAssignedResult.rows.map(
+      (row) => row.user_id
+    );
 
-        const newAssignees = assignees.filter(id => !alreadyAssignedIds.includes(id));
+    const newAssignees = assignees.filter(
+      (id) => !alreadyAssignedIds.includes(id)
+    );
 
-        if (newAssignees.length === 0) {
-            return res.status(200).json({ message: 'All users already assigned' });
-        }
+    if (newAssignees.length === 0) {
+      return res.status(200).json({ message: "All users already assigned" });
+    }
 
-        // Generate UUID for each assignee
-        const assigneeIds = newAssignees.map(() => uuidv4());
+    // Generate UUID for each assignee
+    const assigneeIds = newAssignees.map(() => uuidv4());
 
-        // Insert new assignees with generated UUIDs
-        const insertQuery = `INSERT INTO task_assignees (id, task_id, user_id) VALUES 
-            ${newAssignees.map((_, idx) => `($${idx * 3 + 1}, $${idx * 3 + 2}, $${idx * 3 + 3})`).join(', ')}
+    // Insert new assignees with generated UUIDs
+    const insertQuery = `INSERT INTO task_assignees (id, task_id, user_id) VALUES 
+            ${newAssignees.map((_, idx) => `($${idx * 3 + 1}, $${idx * 3 + 2}, $${idx * 3 + 3})`).join(", ")}
         `;
 
-        // Flatten the values into a single array for the query
-        const values = [];
-        newAssignees.forEach((user, idx) => {
-            values.push(assigneeIds[idx], taskId, user);
-        });
+    // Flatten the values into a single array for the query
+    const values = [];
+    newAssignees.forEach((user, idx) => {
+      values.push(assigneeIds[idx], taskId, user);
+    });
 
-        // Execute the query
-        await pool.query(insertQuery, values);
+    // Execute the query
+    await pool.query(insertQuery, values);
 
-        res.json({ message: 'New assignees added', newAssignees });
-
-    } catch (error) {
-        console.error('Error assigning task:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+    res.json({ message: "New assignees added", newAssignees });
+  } catch (error) {
+    console.error("Error assigning task:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
 };
-
 
 module.exports = {
   createTask,

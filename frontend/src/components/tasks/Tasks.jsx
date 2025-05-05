@@ -12,24 +12,27 @@ function Tasks() {
   const [view, setView] = useState("list"); // 'board' or 'list'
   const [selectedTask, setSelectedTask] = useState(null);
   const [tasks, setTasks] = useState([]);
-  const {selectedWorkspace} = useWorkspace();
+  const { selectedWorkspace } = useWorkspace();
   const [isLoading, setIsLoading] = useState(true); // Loading state
   const [showCreateTask, setShowCreateTask] = useState(false);
   const workspaceId = selectedWorkspace?.id;
 
   useEffect(() => {
-    //fetching tasks from baceknd
-    const fetchTasks = async () =>{
+    // Fetching tasks from backend
+    const fetchTasks = async () => {
       try {
         setIsLoading(true);
         const token = localStorage.getItem("token");
-        const res = await axios.get(`http://localhost:5033/api/tasks/${workspaceId}`, 
-          {headers:{
-            Authorization: `Bearer ${token}`
-        }}
+        const res = await axios.get(
+          `http://localhost:5033/api/tasks/${workspaceId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
         );
         console.log("Fetched tasks:", res.data);
-        
+
         setTasks(res.data);
         setIsLoading(false);
       } catch (error) {
@@ -50,43 +53,47 @@ function Tasks() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-[#101221] rounded-xl border-gray-800 border-[0.5px]">
+    <div className="flex flex-col max-h-full bg-[#101221] rounded-xl border-gray-800 border-[0.5px]">
       {/* Top bar */}
       <div className="flex justify-between items-center p-4 border-b-[0.5px] border-b-gray-800">
         <h1 className="text-xl font-semibold">Tasks</h1>
         <div className="flex items-center gap-4">
-          <ViewToggle  onToggle = {(mode) => setView(mode)}/>
-
-          <CreateTaskButton onClick={() => setShowCreateTask(true)}/>
+          <ViewToggle onToggle={(mode) => setView(mode)} />
+          <CreateTaskButton onClick={() => setShowCreateTask(true)} />
           <CreateTask
             isOpen={showCreateTask}
             onClose={() => setShowCreateTask(false)}
             onTaskCreated={(newTask) => setTasks([newTask, ...tasks])}
             workspaceId={workspaceId}
           />
-
         </div>
       </div>
 
-      {/* Content */}
-      <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 overflow-auto">
+      {/* Scrollable Content Area */}
+      <div className="flex-1 overflow-hidden flex flex-col">
+        {/* Scrollable tasks area */}
+        <div className="flex-1 overflow-y-auto ">
           {view === "board" ? (
             <TaskBoardView onTaskSelect={setSelectedTask} />
           ) : (
-            <TaskListView onTaskSelect={setSelectedTask} tasks={tasks} />
+            <TaskListView setTasks={setTasks} tasks={tasks} />
           )}
         </div>
 
-        {/* Task Details */}
-        {selectedTask && (
-          <div className="w-[400px] border-l border-gray-200 overflow-y-auto">
-            <TaskDetails task={selectedTask} onClose={() => setSelectedTask(null)} />
-          </div>
-        )}
+        {/* Pagination controls */}
+        <div className="flex justify-center mt-4">
+          {/* Add your pagination controls here */}
+        </div>
       </div>
+
+      {/* Task Details */}
+      {selectedTask && (
+        <div className="w-[400px] border-l border-gray-200 overflow-y-auto">
+          <TaskDetails task={selectedTask} onClose={() => setSelectedTask(null)} />
+        </div>
+      )}
     </div>
   );
 }
 
-export default Tasks
+export default Tasks;
