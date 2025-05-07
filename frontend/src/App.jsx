@@ -9,8 +9,9 @@ import LandingPage from './pages/LandingPage';
 import { Navigate } from 'react-router-dom';
 import CreateWorkspace from './components/CreateWorkspace';
 import Overview from './components/overview/Overview'
-import Tasks from './components/tasks/tasks'
+import Tasks from './components/tasks/Tasks'
 import Team from './components/team/Team'
+import { Toaster } from "react-hot-toast";
 
 axios.defaults.baseURL = 'http://localhost:5033';
 axios.defaults.withCredentials = true;
@@ -19,6 +20,7 @@ function App() {
 
   return (
     <>
+      <Toaster position="top-center" reverseOrder={false} />
       <Routes>
           
           <Route path="/dashboard" element={<PrivateRoute><Dashboard/></PrivateRoute>}/>

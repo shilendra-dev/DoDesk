@@ -112,7 +112,7 @@ const updateTask = async (req, res) => {
   const { title, description, status, priority, due_date } = req.body;
 
   try {
-    const result = pool.query(
+    const result = await pool.query(
       `UPDATE tasks
             SET title = $1, description = $2, status = $3, priority = $4, due_date = $5
             WHERE id = $6 

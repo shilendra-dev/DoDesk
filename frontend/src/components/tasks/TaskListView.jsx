@@ -1,10 +1,13 @@
 import React, { useState } from "react";
+import { createPortal } from "react-dom";
 import BadgeLabel from "../atoms/BadgeLabel";
 import AssignModal from "../modals/AssignModal";
 import { assignTaskToMembers } from "../../api/taskApi";
 import { useWorkspaceMembers } from "../../context/WorkspaceMembers";
 import { useWorkspace } from "../../context/WorkspaceContext";
 import axios from "axios";
+import { Pencil } from "lucide-react";
+import TaskEditModal from "../../components/modals/TaskEditModal";
 
 function TaskListView({ tasks, setTasks }) {
   const [selectedTask, setSelectedTask] = useState(null);
@@ -12,7 +15,25 @@ function TaskListView({ tasks, setTasks }) {
   const { members } = useWorkspaceMembers();
   const { selectedWorkspace } = useWorkspace();
   const [currentPage, setCurrentPage] = useState(1);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const tasksPerPage = 15;
+
+  const [tooltip, setTooltip] = useState({ visible: false, name: "", x: 0, y: 0 });
+
+  const showTooltip = (name, e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    setTooltip({
+      visible: true,
+      name,
+      x: rect.left + rect.width / 2,
+      y: rect.top - 8,
+    });
+  };
+
+  const hideTooltip = () => {
+    setTooltip({ visible: false, name: "", x: 0, y: 0 });
+  };
 
   const indexOfLastTask = currentPage * tasksPerPage;
   const indexOfFirstTask = indexOfLastTask - tasksPerPage;
@@ -20,13 +41,8 @@ function TaskListView({ tasks, setTasks }) {
 
   const totalPages = Math.ceil(tasks.length / tasksPerPage);
 
-  const handleAssign = async (taskId, assigneeIds) => {
-    setLoading(true); // Start loading
+  const fetchTasks = async () => {
     try {
-      // Call the API to assign members
-      await assignTaskToMembers(taskId, assigneeIds);
-
-      // Refetch the entire list of tasks from the backend
       const token = localStorage.getItem("token");
       const res = await axios.get(
         `http://localhost:5033/api/tasks/${selectedWorkspace.id}`,
@@ -36,9 +52,20 @@ function TaskListView({ tasks, setTasks }) {
           },
         }
       );
-
-      // Update the tasks state with the latest data
       setTasks(res.data);
+    } catch (err) {
+      console.error("Failed to fetch tasks:", err);
+    }
+  };
+
+  const handleAssign = async (taskId, assigneeIds) => {
+    setLoading(true); // Start loading
+    try {
+      // Call the API to assign members
+      await assignTaskToMembers(taskId, assigneeIds);
+
+      // Refetch the entire list of tasks from the backend
+      await fetchTasks();
     } catch (err) {
       console.error("Failed to assign members:", err);
     } finally {
@@ -77,7 +104,22 @@ function TaskListView({ tasks, setTasks }) {
                   key={task.id}
                   className="border-b border-b-gray-800 hover:bg-[#090E12] text-sm text-gray-200 bg-[#101221]/30 backdrop-blur-sm"
                 >
-                  <td className="px-6 py-4 text-left align-middle">{task.title}</td>
+                  <td className="px-6 py-4 text-left align-middle">
+                    <div className="flex items-center justify-between space-x-2">
+                      <span className="text-gray-200">{task.title}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedTask(task);
+                          setIsEditModalOpen(true);
+                        }}
+                        title="Edit Task"
+                        className="text-gray-400 hover:text-indigo-500"
+                      >
+                        <Pencil size={16} />
+                      </button>
+                    </div>
+                  </td>
                   <td className="px-6 py-4 text-left align-middle">
                     {task.description || "-"}
                   </td>
@@ -96,27 +138,33 @@ function TaskListView({ tasks, setTasks }) {
                               <div
                                 className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs font-bold flex items-center justify-center ring-2 ring-gray-900 shadow-lg hover:scale-105 transition-transform duration-150"
                                 title={assignee.name}
+                                onMouseEnter={(e) => showTooltip(assignee.name, e)}
+                                onMouseLeave={hideTooltip}
                               >
                                 {assignee.name?.substring(0, 2).toUpperCase()}
-                              </div>
-                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-white bg-[#1F2937]/60 backdrop-blur-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap z-50 shadow-md border border-gray-700">
-                                {assignee.name}
                               </div>
                             </div>
                           ))}
                           {task.assignees.length > 3 && (
-                            <div className="relative group" style={{ zIndex: 0 }}>
+                            <div
+                              className="relative group"
+                              style={{ zIndex: 0 }}
+                              onMouseEnter={(e) =>
+                                showTooltip(
+                                  task.assignees
+                                    .slice(3)
+                                    .map((assignee) => assignee.name)
+                                    .join(", "),
+                                  e
+                                )
+                              }
+                              onMouseLeave={hideTooltip}
+                            >
                               <div
                                 className="w-8 h-8 rounded-full bg-gray-600 text-white text-xs font-bold flex items-center justify-center ring-2 ring-gray-900 shadow-lg"
                                 title={`${task.assignees.length - 3} more`}
                               >
                                 +{task.assignees.length - 3}
-                              </div>
-                              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 text-xs text-white bg-[#1F2937]/60 backdrop-blur-sm rounded opacity-0 group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap z-50 shadow-md border border-gray-700">
-                                {task.assignees
-                                  .slice(3)
-                                  .map((assignee) => assignee.name)
-                                  .join(", ")}
                               </div>
                             </div>
                           )}
@@ -134,7 +182,11 @@ function TaskListView({ tasks, setTasks }) {
                       <button
                         title="Add Assignee"
                         className="w-7 h-7 rounded-full bg-gray-700 text-white flex items-center justify-center hover:bg-gray-600 text-sm font-bold ml-2"
-                        onClick={() => setSelectedTask(task)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedTask(task);
+                          setIsAssignModalOpen(true);
+                        }}
                       >
                         +
                       </button>
@@ -198,13 +250,41 @@ function TaskListView({ tasks, setTasks }) {
         </div>
         </div>
         <AssignModal
-          isOpen={!!selectedTask}
-          onClose={() => setSelectedTask(null)}
+          isOpen={isAssignModalOpen}
+          onClose={() => {
+            setIsAssignModalOpen(false);
+            setSelectedTask(null);
+          }}
           taskId={selectedTask?.id}
           onAssign={handleAssign}
           members={members}
         />
+        <TaskEditModal
+          isOpen={isEditModalOpen}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setSelectedTask(null);
+          }}
+          task={selectedTask}
+          setTasks={setTasks}
+          onSave={fetchTasks}
+        />
       </div>
+      {tooltip.visible &&
+        createPortal(
+          <div
+            className="fixed px-2 py-1 text-xs text-white bg-[#1F2937]/60 backdrop-blur-sm rounded z-[9999] shadow-md border border-gray-700"
+            style={{
+              top: tooltip.y,
+              left: tooltip.x,
+              transform: "translate(-50%, -100%)",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {tooltip.name}
+          </div>,
+          document.body
+        )}
     </div>
   );
 }

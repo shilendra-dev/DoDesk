@@ -9,7 +9,7 @@ const userRoutes = require("./routes/userRoutes");
 const createWorkspace = require("./routes/workspaceRoutes");
 const { getUserWorkspaces, inviteMember, getWorkspaceMembers } = require("./controllers/workspaceController");
 const taskRoutes = require("./routes/taskRoutes");
-const { assignTask } = require("./controllers/taskController");
+const { assignTask, updateTask } = require("./controllers/taskController");
 
 const app = express();
 
@@ -29,6 +29,7 @@ app.use("/api/workspaces", getUserWorkspaces);
 app.use("/api/workspaces", getWorkspaceMembers);
 app.use("/api/workspaces", inviteMember);
 app.use("/api/tasks", taskRoutes);
+app.use("/api/tasks", updateTask);
 app.use("/api/tasks", assignTask)
 
 
