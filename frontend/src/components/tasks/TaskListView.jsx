@@ -19,6 +19,29 @@ function TaskListView({ tasks, setTasks }) {
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const tasksPerPage = 15;
 
+  //states for sorting and filtering logic
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [priorityFilter, setPriorityFilter] = useState("All");
+  const [sortOption, setSortOption] = useState("None");
+
+  //Filtering Logic
+  let filteredTasks = tasks.filter(task => {
+    const statusMatch = statusFilter === "All" || task.status.toLowerCase() === statusFilter.toLowerCase();
+    const priorityMatch = priorityFilter === "All" || task.priority.toLowerCase() === priorityFilter.toLowerCase();
+    return statusMatch && priorityMatch;
+  })
+
+  //Sorting logic
+  if (sortOption === "Due Date (Asc)") {
+    filteredTasks.sort((a, b) => new Date(a.due_date) - new Date(b.due_date));
+  } else if (sortOption === "Priority (High → Low)") {
+    const priorityOrder = { high: 3, mid: 2, low: 1 };
+    filteredTasks.sort((a, b) => priorityOrder[b.priority] - priorityOrder[a.priority]);
+  } else if (sortOption === "Priority (Low → High)") {
+    const priorityOrder = { high: 3, mid: 2, low: 1 };
+    filteredTasks.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+  }
+
   const [tooltip, setTooltip] = useState({ visible: false, name: "", x: 0, y: 0 });
 
   const showTooltip = (name, e) => {
@@ -35,9 +58,10 @@ function TaskListView({ tasks, setTasks }) {
     setTooltip({ visible: false, name: "", x: 0, y: 0 });
   };
 
+  //Pagination Logic
   const indexOfLastTask = currentPage * tasksPerPage;
   const indexOfFirstTask = indexOfLastTask - tasksPerPage;
-  const currentTasks = tasks.slice(indexOfFirstTask, indexOfLastTask);
+  const currentTasks = filteredTasks.slice(indexOfFirstTask, indexOfLastTask);
 
   const totalPages = Math.ceil(tasks.length / tasksPerPage);
 
@@ -82,6 +106,59 @@ function TaskListView({ tasks, setTasks }) {
               <span>Loading...</span>
             </div>
           )}
+
+          <div className="flex justify-between items-center flex-wrap gap-4 px-4 py-3 bg-[#101221]/60 backdrop-blur ">
+            <div className="flex gap-4 items-center">
+              {/* Status Filter */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                <label htmlFor="statusFilter" className="text-sm font-medium text-gray-300">Status</label>
+                <select
+                  id="statusFilter"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                >
+                  <option>All</option>
+                  <option>Pending</option>
+                  <option>In-Progress</option>
+                  <option>Completed</option>
+                </select>
+              </div>
+
+              {/* Priority Filter */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                <label htmlFor="priorityFilter" className="text-sm font-medium text-gray-300">Priority</label>
+                <select
+                  id="priorityFilter"
+                  value={priorityFilter}
+                  onChange={(e) => setPriorityFilter(e.target.value)}
+                  className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                >
+                  <option>All</option>
+                  <option>High</option>
+                  <option>Mid</option>
+                  <option>Low</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex items-center">
+              {/* Sort Option */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                <label htmlFor="sortOption" className="text-sm font-medium text-gray-300">Sort by</label>
+                <select
+                  id="sortOption"
+                  value={sortOption}
+                  onChange={(e) => setSortOption(e.target.value)}
+                  className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                >
+                  <option>None</option>
+                  <option>Due Date (Asc)</option>
+                  <option>Priority (High → Low)</option>
+                  <option>Priority (Low → High)</option>
+                </select>
+              </div>
+            </div>
+          </div>
 
           <table className="min-w-full table-fixed bg-[#101221]/50 backdrop-blur-md shadow-md">
             {/* Table Header */}
@@ -273,7 +350,7 @@ function TaskListView({ tasks, setTasks }) {
       {tooltip.visible &&
         createPortal(
           <div
-            className="fixed px-2 py-1 text-xs text-white bg-[#1F2937]/60 backdrop-blur-sm rounded z-[9999] shadow-md border border-gray-700"
+            className="fixed px-3 py-1.5 text-xs text-white bg-black/70 backdrop-blur-sm rounded-md z-[9999] shadow-lg border border-gray-600"
             style={{
               top: tooltip.y,
               left: tooltip.x,
