@@ -125,7 +125,7 @@ const updateTask = async (req, res) => {
     res.status(200).json(result.rows[0]);
   } catch (error) {
     console.error("Error updating task: ", error);
-    res.status(500).josn({ message: "Failed to update tasks" });
+    res.status(500).json({ message: "Failed to update tasks" });
   }
 };
 

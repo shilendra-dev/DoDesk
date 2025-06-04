@@ -10,3 +10,14 @@ export const assignTaskToMembers = async (taskId, assigneeIds) => {
   );
   return res.data;
 };
+
+
+export const updateTask = async (taskId, updatedData) => {
+  const token = localStorage.getItem("token");
+  const res = await axios.put(
+    `http://localhost:5033/api/tasks/${taskId}`,
+    updatedData,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+  return res.data;
+};

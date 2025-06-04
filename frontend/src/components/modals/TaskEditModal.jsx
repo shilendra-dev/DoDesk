@@ -30,6 +30,24 @@ function TaskEditModal({ isOpen, onClose, task, onSave }) {
     }));
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this task?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`/api/tasks/${task.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      toast.success("Task deleted successfully!");
+      onClose();
+      if (onSave) onSave(null); // Let parent refresh tasks
+    } catch (error) {
+      console.error("Error deleting task:", error);
+      toast.error("Failed to delete task.");
+    }
+  };
+
   const handleSubmit = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -108,19 +126,27 @@ function TaskEditModal({ isOpen, onClose, task, onSave }) {
           className="w-full mb-4 p-2 rounded-xl bg-gray-800 text-white"
         />
 
-        <div className="flex justify-end space-x-2">
+        <div className="flex justify-between items-center">
           <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-600 text-white rounded-xl hover:bg-gray-500"
+            onClick={handleDelete}
+            className="px-4 py-2 bg-red-700 text-white rounded-xl hover:bg-red-500"
           >
-            Cancel
+            Delete Task
           </button>
-          <button
-            onClick={handleSubmit}
-            className="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500"
-          >
-            Save
-          </button>
+          <div className="space-x-2">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 bg-gray-600 text-white rounded-xl hover:bg-gray-500"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSubmit}
+              className="px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-500"
+            >
+              Save
+            </button>
+          </div>
         </div>
       </div>
     </div>

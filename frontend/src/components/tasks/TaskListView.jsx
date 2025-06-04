@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { createPortal } from "react-dom";
 import BadgeLabel from "../atoms/BadgeLabel";
 import AssignModal from "../modals/AssignModal";
-import { assignTaskToMembers } from "../../api/taskApi";
+import { assignTaskToMembers, updateTask } from "../../api/taskApi";
 import { useWorkspaceMembers } from "../../context/WorkspaceMembers";
 import { useWorkspace } from "../../context/WorkspaceContext";
 import axios from "axios";
@@ -18,6 +18,14 @@ function TaskListView({ tasks, setTasks }) {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const tasksPerPage = 15;
+
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [editingField, setEditingField] = useState(null);
+  const [editedTitle, setEditedTitle] = useState("");
+
+  // Dropdown state for inline status/priority dropdowns
+  const [dropdownPosition, setDropdownPosition] = useState(null);
+  const [dropdownType, setDropdownType] = useState(null); // "status" or "priority"
 
   //states for sorting and filtering logic
   const [statusFilter, setStatusFilter] = useState("All");
@@ -97,10 +105,35 @@ function TaskListView({ tasks, setTasks }) {
     }
   };
 
+  // Generic API handler for updating any task field
+  const handleTaskFieldUpdate = async (taskId, field, value) => {
+    try {
+      const taskToUpdate = tasks.find(task => task.id === taskId);
+      if (!taskToUpdate) return;
+
+      const updatedTask = {
+        ...taskToUpdate,
+        [field]: value
+      };
+
+      await updateTask(taskId, updatedTask);
+      await fetchTasks();
+    } catch (err) {
+      console.error(`Failed to update task ${field}:`, err);
+    }
+  };
+
+  // Inline edit handler for task fields
+  const handleInlineEdit = async (taskId, field, value) => {
+    await handleTaskFieldUpdate(taskId, field, value);
+    setEditingTaskId(null);
+    setEditingField(null);
+  };
+
   return (
-    <div className="h-full flex flex-col">
-      <div className="overflow-x-auto flex-1 flex flex-col">
-        <div className="max-h-[620px] overflow-y-auto flex flex-col border border-transparent">
+    <div className="h-full flex flex-col" onClick={() => setDropdownPosition(null)}>
+      <div className="overflow-auto flex-1 flex flex-col">
+        <div className="max-h-[620px] overflow-y-auto flex flex-col border border-transparent relative z-0">
           {loading && (
             <div className="text-center py-4 text-gray-500">
               <span>Loading...</span>
@@ -160,17 +193,17 @@ function TaskListView({ tasks, setTasks }) {
             </div>
           </div>
 
-          <table className="min-w-full table-fixed bg-[#101221]/50 backdrop-blur-md shadow-md">
+          <table className="w-auto bg-[#101221]/50 backdrop-blur-md shadow-md">
             {/* Table Header */}
             <thead className="sticky top-0 z-10 bg-[#090E12]/90 backdrop-blur-md border-b border-b-gray-800 text-gray-100 text-left text-sm">
             <tr>
-              <th className="px-6 py-4 text-left align-middle">Title</th>
-              <th className="px-6 py-4 text-left align-middle">Description</th>
-              <th className="px-6 py-4 text-center align-middle">Assignees</th>
-              <th className="px-6 py-4 text-center align-middle">Status</th>
-              <th className="px-6 py-4 text-center align-middle">Priority</th>
-              <th className="px-6 py-4 text-left align-middle">Due Date</th>
-              <th className="px-6 py-4 text-left align-middle">Created By</th>
+              <th className="px-3 py-2 text-left align-middle">Title</th>
+              <th className="px-3 py-2 text-left align-middle">Description</th>
+              <th className="px-3 py-2 text-center align-middle">Assignees</th>
+              <th className="px-3 py-2 text-center align-middle">Status</th>
+              <th className="px-3 py-2 text-center align-middle">Priority</th>
+              <th className="px-3 py-2 text-left align-middle">Due Date</th>
+              <th className="px-3 py-2 text-left align-middle">Created By</th>
             </tr>
           </thead>
           {/* Table Body */}
@@ -179,11 +212,38 @@ function TaskListView({ tasks, setTasks }) {
               currentTasks.map((task) => (
                 <tr
                   key={task.id}
-                  className="border-b border-b-gray-800 hover:bg-[#090E12] text-sm text-gray-200 bg-[#101221]/30 backdrop-blur-sm"
+                  className="border-b border-b-gray-800 hover:bg-[#090E12] text-sm text-gray-200 bg-[#101221]/30 backdrop-blur-sm py-2 overflow-visible"
                 >
-                  <td className="px-6 py-4 text-left align-middle">
+                  <td className="px-3 py-2 text-left align-middle">
                     <div className="flex items-center justify-between space-x-2">
-                      <span className="text-gray-200">{task.title}</span>
+
+                      {/* Editable Task Title */}
+                      {editingTaskId === task.id && editingField === "title" ? (
+                        <input
+                          type="text"
+                          value={editedTitle}
+                          onChange={(e) => setEditedTitle(e.target.value)}
+                          onBlur={() => handleInlineEdit(task.id, "title", editedTitle)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleInlineEdit(task.id, "title", editedTitle);
+                          }}
+                          className="bg-transparent  text-white text-sm rounded w-full focus:outline-none"
+                          autoFocus
+                        />
+                      ) : (
+                        <span
+                          className="text-gray-200 cursor-pointer"
+                          onClick={() => {
+                            setEditingTaskId(task.id);
+                            setEditedTitle(task.title);
+                            setEditingField("title");
+                          }}
+                        >
+                          {task.title}
+                        </span>
+                      )}
+
+                      {/* Edit Task Button */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -197,10 +257,43 @@ function TaskListView({ tasks, setTasks }) {
                       </button>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-left align-middle">
-                    {task.description || "-"}
+                  
+                  {/* Editable Task Description */}
+                  <td className="px-3 py-2 text-left align-middle">
+                    {editingTaskId === task.id && editingField === "description" ? (
+                      <input
+                        type="text"
+                        value={task.description || ""}
+                        onChange={(e) =>
+                          setTasks((prevTasks) =>
+                            prevTasks.map((t) =>
+                              t.id === task.id ? { ...t, description: e.target.value } : t
+                            )
+                          )
+                        }
+                        onBlur={() => {
+                          handleInlineEdit(task.id, "description", task.description);
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") handleInlineEdit(task.id, "description", task.description);
+                        }}
+                        className="bg-transparent px-2 py-1 text-white text-sm rounded w-full focus:outline-none whitespace-nowrap overflow-hidden text-ellipsis"
+                        autoFocus
+                        maxLength={100}
+                      />
+                    ) : (
+                      <span
+                        className="text-gray-300 cursor-pointer max-w-[250px] truncate block whitespace-nowrap overflow-hidden"
+                        onClick={() => {
+                          setEditingTaskId(task.id);
+                          setEditingField("description");
+                        }}
+                      >
+                        {task.description || "-"}
+                      </span>
+                    )}
                   </td>
-                  <td className="px-6 py-4 text-center align-middle flex justify-center">
+                  <td className="px-3 py-2 text-center align-middle flex justify-center">
                     <div className="flex items-center -space-x-2">
                       {task.assignees &&
                       Array.isArray(task.assignees) &&
@@ -255,39 +348,55 @@ function TaskListView({ tasks, setTasks }) {
                         </div>
                       )}
 
-                      {/* "+" Add assignee to task button */}
-                      <button
-                        title="Add Assignee"
-                        className="w-7 h-7 rounded-full bg-gray-700 text-white flex items-center justify-center hover:bg-gray-600 text-sm font-bold ml-2"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedTask(task);
-                          setIsAssignModalOpen(true);
-                        }}
-                      >
-                        +
-                      </button>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-center align-middle whitespace-nowrap">
-                    <BadgeLabel type="status" value={task.status} />
+                  <td className="px-3 py-2 text-center align-middle whitespace-nowrap relative">
+                    <div className="relative inline-block text-left">
+                      <div
+                        className="cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setEditingTaskId(task.id);
+                          setEditingField("status");
+                          setDropdownPosition({ x: rect.left, y: rect.bottom });
+                          setDropdownType("status");
+                        }}
+                      >
+                        <BadgeLabel type="status" value={String(task.status).toLowerCase()} />
+                      </div>
+                    </div>
                   </td>
-                  <td className="px-6 py-4 text-center align-middle">
-                    <BadgeLabel type="priority" value={task.priority} />
+                  <td className="px-3 py-2 text-center align-middle relative">
+                    <div className="relative inline-block text-left">
+                      <div
+                        className="cursor-pointer"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          const rect = e.currentTarget.getBoundingClientRect();
+                          setEditingTaskId(task.id);
+                          setEditingField("priority");
+                          setDropdownPosition({ x: rect.left, y: rect.bottom });
+                          setDropdownType("priority");
+                        }}
+                      >
+                        <BadgeLabel type="priority" value={String(task.priority).toLowerCase()} />
+                      </div>
+                    </div>
                   </td>
-                  <td className="px-6 py-4 text-left align-middle">
+                  <td className="px-3 py-2 text-left align-middle">
                     {task.due_date
                       ? new Date(task.due_date).toLocaleDateString()
                       : "—"}
                   </td>
-                  <td className="px-6 py-4 text-left align-middle">
+                  <td className="px-3 py-2 text-left align-middle">
                     {task.created_by_name || "—"}
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="text-center py-4 text-gray-500">
+                <td colSpan={6} className="text-center py-2 text-gray-500">
                   No tasks found.
                 </td>
               </tr>
@@ -296,7 +405,7 @@ function TaskListView({ tasks, setTasks }) {
           </table>
           
         {/* Pagination - sticky inside scroll container */}
-        <div className="sticky bottom-0 bg-[#101221]/90 backdrop-blur-sm pt-2 pb-0 flex justify-center items-center space-x-2 text-sm text-gray-200 z-10 border-t border-gray-700">
+        <div className="sticky bottom-0 left-0 w-full bg-[#101221]/90 backdrop-blur-sm pt-2 pb-2 flex justify-center items-center space-x-2 text-sm text-gray-200 z-10 border-t border-gray-700">
           <button
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
@@ -362,6 +471,36 @@ function TaskListView({ tasks, setTasks }) {
           </div>,
           document.body
         )}
+      {dropdownPosition && editingTaskId && (
+        createPortal(
+          <div
+            className="fixed z-[9999] bg-[#1f2937] border border-gray-700 rounded shadow-md p-1 min-w-max"
+            style={{ top: dropdownPosition.y + 4, left: dropdownPosition.x }}
+            onClick={e => e.stopPropagation()}
+          >
+            {(dropdownType === "status"
+              ? ["pending", "in-progress", "completed"]
+              : ["high", "mid", "low"]
+            ).map((option) => (
+              <div
+                key={option}
+                onClick={() => {
+                  handleInlineEdit(editingTaskId, dropdownType, option);
+                  setEditingTaskId(null);
+                  setEditingField(null);
+                  setDropdownPosition(null);
+                }}
+
+                className="px-2 py-1 hover:bg-gray-600 cursor-pointer rounded"
+                autoFocus
+              >
+                <BadgeLabel type={dropdownType} value={option} />
+              </div>
+            ))}
+          </div>,
+          document.body
+        )
+      )}
     </div>
   );
 }
