@@ -34,6 +34,7 @@ function TaskListView({ tasks, setTasks }) {
   const [statusFilter, setStatusFilter] = useState("All");
   const [priorityFilter, setPriorityFilter] = useState("All");
   const [sortOption, setSortOption] = useState("None");
+  const [assigneeFilter, setAssigneeFilter] = useState("All");
 
   // Save filters and sort option to localStorage whenever they change
   useEffect(() => {
@@ -54,7 +55,10 @@ function TaskListView({ tasks, setTasks }) {
   let filteredTasks = tasks.filter(task => {
     const statusMatch = statusFilter === "All" || task.status.toLowerCase() === statusFilter.toLowerCase();
     const priorityMatch = priorityFilter === "All" || task.priority.toLowerCase() === priorityFilter.toLowerCase();
-    return statusMatch && priorityMatch;
+    const assigneeMatch = assigneeFilter === "All" || 
+      (task.assignees && Array.isArray(task.assignees) && 
+      task.assignees.some(assignee => assignee.name === assigneeFilter));
+    return statusMatch && priorityMatch && assigneeMatch;
   })
 
   // Sorting logic (extended)
@@ -195,6 +199,30 @@ function TaskListView({ tasks, setTasks }) {
                   <option>High</option>
                   <option>Mid</option>
                   <option>Low</option>
+                </select>
+              </div>
+
+              {/* Assignee Filter */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                <label htmlFor="assigneeFilter" className="text-sm font-medium text-gray-300">Assignee</label>
+                <select
+                  id="assigneeFilter"
+                  value={assigneeFilter}
+                  onChange={(e) => setAssigneeFilter(e.target.value)}
+                  className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                >
+                  <option>All</option>
+                  {tasks
+                    .flatMap(task => task.assignees || [])
+                    .filter((assignee, index, self) => 
+                      assignee.name && index === self.findIndex(a => a.name === assignee.name)
+                    )
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map(assignee => (
+                      <option key={assignee.name} value={assignee.name}>
+                        {assignee.name}
+                      </option>
+                    ))}
                 </select>
               </div>
             </div>

@@ -9,11 +9,20 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
   const [dropdownMembers, setDropdownMembers] = useState([]);
   const [newlyAddedAssigneeIds, setNewlyAddedAssigneeIds] = useState([]);
+  const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
     setEditedTask(task);
     setNewlyAddedAssigneeIds([]);
   }, [task]);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    setTimeout(() => {
+      setIsClosing(false);
+      onClose();
+    }, 300);
+  };
 
   if (!isOpen || !task || !editedTask) return null;
 
@@ -33,12 +42,10 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
     }
   };
 
-  // Add handleAssign and handleRemoveAssignee
   const handleAssign = async (taskId, assigneeIds) => {
     try {
       await assignTaskToMembers(taskId, assigneeIds);
 
-      // Fetch updated tasks for the workspace to get the latest task data (including assignees)
       if (task.workspace_id) {
         const updatedTaskResponse = await fetch(
           `http://localhost:5033/api/tasks/${task.workspace_id}`,
@@ -79,7 +86,6 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
     try {
       await removeAssignee(task.id, userId);
       toast.success("Assignee removed successfully");
-      // Remove the assignee from editedTask and trigger re-render
       setEditedTask(prev => ({
         ...prev,
         assignees: (prev.assignees || []).filter(assignee => assignee.id !== userId)
@@ -98,15 +104,16 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
   };
 
   return (
-    <div
-      className="fixed top-0 right-0 w-[480px] max-w-full h-full bg-[#0f172a] z-50 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out translate-x-0 animate-[slideIn_300ms_ease-in-out]"
-    >
+    <div className={`fixed top-0 right-0 w-[480px] max-w-full h-full bg-[#0f172a] z-50 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${isClosing ? 'translate-x-full' : 'translate-x-0'} task-details-enter`}>
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4">
-        <h2 className="text-xl font-semibold text-white truncate mt-3">{editedTask?.title || 'Untitled Task'}</h2>
+      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800 bg-[#0f172a]/95 backdrop-blur-sm sticky top-0 z-10">
+        <h2 className="text-xl font-semibold text-white truncate flex items-center gap-2">
+          <span className="text-blue-400">#</span>
+          {editedTask?.title || 'Untitled Task'}
+        </h2>
         <button
-          onClick={onClose}
-          className="text-gray-400 hover:text-white transition-transform duration-150 transform hover:scale-110"
+          onClick={handleClose}
+          className="text-gray-400 hover:text-white transition-all duration-150 transform hover:scale-110 hover:rotate-90 flex items-center"
           aria-label="Close drawer"
         >
           <ChevronRight size={20} />
@@ -127,7 +134,9 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
             name="title"
             value={editedTask?.title || ''}
             onChange={handleAutoSaveChange}
-            className="flex-1 bg-[#1e293b] text-white text-lg font-medium rounded-md px-3 py-2 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:text-xl transition-all duration-200 ease-in-out"
+            className="flex-1 bg-[#1e293b] text-white text-lg font-medium rounded-lg px-4 py-2.5 
+              placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:text-xl 
+              transition-all duration-200 ease-in-out border border-gray-700 hover:border-gray-600"
             placeholder="Enter task title"
           />
         </div>
@@ -145,11 +154,14 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
               name="status"
               value={editedTask?.status || ''}
               onChange={handleAutoSaveChange}
-              className="flex-1 bg-[#1e293b] text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 ease-in-out"
+              className="flex-1 bg-[#1e293b] text-white rounded-lg px-4 py-2.5 
+                focus:outline-none focus:ring-2 focus:ring-blue-500 
+                transition-all duration-200 ease-in-out border border-gray-700 
+                hover:border-gray-600 cursor-pointer"
             >
-              <option value="pending">Pending</option>
-              <option value="in-progress">In Progress</option>
-              <option value="completed">Completed</option>
+              <option value="pending" className="bg-[#1e293b]">Pending</option>
+              <option value="in-progress" className="bg-[#1e293b]">In Progress</option>
+              <option value="completed" className="bg-[#1e293b]">Completed</option>
             </select>
           </div>
 
@@ -165,11 +177,14 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
               name="priority"
               value={editedTask?.priority || ''}
               onChange={handleAutoSaveChange}
-              className="flex-1 bg-[#1e293b] text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 ease-in-out"
+              className="flex-1 bg-[#1e293b] text-white rounded-lg px-4 py-2.5 
+                focus:outline-none focus:ring-2 focus:ring-blue-500 
+                transition-all duration-200 ease-in-out border border-gray-700 
+                hover:border-gray-600 cursor-pointer"
             >
-              <option value="low">Low</option>
-              <option value="mid">Mid</option>
-              <option value="high">High</option>
+              <option value="low" className="bg-[#1e293b]">Low</option>
+              <option value="mid" className="bg-[#1e293b]">Mid</option>
+              <option value="high" className="bg-[#1e293b]">High</option>
             </select>
           </div>
         </div>
@@ -191,7 +206,10 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
                 : ''
             }
             onChange={handleAutoSaveChange}
-            className="flex-1 bg-[#1e293b] text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200 ease-in-out"
+            className="flex-1 bg-[#1e293b] text-white rounded-lg px-4 py-2.5 
+              focus:outline-none focus:ring-2 focus:ring-blue-500 
+              transition-all duration-200 ease-in-out border border-gray-700 
+              hover:border-gray-600"
           />
         </div>
 
@@ -207,11 +225,11 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
               {(editedTask.assignees || []).map((assignee) => (
                 <div
                   key={assignee.id}
-                  className={`group inline-flex items-center justify-center px-3 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 transition-all duration-300 ease-in-out transform ${newlyAddedAssigneeIds.includes(assignee.id) ? 'fade-in' : ''}`}
+                  className={`group inline-flex items-center justify-center h-7 px-3 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 transition-all duration-300 ease-in-out transform ${newlyAddedAssigneeIds.includes(assignee.id) ? 'fade-in' : ''}`}
                   style={{ transitionProperty: 'background, color, opacity, transform' }}
                 >
                   <div className="relative flex items-center justify-center group">
-                    <span className="text-white transition-opacity duration-200 group-hover:opacity-60">
+                    <span className="text-white transition-opacity duration-200 group-hover:opacity-60 whitespace-nowrap">
                       {assignee.name}
                     </span>
                     <button
@@ -237,19 +255,27 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
                     console.error("Error fetching members:", err);
                   }
                 }}
-                className="w-6 h-6 rounded-full bg-gray-600 hover:bg-gray-500 text-white flex items-center justify-center text-xs"
+                className="h-7 w-7 rounded-full bg-gray-700 hover:bg-gray-600 
+                  text-white flex items-center justify-center text-sm
+                  transition-all duration-200 hover:scale-110 shadow-md"
               >
                 +
               </button>
             </div>
             {showAssigneeDropdown && (
-              <div className="absolute top-full left-0 mt-2 w-48 bg-[#1e293b] text-white rounded shadow-lg border border-gray-700 z-50 max-h-40 overflow-y-auto">
+              <div className="absolute top-full left-0 mt-2 w-56 bg-[#1e293b] text-white 
+                rounded-lg shadow-xl border border-gray-700 z-50 max-h-48 overflow-y-auto
+                backdrop-blur-sm bg-opacity-95">
                 {dropdownMembers?.map((member) => (
                   <div
                     key={member.id}
                     onClick={() => handleAssign(editedTask.id, [member.user_id])}
-                    className="px-3 py-2 hover:bg-blue-600 cursor-pointer text-sm"
+                    className="px-4 py-2.5 hover:bg-blue-600/50 cursor-pointer text-sm
+                      transition-colors duration-200 flex items-center gap-2"
                   >
+                    <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-xs">
+                      {member.name.charAt(0).toUpperCase()}
+                    </div>
                     {member.name}
                   </div>
                 ))}
@@ -282,8 +308,12 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
             name="description"
             value={editedTask?.description || ''}
             onChange={handleAutoSaveChange}
-            className="flex-1 bg-[#1e293b] text-gray-200 rounded-md px-3 py-2 min-h-[120px] resize-none placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:text-base transition-all duration-200 ease-in-out"
-            placeholder="Add task description"
+            className="flex-1 bg-[#1e293b] text-gray-200 rounded-lg px-4 py-3 
+              min-h-[120px] resize-none placeholder-gray-500 
+              focus:outline-none focus:ring-2 focus:ring-blue-500 
+              transition-all duration-200 ease-in-out border border-gray-700 
+              hover:border-gray-600"
+            placeholder="Add task description..."
           />
         </div>
       </div>
@@ -299,18 +329,6 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
             opacity: 1;
           }
         }
-        .fade-leave {
-          opacity: 1;
-          transform: scale(1);
-          transition: opacity 0.3s, transform 0.3s;
-        }
-        .fade-leave-active {
-          opacity: 0;
-          transform: scale(0.95);
-        }
-        .fade-in {
-          animation: fadeInScale 0.4s ease-out;
-        }
 
         @keyframes fadeInScale {
           from {
@@ -321,6 +339,22 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
             opacity: 1;
             transform: scale(1);
           }
+        }
+
+        .task-details-enter {
+          animation: slideIn 0.3s ease-out;
+        }
+
+        .fade-in {
+          animation: fadeInScale 0.4s ease-out;
+        }
+
+        .hover-lift {
+          transition: transform 0.2s ease;
+        }
+        
+        .hover-lift:hover {
+          transform: translateY(-2px);
         }
       `}</style>
     </div>
