@@ -199,7 +199,7 @@ const assignTask = async (req, res) => {
     );
 
     if (newAssignees.length === 0) {
-      return res.status(200).json({ message: "All users already assigned" });
+      return res.status(409).json({ error: "Assignees already exist" });
     }
 
     // Generate UUID for each assignee
@@ -226,10 +226,36 @@ const assignTask = async (req, res) => {
   }
 };
 
+const removeAssignee = async (req, res) => {
+  const { taskId } = req.params;
+  const { userId } = req.body;
+
+  if(!taskId || !userId) {
+    console.log("task id: ", taskId);
+    console.log("user id: ", userId);
+    return res.status(400).json({ error: "Task ID and User ID are required" });
+  }
+
+  try{
+    const result = await pool.query(
+      `DELETE FROM task_assignees WHERE task_id = $1 AND user_id = $2 RETURNING *`,
+      [taskId, userId]
+    );
+    if(result.rows.length === 0) {
+      return res.status(404).json({ message: "Assignee not found for this task" });
+    }
+    res.status(200).json({ message: "Assignee removed successfully", assignee: result.rows[0] });
+  }catch (error) {
+    console.error("Error removing assignee:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+}
+
 module.exports = {
   createTask,
   getTasksByWorkspace,
   updateTask,
   deleteTask,
   assignTask,
+  removeAssignee
 };

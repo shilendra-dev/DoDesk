@@ -9,7 +9,7 @@ const userRoutes = require("./routes/userRoutes");
 const createWorkspace = require("./routes/workspaceRoutes");
 const { getUserWorkspaces, inviteMember, getWorkspaceMembers } = require("./controllers/workspaceController");
 const taskRoutes = require("./routes/taskRoutes");
-const { assignTask, updateTask } = require("./controllers/taskController");
+const { assignTask, updateTask, removeAssignee } = require("./controllers/taskController");
 
 const app = express();
 
@@ -31,6 +31,7 @@ app.use("/api/workspaces", inviteMember);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/tasks", updateTask);
 app.use("/api/tasks", assignTask)
+app.use("/api/tasks", removeAssignee);
 
 
 //test db connection

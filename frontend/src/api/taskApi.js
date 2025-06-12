@@ -11,7 +11,17 @@ export const assignTaskToMembers = async (taskId, assigneeIds) => {
   return res.data;
 };
 
-
+export const removeAssignee = async (taskId, userId) => {
+  const token = localStorage.getItem("token");
+  const res = await axios.delete(
+    `http://localhost:5033/api/tasks/${taskId}/removeAssignee`,
+    {
+      data: { userId },
+      headers: { Authorization: `Bearer ${token}` }
+    }
+  );
+  return res.data;
+};
 export const updateTask = async (taskId, updatedData) => {
   const token = localStorage.getItem("token");
   const res = await axios.put(
