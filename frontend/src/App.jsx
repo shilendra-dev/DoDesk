@@ -13,6 +13,7 @@ import Tasks from './components/tasks/Tasks'
 import Team from './components/team/Team'
 import { Toaster } from "react-hot-toast";
 
+
 axios.defaults.baseURL = 'http://localhost:5033';
 axios.defaults.withCredentials = true;
 
@@ -43,8 +44,6 @@ function App() {
             <Route path="calender" element={<Team/>}/>
           </Route>
       </Routes>
-
-      
     </>
   )
 }

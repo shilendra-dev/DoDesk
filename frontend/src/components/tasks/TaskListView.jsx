@@ -6,6 +6,8 @@ import { useWorkspace } from "../../context/WorkspaceContext";
 import axios from "axios";
 import { SquareLibrary } from "lucide-react";
 import TaskDetails from "./TaskDetails";
+import { useSavedFilters } from '../../hooks/useSavedFilters';
+import { Save, Trash2, Star, Filter } from 'lucide-react';
 
 const formatDateLocal = (dateStr) => {
   const date = new Date(dateStr);
@@ -17,7 +19,7 @@ const formatDateLocal = (dateStr) => {
 
 function TaskListView({ tasks, setTasks }) {
   const [selectedTask, setSelectedTask] = useState(null);
-  const [loading] = useState(false); // Loading state
+  const [loading] = useState(false);
   const { selectedWorkspace } = useWorkspace();
   const [currentPage, setCurrentPage] = useState(1);
   const tasksPerPage = 15;
@@ -28,7 +30,7 @@ function TaskListView({ tasks, setTasks }) {
 
   // Dropdown state for inline status/priority dropdowns
   const [dropdownPosition, setDropdownPosition] = useState(null);
-  const [dropdownType, setDropdownType] = useState(null); // "status" or "priority"
+  const [dropdownType, setDropdownType] = useState(null);
 
   //states for sorting and filtering logic
   const [statusFilter, setStatusFilter] = useState("All");
@@ -36,20 +38,237 @@ function TaskListView({ tasks, setTasks }) {
   const [sortOption, setSortOption] = useState("None");
   const [assigneeFilter, setAssigneeFilter] = useState("All");
 
-  // Save filters and sort option to localStorage whenever they change
-  useEffect(() => {
-    localStorage.setItem("taskFilters", JSON.stringify({ statusFilter, priorityFilter, sortOption }));
-  }, [statusFilter, priorityFilter, sortOption]);
+  //states for saved filters
+  const { 
+    savedFilters, 
+    defaultFilter,
+    selectedViewId,
+    loading: filtersLoading,
+    fetchSavedFilters,
+    createFilter, 
+    removeFilter, 
+    makeDefault,
+    clearSelectedView
+  } = useSavedFilters();
+  const [showSaveFilterModal, setShowSaveFilterModal] = useState(false);
+  const [newFilterName, setNewFilterName] = useState('');
 
-  // Load filters and sort option from localStorage on mount
+  //load saved filters on mount'setDefaultFilter' is declared but its value is never read.
   useEffect(() => {
-    const saved = JSON.parse(localStorage.getItem("taskFilters"));
-    if (saved) {
-      setStatusFilter(saved.statusFilter || "All");
-      setPriorityFilter(saved.priorityFilter || "All");
-      setSortOption(saved.sortOption || "None");
+    if(selectedWorkspace?.id){
+      fetchSavedFilters(selectedWorkspace.id);
     }
-  }, []);
+  }, [selectedWorkspace?.id, fetchSavedFilters]);
+
+  // Apply default filter when it's loaded
+  useEffect(() => {
+    if (defaultFilter && !filtersLoading) {
+      const config = defaultFilter.filter_config;
+      if (config) {
+        setStatusFilter(config.statusFilter || 'All');
+        setPriorityFilter(config.priorityFilter || 'All');
+        setSortOption(config.sortOption || 'None');
+        setAssigneeFilter(config.assigneeFilter || 'All');
+      }
+    }
+  }, [defaultFilter, filtersLoading]);
+
+  // Watch for filter changes to clear selected view
+  useEffect(() => {
+    if (selectedViewId !== 'none') {
+      const selectedFilter = savedFilters.find(filter => filter.id === selectedViewId);
+      if (selectedFilter) {
+        const config = selectedFilter.filter_config;
+        const filtersMatch = 
+          config.statusFilter === statusFilter &&
+          config.priorityFilter === priorityFilter &&
+          config.sortOption === sortOption &&
+          config.assigneeFilter === assigneeFilter;
+
+        if (!filtersMatch) {
+          clearSelectedView();
+        }
+      }
+    }
+  }, [statusFilter, priorityFilter, sortOption, assigneeFilter, savedFilters, selectedViewId, clearSelectedView]);
+
+  const handleClearAll = () => {
+    setStatusFilter('All');
+    setPriorityFilter('All');
+    setSortOption('None');
+    setAssigneeFilter('All');
+    clearSelectedView();
+    fetchTasks();
+  };
+
+  const handleViewSelect = async (e) => {
+    const value = e.target.value;
+    
+    if (value === 'none') {
+      setStatusFilter('All');
+      setPriorityFilter('All');
+      setSortOption('None');
+      setAssigneeFilter('All');
+      clearSelectedView();
+      return;
+    }
+
+    try {
+      const selectedFilter = savedFilters.find(filter => filter.id === value);
+      if (!selectedFilter) return;
+
+      const config = selectedFilter.filter_config;
+      if (!config) return;
+
+      // Apply the saved filter configuration
+      setStatusFilter(config.statusFilter || 'All');
+      setPriorityFilter(config.priorityFilter || 'All');
+      setSortOption(config.sortOption || 'None');
+      setAssigneeFilter(config.assigneeFilter || 'All');
+
+      // Make the selected view the default
+      await makeDefault(selectedWorkspace.id, value);
+
+      // Refresh tasks with new filters
+      await fetchTasks();
+    } catch (error) {
+      console.error('Error applying saved filter:', error);
+    }
+  };
+
+  const handleSaveFilter = async () => {
+    if (!newFilterName.trim()) {
+      return;
+    }
+
+    try {
+      const filterConfig = {
+        statusFilter,
+        priorityFilter,
+        sortOption,
+        assigneeFilter
+      };
+      
+      const filterData = {
+        name: newFilterName.trim(),
+        filter_config: JSON.stringify(filterConfig) 
+      };
+      
+      await createFilter(selectedWorkspace.id, filterData);
+      await makeDefault(selectedWorkspace.id, selectedViewId);
+      
+      setShowSaveFilterModal(false);
+      setNewFilterName('');
+    } catch (error) {
+      console.error('Error saving filter:', error);
+    }
+  };
+
+  const renderFilterView = () => {
+    const hasActiveFilters = statusFilter !== 'All' || 
+      priorityFilter !== 'All' || 
+      assigneeFilter !== 'All' || 
+      sortOption !== 'None';
+
+    return (
+      <>
+        <div className="flex items-center gap-2 px-4 py-2 bg-[#101221]/60 backdrop-blur border-b border-gray-800">
+          <div className="flex items-center gap-2">
+            <Filter size={16} className="text-gray-400" />
+            {hasActiveFilters ? (
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-gray-400">
+                  {statusFilter !== 'All' && `Status: ${statusFilter}`}
+                  {priorityFilter !== 'All' && ` • Priority: ${priorityFilter}`}
+                  {assigneeFilter !== 'All' && ` • Assignee: ${assigneeFilter}`}
+                  {sortOption !== 'None' && ` • Sort: ${sortOption}`}
+                </span>
+                {selectedViewId === 'none' ? (
+                  <button
+                    onClick={() => setShowSaveFilterModal(true)}
+                    className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-700 text-gray-200 rounded hover:bg-gray-600 transition-colors"
+                    title="Save this view"
+                  >
+                    <Save size={12} />
+                    Save View
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => removeFilter(selectedWorkspace.id, selectedViewId)}
+                    className="flex items-center gap-1 px-2 py-1 text-xs bg-red-600/20 text-red-400 rounded hover:bg-red-600/30 transition-colors"
+                    title="Delete selected view"
+                  >
+                    <Trash2 size={12} />
+                    Delete View
+                  </button>
+                )}
+              </div>
+            ) : (
+              <span className="text-xs text-gray-400 italic">
+                No filters applied
+              </span>
+            )}
+          </div>
+
+          {/* Saved Views Dropdown */}
+          {savedFilters && savedFilters.length > 0 && (
+            <div className="ml-auto flex items-center gap-2">
+              <span className="text-xs text-gray-400">View:</span>
+              <select
+                onChange={handleViewSelect}
+                value={selectedViewId}
+                className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+              >
+                <option value="none">None</option>
+                {savedFilters.map(filter => (
+                  <option key={filter.id} value={filter.id}>
+                    {filter.name}
+                    {defaultFilter?.id === filter.id && ' (Default)'}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+
+        {/* Save View Modal */}
+        {showSaveFilterModal && createPortal(
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999]">
+            <div className="bg-gray-800 rounded-lg p-6 w-96 shadow-xl">
+              <h3 className="text-lg font-medium text-gray-100 mb-4">Save Current View</h3>
+              <input
+                type="text"
+                value={newFilterName}
+                onChange={(e) => setNewFilterName(e.target.value)}
+                placeholder="Enter view name"
+                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                autoFocus
+              />
+              <div className="flex justify-end gap-2 mt-4">
+                <button
+                  onClick={() => {
+                    setShowSaveFilterModal(false);
+                    setNewFilterName('');
+                  }}
+                  className="px-4 py-2 text-sm text-gray-300 hover:text-gray-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveFilter}
+                  disabled={!newFilterName.trim()}
+                  className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Save
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+      </>
+    );
+  };
 
   //Filtering Logic
   let filteredTasks = tasks.filter(task => {
@@ -132,7 +351,6 @@ function TaskListView({ tasks, setTasks }) {
     }
   };
 
-
   // Generic API handler for updating any task field
   const handleTaskFieldUpdate = async (taskId, field, value) => {
     try {
@@ -168,7 +386,10 @@ function TaskListView({ tasks, setTasks }) {
             </div>
           )}
 
-          <div className="flex justify-between items-center flex-wrap gap-4 px-4 py-3 bg-[#101221]/60 backdrop-blur ">
+          {/* Add the filter view section */}
+          {renderFilterView()}
+
+          <div className="flex justify-between items-center flex-wrap gap-4 px-4 py-3 bg-[#101221]/60 backdrop-blur">
             <div className="flex gap-4 items-center">
               {/* Status Filter */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
@@ -226,7 +447,7 @@ function TaskListView({ tasks, setTasks }) {
                 </select>
               </div>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center gap-4">
               {/* Sort Option */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                 <label htmlFor="sortOption" className="text-sm font-medium text-gray-300">Sort by</label>
@@ -247,6 +468,22 @@ function TaskListView({ tasks, setTasks }) {
                   <option>Date Created (Oldest)</option>
                 </select>
               </div>
+
+              {/* Clear Button - Shows when any filter or sort is applied */}
+              {(statusFilter !== 'All' || 
+                priorityFilter !== 'All' || 
+                assigneeFilter !== 'All' || 
+                sortOption !== 'None' || 
+                selectedViewId !== 'none') && (
+                <button
+                  onClick={handleClearAll}
+                  className="flex items-center gap-1 px-3 py-1.5 text-xs bg-red-600/20 text-red-400 rounded hover:bg-red-600/30 transition-colors"
+                  title="Clear all filters and view"
+                >
+                  <Trash2 size={12} />
+                  Clear
+                </button>
+              )}
             </div>
           </div>
 
@@ -556,5 +793,5 @@ function TaskListView({ tasks, setTasks }) {
     </div>
   );
 }
-
 export default TaskListView;
+

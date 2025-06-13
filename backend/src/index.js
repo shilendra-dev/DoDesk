@@ -10,7 +10,7 @@ const createWorkspace = require("./routes/workspaceRoutes");
 const { getUserWorkspaces, inviteMember, getWorkspaceMembers } = require("./controllers/workspaceController");
 const taskRoutes = require("./routes/taskRoutes");
 const { assignTask, updateTask, removeAssignee } = require("./controllers/taskController");
-
+const savedFilterRoutes = require("./routes/savedFilterRoutes");
 const app = express();
 
 //middleware
@@ -32,6 +32,7 @@ app.use("/api/tasks", taskRoutes);
 app.use("/api/tasks", updateTask);
 app.use("/api/tasks", assignTask)
 app.use("/api/tasks", removeAssignee);
+app.use("/api/saved-filters", savedFilterRoutes);
 
 
 //test db connection
