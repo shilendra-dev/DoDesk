@@ -8,6 +8,7 @@ import { SquareLibrary } from "lucide-react";
 import TaskDetails from "./TaskDetails";
 import { useSavedFilters } from '../../hooks/useSavedFilters';
 import { Save, Trash2, Star, Filter } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const formatDateLocal = (dateStr) => {
   const date = new Date(dateStr);
@@ -154,13 +155,25 @@ function TaskListView({ tasks, setTasks }) {
         filter_config: JSON.stringify(filterConfig) 
       };
       
-      await createFilter(selectedWorkspace.id, filterData);
-      await makeDefault(selectedWorkspace.id, selectedViewId);
+      const newFilter = await createFilter(selectedWorkspace.id, filterData);
+      await makeDefault(selectedWorkspace.id, newFilter.id);
       
       setShowSaveFilterModal(false);
       setNewFilterName('');
+      toast.success('View saved successfully');
     } catch (error) {
       console.error('Error saving filter:', error);
+      toast.error('Failed to save view');
+    }
+  };
+
+  const handleDeleteView = async () => {
+    try {
+      await removeFilter(selectedWorkspace.id, selectedViewId);
+      toast.success('View deleted successfully');
+    } catch (error) {
+      console.error('Error deleting filter:', error);
+      toast.error('Failed to delete view');
     }
   };
 
@@ -194,7 +207,7 @@ function TaskListView({ tasks, setTasks }) {
                   </button>
                 ) : (
                   <button
-                    onClick={() => removeFilter(selectedWorkspace.id, selectedViewId)}
+                    onClick={handleDeleteView}
                     className="flex items-center gap-1 px-2 py-1 text-xs bg-red-600/20 text-red-400 rounded hover:bg-red-600/30 transition-colors"
                     title="Delete selected view"
                   >
@@ -223,7 +236,6 @@ function TaskListView({ tasks, setTasks }) {
                 {savedFilters.map(filter => (
                   <option key={filter.id} value={filter.id}>
                     {filter.name}
-                    {defaultFilter?.id === filter.id && ' (Default)'}
                   </option>
                 ))}
               </select>
@@ -794,4 +806,3 @@ function TaskListView({ tasks, setTasks }) {
   );
 }
 export default TaskListView;
-

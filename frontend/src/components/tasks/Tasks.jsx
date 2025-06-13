@@ -53,7 +53,7 @@ function Tasks() {
   }
 
   return (
-    <div className="flex flex-col max-h-full bg-[#101221] rounded-xl border-gray-800 border-[0.5px]">
+    <div className="flex flex-col flex-1 h-full max-w-lvw bg-[#101221] rounded-xl border-gray-800 border-[0.5px] overflow-hidden">
       {/* Top bar */}
       <div className="flex justify-between items-center p-4 border-b-[0.5px] border-b-gray-800">
         <h1 className="text-xl font-semibold">Tasks</h1>
@@ -70,11 +70,15 @@ function Tasks() {
       </div>
 
       {/* Scrollable Content Area */}
-      <div className="flex-1 overflow-hidden flex flex-col">
+      <div className="flex flex-1 h-full overflow-hidden flex-col">
         {/* Scrollable tasks area */}
-        <div className="flex-1 overflow-y-auto ">
+        <div className="flex flex-col flex-1 h-0 overflow-y-auto">
           {view === "board" ? (
-            <TaskBoardView onTaskSelect={setSelectedTask} />
+            <TaskBoardView 
+              tasks={tasks} 
+              setTasks={setTasks} 
+              onTaskSelect={setSelectedTask} 
+            />
           ) : (
             <TaskListView setTasks={setTasks} tasks={tasks} />
           )}
