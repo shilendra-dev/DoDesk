@@ -25,7 +25,7 @@ const COLUMNS = {
   },
 };
 
-function TaskBoardView({ tasks, setTasks, onTaskSelect }) {
+function TaskBoardView({ tasks, setTasks }) {
   
 
   // Filters and Sorting States

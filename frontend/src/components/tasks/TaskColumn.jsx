@@ -5,7 +5,7 @@ import BadgeLabel from '../atoms/BadgeLabel';
 import { MoreVertical, Eye } from 'lucide-react';
 import TaskDetails from "./TaskDetails";
 
-function TaskColumn({ column, tasks, onTaskSelect, setTasks }) {
+function TaskColumn({ column, tasks, onTaskSelect}) {
   const [localTasks, setLocalTasks] = useState(tasks);
   const [showColumnMenu, setShowColumnMenu] = useState(false);
   const [showTooltip, setShowTooltip] = useState(null);
