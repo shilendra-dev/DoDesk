@@ -34,7 +34,7 @@ function CreateTask({ isOpen, onClose, onTaskCreated, workspaceId }) {
     };
 
     return (
-        <div className={`fixed top-0 right-0 w-[480px] max-w-full h-full bg-[#0f172a] z-50 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'} task-details-enter`}>
+        <div className={`fixed top-0 right-0 w-[480px] max-w-full h-full bg-[#0f172a] z-70 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'} task-details-enter`}>
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800 bg-[#0f172a]/95 backdrop-blur-sm sticky top-0 z-10">
                 <h2 className="text-xl font-semibold text-white truncate flex items-center gap-2">
