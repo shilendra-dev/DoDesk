@@ -66,16 +66,17 @@ Inspired by tools like Notion, Trello, and Asana — but fully custom-built from
 ## 🔧 Setup Instructions
 
 
-### 1. .env
+### 1. Configure Environment Variables
 
-PORT = YOUR PORT
-DB_USER = your_Db
-DB_HOST = hostnaem
-DB_NAME = dbname
-DB_PASSWORD = dbpassword
-DB_PORT = dbport
-JWT_SECRET = jwtsecrettoken
-RESEND_API_KEY = yourresendapikey
+Create a `.env` file in the root directory with the following content:
+PORT=YOUR_PORT
+DB_USER=your_Db
+DB_HOST=hostname
+DB_NAME=dbname
+DB_PASSWORD=dbpassword
+DB_PORT=dbport
+JWT_SECRET=jwtsecrettoken
+RESEND_API_KEY=yourresendapikey
 
 ---
 
