@@ -67,8 +67,7 @@ Inspired by tools like Notion, Trello, and Asana — but fully custom-built from
 
 
 ### 1. Configure Environment Variables
-
-Create a `.env` file in the root directory with the following content:
+```env
 PORT=YOUR_PORT
 DB_USER=your_Db
 DB_HOST=hostname
@@ -77,13 +76,13 @@ DB_PASSWORD=dbpassword
 DB_PORT=dbport
 JWT_SECRET=jwtsecrettoken
 RESEND_API_KEY=yourresendapikey
-
+```
 ---
 
 ### 2. migration
-
+```
 npx knex migrate:latest
-
+```
 ---
 
 ### 3. Clone the Repository
