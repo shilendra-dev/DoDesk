@@ -63,52 +63,10 @@ Inspired by tools like Notion, Trello, and Asana — but fully custom-built from
 
 ---
 
-## 📁 Folder Structure 
-DoDesk/
-├── backend/
-│   ├── controllers/
-│   ├── routes/
-│   ├── db/
-│   │   ├── migrations/
-│   │   └── knexfile.js
-│   ├── utils/
-│   └── index.js
-│
-├── frontend/
-│   ├── public/
-│   ├── src/
-│   │   ├── api/
-│   │   ├── assets/
-│   │   ├── components/
-│   │   │   ├── tasks/
-│   │   │   │   ├── TaskBoardView.jsx
-│   │   │   │   ├── TaskColumn.jsx
-│   │   │   │   ├── CreateTask.jsx
-│   │   ├── context/
-│   │   │   ├── WorkspaceContext.jsx
-│   │   │   └── SavedFilterContext.jsx
-│   │   ├── pages/
-│   │   ├── App.jsx
-│   │   └── main.jsx
-│   └── tailwind.config.js
-│
-├── .env
-├── README.md
-└── package.json
-
----
-
 ## 🔧 Setup Instructions
 
-### 1. Clone the Repository
 
-```bash
-git clone https://github.com/your-username/dodesk.git
-cd dodesk
-
----
-
-### 2. .env
+### 1. .env
 
 PORT = YOUR PORT
 DB_USER = your_Db
@@ -121,7 +79,17 @@ RESEND_API_KEY = yourresendapikey
 
 ---
 
-### 3. migration
+### 2. migration
 
 npx knex migrate:latest
+
+---
+
+### 3. Clone the Repository
+
+```bash
+git clone https://github.com/your-username/dodesk.git
+cd dodesk
+
+---
 
