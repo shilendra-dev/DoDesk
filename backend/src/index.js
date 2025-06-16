@@ -12,6 +12,8 @@ const taskRoutes = require("./routes/taskRoutes");
 const { assignTask, updateTask, removeAssignee } = require("./controllers/taskController");
 const savedFilterRoutes = require("./routes/savedFilterRoutes");
 const app = express();
+const commentRoutes = require("./routes/commentRoutes");
+const subtaskRoutes = require("./routes/subtaskRoutes");
 
 //middleware
 app.use(cors({
@@ -21,6 +23,7 @@ app.use(cors({
 
 app.use(express.json());
 
+// mounting the controllers
 app.use("/api/auth", authRoutes);
 app.use("/api/auth", me);
 app.use("/api/users", userRoutes);
@@ -33,6 +36,9 @@ app.use("/api/tasks", updateTask);
 app.use("/api/tasks", assignTask)
 app.use("/api/tasks", removeAssignee);
 app.use("/api/saved-filters", savedFilterRoutes);
+app.use("/api/", commentRoutes);
+app.use('/api', subtaskRoutes);
+
 
 
 //test db connection
