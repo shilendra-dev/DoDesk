@@ -5,7 +5,6 @@ function ProtectedRoute({children, allowedRoles}) {
     
 
     const {user, loading} = useAuth();
-    console.log("User in ProtectedRoute:", user);
 
         if (loading) return <div>Loading...</div>;
 

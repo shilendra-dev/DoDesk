@@ -1,5 +1,6 @@
 const { v4: uuidv4, validate } = require("uuid");
 const pool = require("../config/db");
+const { createApi } = require("../utils/router");
 
 //create task or CREATE
 const createTask = async (req, res) => {
@@ -25,7 +26,7 @@ const createTask = async (req, res) => {
         id,
         title,
         description,
-        status,
+        status, 
         priority,
         due_date,
         workspace_id,
@@ -42,12 +43,26 @@ const createTask = async (req, res) => {
 
     const created_by_name = userResult.rows[0]?.name || null;
 
-    res.status(201).json({ ...createdTask, created_by_name });
+    //res.status(201).json({ ...createdTask, created_by_name });
+
+    return {
+      status: 201,
+      message: "Task created successfully",
+      task: {
+        ...createdTask,
+        created_by_name,
+      }
+}
   } catch (error) {
     console.error("Error creating task: ", error);
-    res.status(500).json({ message: "Faied to create task" });
+    return {
+      status: 500,
+      message: "Failed to create task",
+      error: error.message
+    };
   }
 };
+createApi().post("/workspaces/:workspace_id/task").authSecure(createTask); // for creating a new task
 
 //fetch task or READ
 const getTasksByWorkspace = async (req, res) => {
@@ -99,15 +114,28 @@ const getTasksByWorkspace = async (req, res) => {
       assignees: assigneeMap[task.id] || [],
     }));
 
-    res.json(tasksWithAssignees);
+    // res.json(tasksWithAssignees);
+    return {
+      status: 200,
+      message: "Tasks fetched successfully",
+      tasks: tasksWithAssignees
+    }
   } catch (error) {
     console.log("Error fetching tasks: ", error);
-    res.status(500).json({ message: "Failed fetching tasks" });
+    return {
+      status: 500,
+      message: "Failed fetching tasks",
+      error: error.message
+    };
   }
 };
+createApi().get("/workspace/:workspace_id/tasks").authSecure(getTasksByWorkspace); // for fetching tasks by workspace
 
 //edit task or UPDATE
 const updateTask = async (req, res) => {
+  if (!req.params || !req.body) {
+    return res.status(400).json({ message: "Task ID and update data required" });
+  }
   const { taskId } = req.params;
   const { title, description, status, priority, due_date } = req.body;
 
@@ -120,14 +148,28 @@ const updateTask = async (req, res) => {
       [title, description, status, priority, due_date, taskId]
     );
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: "Task not found" });
+      //return res.status(404).json({ message: "Task not found" });
+      return {
+        status: 404,
+        message: "Task not found",
+      };
     }
-    res.status(200).json(result.rows[0]);
+    //res.status(200).json(result.rows[0]);
+    return {
+      status: 200,
+      message: "Task updated successfully",
+      task: result.rows[0],
+    };
   } catch (error) {
     console.error("Error updating task: ", error);
-    res.status(500).json({ message: "Failed to update tasks" });
+    return {
+      status: 500,
+      message: "Failed to update tasks",
+      error: error.message
+    };
   }
 };
+createApi().put("/task/:taskId").authSecure(updateTask); // for updating a task
 
 //delete task or DELETE
 const deleteTask = async (req, res) => {
@@ -139,14 +181,28 @@ const deleteTask = async (req, res) => {
       [taskId]
     );
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: "Task not found" });
+      //return res.status(404).json({ message: "Task not found" });
+      return {
+        status: 404,
+        message: "Task not found",
+      }
     }
-    res.status(200).json({ message: "Task deleted successfully" });
+    //res.status(200).json({ message: "Task deleted successfully" });
+    return {
+      status: 200,
+      message: "Task deleted successfully",
+      task: result.rows[0],
+    };
   } catch (error) {
     console.error("Error deleting tasks:", error);
-    res.status(500).json({ message: "Failed to delete task" });
+    return {
+      status: 500,
+      message: "Failed to delete task",
+      error: error.message
+    };
   }
 };
+createApi().delete("/task/:taskId").authSecure(deleteTask); // for deleting a task
 
 const assignTask = async (req, res) => {
   const { taskId } = req.params;
@@ -180,9 +236,13 @@ const assignTask = async (req, res) => {
     );
 
     if (invalidAssignees.length > 0) {
-      return res.status(400).json({
-        error: `Invalid assignees: ${invalidAssignees.join(", ")}`,
-      });
+      // return res.status(400).json({
+      //   error: `Invalid assignees: ${invalidAssignees.join(", ")}`,
+      // });
+      return {
+        status: 400,
+        message: `Invalid assignees: ${invalidAssignees.join(", ")}`,
+      };
     }
 
     // Avoid duplicates: checking if already assigned
@@ -199,7 +259,11 @@ const assignTask = async (req, res) => {
     );
 
     if (newAssignees.length === 0) {
-      return res.status(409).json({ error: "Assignees already exist" });
+      //return res.status(409).json({ error: "Assignees already exist" });
+      return {
+        status: 409,
+        message: "Assignees already exist",
+      };
     }
 
     // Generate UUID for each assignee
@@ -219,21 +283,38 @@ const assignTask = async (req, res) => {
     // Execute the query
     await pool.query(insertQuery, values);
 
-    res.json({ message: "New assignees added", newAssignees });
+    //res.json({ message: "New assignees added", newAssignees });
+    return {
+      status: 200,
+      message: "New assignees added",
+      newAssignees: newAssignees.map((id, idx) => ({
+        id: assigneeIds[idx],
+        user_id: id,
+        task_id: taskId,
+        workspace_id: workspace_id
+      }))
+    };
   } catch (error) {
     console.error("Error assigning task:", error);
-    res.status(500).json({ error: "Internal server error" });
+    return {
+      status: 500,
+      message: "Internal server error",
+      error: error.message
+    };
   }
 };
+createApi().post("/task/:taskId/assign").authSecure(assignTask); // for assigning a task to users
 
 const removeAssignee = async (req, res) => {
   const { taskId } = req.params;
   const { userId } = req.body;
 
   if(!taskId || !userId) {
-    console.log("task id: ", taskId);
-    console.log("user id: ", userId);
-    return res.status(400).json({ error: "Task ID and User ID are required" });
+    //return res.status(400).json({ error: "Task ID and User ID are required" });
+    return {
+      status: 400,
+      message: "Task ID and User ID are required",
+    }
   }
 
   try{
@@ -242,20 +323,24 @@ const removeAssignee = async (req, res) => {
       [taskId, userId]
     );
     if(result.rows.length === 0) {
-      return res.status(404).json({ message: "Assignee not found for this task" });
+      //return res.status(404).json({ message: "Assignee not found for this task" });
+      return {
+        status: 404,
+        message: "Assignee not found for this task",
+      };
     }
-    res.status(200).json({ message: "Assignee removed successfully", assignee: result.rows[0] });
+    return {
+      status: 200,
+      message: "Assignee removed successfully",
+      assignee: result.rows[0],
+    };
   }catch (error) {
     console.error("Error removing assignee:", error);
-    return res.status(500).json({ error: "Internal server error" });
+    return {
+      status: 500,
+      message: "Internal server error",
+      error: error.message
+    };
   }
 }
-
-module.exports = {
-  createTask,
-  getTasksByWorkspace,
-  updateTask,
-  deleteTask,
-  assignTask,
-  removeAssignee
-};
+createApi().delete("/task/:taskId/removeAssignee").authSecure(removeAssignee); // for removing an assignee from a task

@@ -1,24 +1,28 @@
 import axios from 'axios';
 import {React, useState} from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext';
 
 function CreateWorkspace({onClose}) {
     const navigate = useNavigate();
     const [name, setName] = useState('');
     const [message, setMessage] = useState('');
+    const { user } = useAuth(); // 👈 get user from context
+    const userId = user?.id;
 
     
     const handleChange = async(e) => {
         setName(e.target.value)
     }
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setMessage('');
     
         try{
+            
             const token = localStorage.getItem("token");
-            const res = await axios.post("http://localhost:5033/api/workspaces/create-workspace", {name} ,
+            
+            const res = await axios.post(`http://localhost:5033/api/user/${userId}/create-workspace`, {name} ,
                 {headers:{
                     Authorization: `Bearer ${token}`
                 }}

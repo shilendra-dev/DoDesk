@@ -1,14 +1,12 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { createPortal } from "react-dom";
-import BadgeLabel from "../atoms/BadgeLabel";
-import { updateTask } from "../../api/taskApi";
 import { useWorkspace } from "../../context/WorkspaceContext";
-import axios from "axios";
-import { SquareLibrary } from "lucide-react";
+import { SavedFilterContext } from "../../context/SavedFilterContext";
+import BadgeLabel from "../atoms/BadgeLabel";
 import TaskDetails from "./TaskDetails";
-import { useSavedFilters } from '../../hooks/useSavedFilters';
-import { Save, Trash2, Star, Filter } from 'lucide-react';
+import { SquareLibrary , Funnel, Save, Trash2, X} from "lucide-react";
 import { toast } from 'react-hot-toast';
+import { updateTask } from "../../api/taskApi";
 
 const formatDateLocal = (dateStr) => {
   const date = new Date(dateStr);
@@ -18,9 +16,9 @@ const formatDateLocal = (dateStr) => {
   return `${year}-${month}-${day}`;
 };
 
-function TaskListView({ tasks, setTasks }) {
+function TaskListView({ tasks, setTasks, refreshTasks }) {
   const [selectedTask, setSelectedTask] = useState(null);
-  const [loading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const { selectedWorkspace } = useWorkspace();
   const [currentPage, setCurrentPage] = useState(1);
   const tasksPerPage = 15;
@@ -33,30 +31,31 @@ function TaskListView({ tasks, setTasks }) {
   const [dropdownPosition, setDropdownPosition] = useState(null);
   const [dropdownType, setDropdownType] = useState(null);
 
-  //states for sorting and filtering logic
+  // Use SavedFilterContext for all filter state and actions
+  const {
+    savedFilters,
+    defaultFilter,
+    selectedViewId,
+    loading: filtersLoading,
+    fetchSavedFilters,
+    createFilter,
+    removeFilter,
+    makeDefault,
+    clearSelectedView
+  } = useContext(SavedFilterContext);
+
+  const [showSaveFilterModal, setShowSaveFilterModal] = useState(false);
+  const [newFilterName, setNewFilterName] = useState("");
+
+  // Local filter state
   const [statusFilter, setStatusFilter] = useState("All");
   const [priorityFilter, setPriorityFilter] = useState("All");
   const [sortOption, setSortOption] = useState("None");
   const [assigneeFilter, setAssigneeFilter] = useState("All");
 
-  //states for saved filters
-  const { 
-    savedFilters, 
-    defaultFilter,
-    selectedViewId,
-    loading: filtersLoading,
-    fetchSavedFilters,
-    createFilter, 
-    removeFilter, 
-    makeDefault,
-    clearSelectedView
-  } = useSavedFilters();
-  const [showSaveFilterModal, setShowSaveFilterModal] = useState(false);
-  const [newFilterName, setNewFilterName] = useState('');
-
-  //load saved filters on mount'setDefaultFilter' is declared but its value is never read.
+  // Load saved filters on workspace change
   useEffect(() => {
-    if(selectedWorkspace?.id){
+    if (selectedWorkspace?.id) {
       fetchSavedFilters(selectedWorkspace.id);
     }
   }, [selectedWorkspace?.id, fetchSavedFilters]);
@@ -66,114 +65,92 @@ function TaskListView({ tasks, setTasks }) {
     if (defaultFilter && !filtersLoading) {
       const config = defaultFilter.filter_config;
       if (config) {
-        setStatusFilter(config.statusFilter || 'All');
-        setPriorityFilter(config.priorityFilter || 'All');
-        setSortOption(config.sortOption || 'None');
-        setAssigneeFilter(config.assigneeFilter || 'All');
+        setStatusFilter(config.statusFilter || "All");
+        setPriorityFilter(config.priorityFilter || "All");
+        setSortOption(config.sortOption || "None");
+        setAssigneeFilter(config.assigneeFilter || "All");
       }
+    } else if (!defaultFilter && !filtersLoading) {
+      setStatusFilter("All");
+      setPriorityFilter("All");
+      setSortOption("None");
+      setAssigneeFilter("All");
     }
   }, [defaultFilter, filtersLoading]);
 
   // Watch for filter changes to clear selected view
   useEffect(() => {
-    if (selectedViewId !== 'none') {
-      const selectedFilter = savedFilters.find(filter => filter.id === selectedViewId);
-      if (selectedFilter) {
-        const config = selectedFilter.filter_config;
-        const filtersMatch = 
-          config.statusFilter === statusFilter &&
-          config.priorityFilter === priorityFilter &&
-          config.sortOption === sortOption &&
-          config.assigneeFilter === assigneeFilter;
-
-        if (!filtersMatch) {
-          clearSelectedView();
-        }
-      }
+    if (
+      statusFilter === "All" &&
+      priorityFilter === "All" &&
+      sortOption === "None" &&
+      assigneeFilter === "All"
+    ) {
+      clearSelectedView();
     }
-  }, [statusFilter, priorityFilter, sortOption, assigneeFilter, savedFilters, selectedViewId, clearSelectedView]);
+  }, [statusFilter, priorityFilter, sortOption, assigneeFilter, clearSelectedView]);
 
   const handleClearAll = () => {
-    setStatusFilter('All');
-    setPriorityFilter('All');
-    setSortOption('None');
-    setAssigneeFilter('All');
+    setStatusFilter("All");
+    setPriorityFilter("All");
+    setSortOption("None");
+    setAssigneeFilter("All");
     clearSelectedView();
-    fetchTasks();
   };
 
   const handleViewSelect = async (e) => {
     const value = e.target.value;
-    
-    if (value === 'none') {
-      setStatusFilter('All');
-      setPriorityFilter('All');
-      setSortOption('None');
-      setAssigneeFilter('All');
+    if (value === "none") {
+      setStatusFilter("All");
+      setPriorityFilter("All");
+      setSortOption("None");
+      setAssigneeFilter("All");
       clearSelectedView();
       return;
     }
-
     try {
-      const selectedFilter = savedFilters.find(filter => filter.id === value);
+      const selectedFilter = savedFilters.find((filter) => filter.id === value);
       if (!selectedFilter) return;
-
       const config = selectedFilter.filter_config;
       if (!config) return;
-
-      // Apply the saved filter configuration
-      setStatusFilter(config.statusFilter || 'All');
-      setPriorityFilter(config.priorityFilter || 'All');
-      setSortOption(config.sortOption || 'None');
-      setAssigneeFilter(config.assigneeFilter || 'All');
-
-      // Make the selected view the default
+      setStatusFilter(config.statusFilter || "All");
+      setPriorityFilter(config.priorityFilter || "All");
+      setSortOption(config.sortOption || "None");
+      setAssigneeFilter(config.assigneeFilter || "All");
       await makeDefault(selectedWorkspace.id, value);
-
-      // Refresh tasks with new filters
-      await fetchTasks();
     } catch (error) {
-      console.error('Error applying saved filter:', error);
+      console.error("Error applying saved filter:", error);
     }
   };
 
   const handleSaveFilter = async () => {
-    if (!newFilterName.trim()) {
-      return;
-    }
-
+    if (!newFilterName.trim()) return;
     try {
       const filterConfig = {
         statusFilter,
         priorityFilter,
         sortOption,
-        assigneeFilter
+        assigneeFilter,
       };
-      
       const filterData = {
         name: newFilterName.trim(),
-        filter_config: JSON.stringify(filterConfig) 
+        filter_config: filterConfig,
       };
-      
-      const newFilter = await createFilter(selectedWorkspace.id, filterData);
-      await makeDefault(selectedWorkspace.id, newFilter.id);
-      
+      await createFilter(selectedWorkspace.id, filterData);
       setShowSaveFilterModal(false);
-      setNewFilterName('');
-      toast.success('View saved successfully');
+      setNewFilterName("");
     } catch (error) {
-      console.error('Error saving filter:', error);
-      toast.error('Failed to save view');
+      console.error("Error saving filter:", error);
     }
   };
 
   const handleDeleteView = async () => {
     try {
       await removeFilter(selectedWorkspace.id, selectedViewId);
-      toast.success('View deleted successfully');
+      toast.success("Filter deleted successfully");
     } catch (error) {
-      console.error('Error deleting filter:', error);
-      toast.error('Failed to delete view');
+      toast.error("Error deleting filter");
+      console.error("Error deleting filter:", error);
     }
   };
 
@@ -187,7 +164,7 @@ function TaskListView({ tasks, setTasks }) {
       <>
         <div className="flex items-center gap-2 px-4 py-2 bg-[#101221]/60 backdrop-blur border-b border-gray-800">
           <div className="flex items-center gap-2">
-            <Filter size={16} className="text-gray-400" />
+            <Funnel className="text-gray-400" size={16} />
             {hasActiveFilters ? (
               <div className="flex items-center gap-2">
                 <span className="text-xs text-gray-400">
@@ -202,7 +179,7 @@ function TaskListView({ tasks, setTasks }) {
                     className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-700 text-gray-200 rounded hover:bg-gray-600 transition-colors"
                     title="Save this view"
                   >
-                    <Save size={12} />
+                    <Save className="text-gray-400" size={16} />
                     Save View
                   </button>
                 ) : (
@@ -211,7 +188,7 @@ function TaskListView({ tasks, setTasks }) {
                     className="flex items-center gap-1 px-2 py-1 text-xs bg-red-600/20 text-red-400 rounded hover:bg-red-600/30 transition-colors"
                     title="Delete selected view"
                   >
-                    <Trash2 size={12} />
+                    <Trash2 className="text-red-400" size={16} />
                     Delete View
                   </button>
                 )}
@@ -223,8 +200,8 @@ function TaskListView({ tasks, setTasks }) {
             )}
           </div>
 
-          {/* Saved Views Dropdown */}
-          {savedFilters && savedFilters.length > 0 && (
+          {/* Ensure dropdown is rendered if savedFilters is an array and has length > 0 */}
+          {Array.isArray(savedFilters) && savedFilters.length > 0 && (
             <div className="ml-auto flex items-center gap-2">
               <span className="text-xs text-gray-400">View:</span>
               <select
@@ -346,23 +323,6 @@ function TaskListView({ tasks, setTasks }) {
 
   const totalPages = Math.ceil(tasks.length / tasksPerPage);
 
-  const fetchTasks = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.get(
-        `http://localhost:5033/api/tasks/${selectedWorkspace.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setTasks(res.data);
-    } catch (err) {
-      console.error("Failed to fetch tasks:", err);
-    }
-  };
-
   // Generic API handler for updating any task field
   const handleTaskFieldUpdate = async (taskId, field, value) => {
     try {
@@ -375,7 +335,6 @@ function TaskListView({ tasks, setTasks }) {
       };
 
       await updateTask(taskId, updatedTask);
-      await fetchTasks();
     } catch (err) {
       console.error(`Failed to update task ${field}:`, err);
     }
@@ -383,14 +342,27 @@ function TaskListView({ tasks, setTasks }) {
 
   // Inline edit handler for task fields
   const handleInlineEdit = async (taskId, field, value) => {
-    await handleTaskFieldUpdate(taskId, field, value);
+    // Optimistically update the task in local state
+    setTasks(prevTasks =>
+      prevTasks.map(task =>
+        task.id === taskId ? { ...task, [field]: value } : task
+      )
+    );
+    //apicall to update the task in the backend
+    try{
+      await handleTaskFieldUpdate(taskId, field, value);
+    }catch(error){
+      toast.error("Failed to update task");
+      console.error(`Failed to update task ${field}:`, error);
+    }
+    
     setEditingTaskId(null);
     setEditingField(null);
   };
 
   return (
     <div className="h-full flex flex-col" onClick={() => setDropdownPosition(null)}>
-      <div className="overflow-auto flex-1 flex flex-col">
+      <div className="overflow-auto flex-1 flex flex-col border border-transparent relative z-0">
         <div className="max-h-[620px] overflow-y-auto flex flex-col border border-transparent relative z-0">
           {loading && (
             <div className="text-center py-4 text-gray-500">
@@ -492,7 +464,7 @@ function TaskListView({ tasks, setTasks }) {
                   className="flex items-center gap-1 px-3 py-1.5 text-xs bg-red-600/20 text-red-400 rounded hover:bg-red-600/30 transition-colors"
                   title="Clear all filters and view"
                 >
-                  <Trash2 size={12} />
+                  <X className="text-red-400" size={16} />
                   Clear
                 </button>
               )}

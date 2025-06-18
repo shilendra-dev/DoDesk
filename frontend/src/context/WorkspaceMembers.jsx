@@ -15,9 +15,8 @@ export const WorkspaceMembersProvider = ({ children }) => {
             if(!selectedWorkspace) return ;
             setLoading(true);
             try{
-                const data = await getAllWorkspaceMembers(selectedWorkspace.id);
-                console.log("allMembers: ", data)
-                setMembers(data);
+                const data = await getAllWorkspaceMembers(selectedWorkspace.id);               
+                setMembers(data || []);
             }catch(error){
                 console.error("Failed to fetch workspace members: ", error);
             }finally{

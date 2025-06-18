@@ -29,22 +29,21 @@ function LoginForm() {
   
     try {
       const res = await axios.post(
-        "http://localhost:5033/api/auth/login",
+        "http://localhost:5033/api/login", //api call for login
         data
       );
   
-      // Log the response to check its structure
-      console.log('Login Response:', res.data);
-  
+      
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
   
       // Check if 'workspaces' exists and is an array
 
+
       initializeWorkspaces(res.data.workspaces); // 👈 set in context
-  
+
       const user = res.data.user; // Assuming user info is in res.data.user
-      console.log('User:', user); // Log user to check its structure
+
       redirectUser(user);
       //console.log(user.default_workspace_id);
      

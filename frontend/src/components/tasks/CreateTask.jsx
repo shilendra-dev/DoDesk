@@ -20,13 +20,13 @@ function CreateTask({ isOpen, onClose, onTaskCreated, workspaceId }) {
         e.preventDefault();
         const token = localStorage.getItem("token");
         try {
-            const res = await axios.post("http://localhost:5033/api/tasks/", {
+            const res = await axios.post(`http://localhost:5033/api/workspaces/${workspaceId}/task`, {
                 ...formData,
                 workspace_id: workspaceId,
             }, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            onTaskCreated(res.data);
+            onTaskCreated(res.data.task);
             onClose();
         } catch (error) {
             console.error("Error creating task: ", error);

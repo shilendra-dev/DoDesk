@@ -1,27 +1,47 @@
 import { useEffect, useState } from "react";
 import { useWorkspace } from "../context/WorkspaceContext"; // adjust path as needed
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from "react-router-dom";
+import axios from "axios";
 
 function WorkspaceDropdown() {
-  const { workspaces, selectedWorkspace, setSelectedWorkspace } = useWorkspace();
+  const { workspaces, selectedWorkspace, setSelectedWorkspace, setDefaultWorkspace, setDefaultWorkspaceId } =
+    useWorkspace();
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-  const {workspaceId} = useParams();
+  const { workspaceId } = useParams();
 
   useEffect(() => {
-    if(workspaceId){
-      const workspace = workspaces.find(ws => ws.id === workspaceId);
+    if (workspaceId) {
+      const workspace = workspaces.find((ws) => ws.id === workspaceId);
       if (workspace) {
         setSelectedWorkspace(workspace);
       }
     }
-  
-  }, [workspaceId, workspaces, setSelectedWorkspace])
-  
-  const handleSelect = (workspace) => {
+  }, [workspaceId, workspaces, setSelectedWorkspace]);
+
+  const handleSelect = async (workspace) => {
     setSelectedWorkspace(workspace);
-    navigate(`/${workspace.id}`)
+    setDefaultWorkspace(workspace);
+    setDefaultWorkspaceId(workspace.id);
+    navigate(`/${workspace.id}`);
     setIsOpen(false);
+
+    // Update default workspace in backend
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        `http://localhost:5033/api/user/set-default-workspace`,
+        { workspace_id: workspace.id },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      // Optionally update user/defaultWorkspaceId in context if needed
+    } catch (err) {
+      console.error("Failed to set default workspace:", err);
+    }
   };
 
   return (

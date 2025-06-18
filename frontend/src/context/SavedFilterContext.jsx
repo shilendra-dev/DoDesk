@@ -19,8 +19,8 @@ export const SavedFilterProvider = ({ children }) => {
     const fetchSavedFilters = useCallback(async (workspaceId) => {
         try {
             setLoading(true);
-            const filters = await getSavedFilters(workspaceId);
-            setSavedFilters(filters);
+            const filtersRes = await getSavedFilters(workspaceId);
+            setSavedFilters(filtersRes.filters || []);
             setError(null);
         } catch (err) {
             setError(err.message);
@@ -33,10 +33,10 @@ export const SavedFilterProvider = ({ children }) => {
     const fetchDefaultFilter = useCallback(async (workspaceId) => {
         try {
             setLoading(true);
-            const filter = await getDefaultFilter(workspaceId);
-            if (filter) {
-                setDefaultFilter(filter);
-                setSelectedViewId(filter.id);
+            const defaultRes = await getDefaultFilter(workspaceId);
+            if (defaultRes.filter) {
+                setDefaultFilter(defaultRes.filter);
+                setSelectedViewId(defaultRes.filter.id);
             }
             setError(null);
         } catch (err) {
@@ -50,7 +50,8 @@ export const SavedFilterProvider = ({ children }) => {
     const createFilter = useCallback(async (workspaceId, filterData) => {
         try {
             setLoading(true);
-            const newFilter = await saveFilter(workspaceId, filterData);
+            const newFilterRes = await saveFilter(workspaceId, filterData);
+            const newFilter = newFilterRes.filter;
             setSavedFilters(prev => [...prev, newFilter]);
             setSelectedViewId(newFilter.id);
             await setDefaultFilterApi(workspaceId, newFilter.id);
@@ -69,6 +70,7 @@ export const SavedFilterProvider = ({ children }) => {
     const removeFilter = useCallback(async (workspaceId, filterId) => {
         try {
             setLoading(true);
+
             await deleteFilter(workspaceId, filterId);
             setSavedFilters(prev => prev.filter(f => f.id !== filterId));
             if (defaultFilter?.id === filterId) {
@@ -88,8 +90,10 @@ export const SavedFilterProvider = ({ children }) => {
     const makeDefault = useCallback(async (workspaceId, filterId) => {
         try {
             setLoading(true);
-            const updatedFilter = await setDefaultFilterApi(workspaceId, filterId);
-            setDefaultFilter(updatedFilter);
+            const updatedRes = await setDefaultFilterApi(workspaceId, filterId);
+            if (updatedRes.filter) {
+                setDefaultFilter(updatedRes.filter);
+            }
             setSelectedViewId(filterId);
             setError(null);
         } catch (err) {
@@ -124,4 +128,4 @@ export const SavedFilterProvider = ({ children }) => {
             {children}
         </SavedFilterContext.Provider>
     );
-}; 
+};

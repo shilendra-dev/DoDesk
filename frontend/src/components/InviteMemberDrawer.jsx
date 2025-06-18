@@ -15,7 +15,7 @@ function InviteMemberDrawer({ isOpen, onClose, workspaceId }) {
       const token = localStorage.getItem("token");
 
       const res = await axios.post(
-        `http://localhost:5033/api/workspaces/${workspaceId}/invite`,
+        `http://localhost:5033/api/workspace/${workspaceId}/invite`,
         { email },
         {
           headers: {

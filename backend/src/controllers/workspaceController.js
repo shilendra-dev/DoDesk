@@ -5,6 +5,7 @@ const axios = require("axios");
 const jwt = require("jsonwebtoken");
 const { sendEmail } = require("../utils/sendEmail");
 const isValidEmail = require("../utils/isValidEmail");
+const { createApi } = require("../utils/router");
 
 //create workspace api
 const createWorkspace = async (req, res) => {
@@ -33,22 +34,30 @@ const createWorkspace = async (req, res) => {
       expiresIn: "2h",
     });
 
-    await axios.get("http://localhost:5033/api/users", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    // await axios.get("http://localhost:5033/api/user", {
+    //   headers: {
+    //     Authorization: `Bearer ${token}`,
+    //   },
+    // });
 
-    res.status(201).json({
+    return {
+      status: 201,
       message: "Workspace Successfully Created",
       workspace: newWorkspace.rows[0],
-    });
+    }
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Error creating workspace" });
+    //res.status(500).json({ message: "Error creating workspace" });
+    return{
+      status: 500,
+      message: "Error creating workspace",
+      error: err.message
+    }
   }
 };
+createApi().post("/user/:user_id/create-workspace").authSecure(createWorkspace); // create a workspace
 
+//get all workspaces of a user
 const getUserWorkspaces = async (req, res) => {
   try {
     const userId = req.user.id;
@@ -61,17 +70,29 @@ const getUserWorkspaces = async (req, res) => {
       [userId]
     );
     if (workspaceResult.rows.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No workspaces found for this user" });
+      // return res
+      //   .status(404)
+      //   .json({ message: "No workspaces found for this user" });
+      return {
+        status: 404,
+        message: "No workspaces found for this user",
+        workspaces: []
+      }
     }
     // Respond with the workspaces
-    res.json(workspaceResult.rows);
+    return { status: 200, message: "Workspaces fetched successfully", workspaces: workspaceResult.rows };
+
   } catch (err) {
     console.error("Error fetching workspaces:", err);
-    res.status(500).json({ message: "Server error" });
+    //res.status(500).json({ message: "Server error" });
+    return {
+      status: 500,
+      message: "Server error",
+      error: err.message
+    }
   }
 };
+createApi().get("/user/:user_id/workspaces").authSecure(getUserWorkspaces); // get all workspaces of a user
 
 //INVITE MEMBERS TO WORKSPACE
 const inviteMember = async (req, res) => {
@@ -129,7 +150,13 @@ const inviteMember = async (req, res) => {
         "Hey Message from dodesk, you have been added to a new workspace."
       );
 
-      return res.status(200).json({ message: "User added to workspace" });
+      //return res.status(200).json({ message: "User added to workspace" });
+      return {
+        status: 200,
+        message: "User added to workspace",
+        workspace_name: workspace_name.rows[0].name,
+        user_name: user_name.rows[0].name
+      }
     } else {
       //USER DOES NOT EXIST ---> SAVE AN INVITATION
       const invitationID = uuidv4();
@@ -155,13 +182,25 @@ const inviteMember = async (req, res) => {
         `Hey Message from dodesk, you have been invited to a new workspace ${workspace_name}, please signup to join http://localhost:5173/`
       );
 
-      return res.status(200).json({ message: "Invitation Successfully Sent" });
+      //return res.status(200).json({ message: "Invitation Successfully Sent" });
+      return {
+        status: 200,
+        message: "Invitation Successfully Sent",
+        workspace_name: workspace_name.rows[0].name,
+        user_name: user_name.rows[0].name
+      }
     }
   } catch (error) {
     console.error("Error inviting member:", error);
-    res.status(500).json({ message: "Server error" });
+    //res.status(500).json({ message: "Server error" });
+    return{
+      status: 500,
+      message: "Server error",
+      error: error.message
+    }
   }
 };
+createApi().post("/workspace/:workspace_id/invite").authSecure(inviteMember); // invite a member to a workspace
 
 const getWorkspaceMembers = async (req, res) => {
   const { workspace_id } = req.params;
@@ -172,11 +211,61 @@ const getWorkspaceMembers = async (req, res) => {
       JOIN users u ON wm.user_id = u.id
       WHERE wm.workspace_id = $1`, [workspace_id]
     );
-    res.json(result.rows);
+    return {
+      status: 200,
+      message: "Workspace members fetched successfully",
+      members: result.rows
+    }
   } catch (error) {
     console.error("Error fetching workspace members:", error);
-    res.status(500).json({ error: "Failed to fetch workspace members" });
+    //res.status(500).json({ error: "Failed to fetch workspace members" });
+    return {
+      status: 500,
+      message: "Failed to fetch workspace members",
+      error: error.message
+    }
   }
 };
+createApi().get("/workspace/:workspace_id/members").authSecure(getWorkspaceMembers); // get all members of a workspace
 
-module.exports = { createWorkspace, getUserWorkspaces, inviteMember, getWorkspaceMembers };
+// set default workspace
+const setDefaultWorkspace = async (req, res) => {
+  const userId = req.user.id;
+  const { workspace_id } = req.body;
+  try {
+    // Check if the workspace exists and the user is a member
+    const workspaceCheck = await pool.query(
+      `SELECT * FROM workspace_members WHERE workspace_id = $1 AND user_id = $2`,
+      [workspace_id, userId]
+    );
+
+    if (workspaceCheck.rows.length === 0) {
+      // return res.status(404).json({ message: "Workspace not found or you are not a member" });
+      return {
+        status: 404,
+        message: "Workspace not found or you are not a member"
+      }
+    }
+
+    // Update user's default_workspace_id
+    await pool.query(
+      `UPDATE users SET default_workspace_id = $1 WHERE id = $2`,
+      [workspace_id, userId]
+    );
+
+    // return res.status(200).json({ message: "Default workspace set successfully" });
+    return {
+      status: 200,
+      message: "Default workspace set successfully"
+    }
+  } catch (error) {
+    console.error("Error setting default workspace:", error);
+    // res.status(500).json({ message: "Server error" });
+    return {
+      status: 500,
+      message: "Server error",
+      error: error.message
+    }
+  }
+}
+createApi().post("/user/set-default-workspace").authSecure(setDefaultWorkspace); // set default workspace for a user

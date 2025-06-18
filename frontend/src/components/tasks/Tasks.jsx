@@ -7,6 +7,7 @@ import CreateTaskButton from "./CreateTaskButton";
 import axios from "axios";
 import {useWorkspace} from "../../context/WorkspaceContext"
 import CreateTask from "./CreateTask";
+import toast from "react-hot-toast";
 
 function Tasks() {
   const [view, setView] = useState("list"); // 'board' or 'list'
@@ -17,23 +18,45 @@ function Tasks() {
   const [showCreateTask, setShowCreateTask] = useState(false);
   const workspaceId = selectedWorkspace?.id;
 
+  // Define refreshTasks function
+  const refreshTasks = async () => {
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem("token");
+      const res = await axios.get(
+        `http://localhost:5033/api/workspace/${workspaceId}/tasks`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      setTasks(res.data.tasks || []);
+      setIsLoading(false);
+    } catch (error) {
+      console.error("Error fetching tasks: ", error);
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
+    if (!workspaceId) return;
     // Fetching tasks from backend
     const fetchTasks = async () => {
       try {
         setIsLoading(true);
         const token = localStorage.getItem("token");
+        
         const res = await axios.get(
-          `http://localhost:5033/api/tasks/${workspaceId}`,
+          `http://localhost:5033/api/workspace/${workspaceId}/tasks`, 
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
-        console.log("Fetched tasks:", res.data);
 
-        setTasks(res.data);
+        setTasks(res.data.tasks || []);
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching tasks: ", error);
@@ -60,12 +83,17 @@ function Tasks() {
         <div className="flex items-center gap-4">
           <ViewToggle onToggle={(mode) => setView(mode)} />
           <CreateTaskButton onClick={() => setShowCreateTask(true)} />
+          
           <CreateTask
             isOpen={showCreateTask}
             onClose={() => setShowCreateTask(false)}
-            onTaskCreated={(newTask) => setTasks([newTask, ...tasks])}
+            onTaskCreated={(newTask) => {
+              setTasks((prev) => [newTask, ...prev]); // Add new task to the top
+              toast.success("Task created successfully!");
+            }}
             workspaceId={workspaceId}
           />
+          
         </div>
       </div>
 
@@ -80,7 +108,7 @@ function Tasks() {
               onTaskSelect={setSelectedTask} 
             />
           ) : (
-            <TaskListView setTasks={setTasks} tasks={tasks} />
+            <TaskListView setTasks={setTasks} tasks={tasks} refreshTasks={refreshTasks} />
           )}
         </div>
 

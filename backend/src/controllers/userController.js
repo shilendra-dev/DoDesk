@@ -2,6 +2,8 @@ const bcrypt = require("bcryptjs");
 const pool = require("../config/db");
 const { v4: uuidv4 } = require("uuid");
 const isValidEmail = require("../utils/isValidEmail");
+const { createApi } = require("../utils/router");
+const { getUserWorkspaces } = require("./workspaceController");
 
 //Create User API
 const createUser = async (req, res) => {
@@ -60,25 +62,39 @@ const createUser = async (req, res) => {
         [email, workspace_id]
       );
 
-      return res
-        .status(201)
-        .json({
+      // return res
+      //   .status(201)
+      //   .json({
+      //     message: "User successfully signed up and added to the workspace",
+      //   });
+      
+        return {
+          status: 201,
           message: "User successfully signed up and added to the workspace",
-        });
+        }
     }
 
     const { password: _, ...userWithoutPassoword } = newUser.rows[0];
-    res
-      .status(201)
-      .json({
+    // res
+    //   .status(201)
+    //   .json({
+    //     message: "Account is successfully created!!",
+    //     user: userWithoutPassoword,
+    //   });
+      return {
+        status: 201,
         message: "Account is successfully created!!",
         user: userWithoutPassoword,
-      });
+      }
   } catch (err) {
     console.error(err.message);
-    res.status(500).json({ message: "Server error" });
+    return {
+      status: 500,
+      message: "Server error",
+    }
   }
 };
+createApi().post("/users/signup").noAuth(createUser); // for creating a new user
 
 // --- GET CURRENT USER + SET DEFAULT WORKSPACE ---
 const getCurrentUser = async (req, res) => {
@@ -120,14 +136,25 @@ const getCurrentUser = async (req, res) => {
       }
     }
 
-    res.json(user);
+    //res.json(user);
+    return {
+      status: 200,
+      message: "User fetched successfully",
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        default_workspace_id: user.default_workspace_id,
+      },
+    }
   } catch (err) {
     console.error("Error fetching user:", err);
-    res.status(500).json({ error: "Server error" });
+    //res.status(500).json({ error: "Server error" });
+    return{
+      status: 500,
+      message: "Server error",
+    }
   }
 };
+createApi().get("/user").authSecure(getCurrentUser); // for getting the current user
 
-module.exports = {
-  createUser,
-  getCurrentUser,
-};

@@ -3,6 +3,8 @@ import { toast } from 'react-hot-toast';
 import { getAllWorkspaceMembers } from '../../api/workspace';
 import { ChevronRight, Text, AlignLeft, Flag, CheckSquare, Calendar, User } from 'lucide-react';
 import { assignTaskToMembers, removeAssignee, updateTask } from '../../api/taskApi';
+import SubtaskList from './subtaskList';
+import axios from 'axios';
 
 function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
   const [editedTask, setEditedTask] = useState(task);
@@ -10,12 +12,12 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
   const [dropdownMembers, setDropdownMembers] = useState([]);
   const [newlyAddedAssigneeIds, setNewlyAddedAssigneeIds] = useState([]);
   const [isClosing, setIsClosing] = useState(false);
-
+  
   useEffect(() => {
     setEditedTask(task);
     setNewlyAddedAssigneeIds([]);
   }, [task]);
-
+  
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(() => {
@@ -28,8 +30,10 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
 
   const handleAutoSaveChange = async (e) => {
     const { name, value } = e.target;
+
     const updated = { ...editedTask, [name]: value };
     setEditedTask(updated);
+    
     try {
       await updateTask(updated.id, updated);
       setTasks(prevTasks =>
@@ -47,13 +51,14 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
       await assignTaskToMembers(taskId, assigneeIds);
 
       if (task.workspace_id) {
-        const updatedTaskResponse = await fetch(
-          `http://localhost:5033/api/tasks/${task.workspace_id}`,
+        const updatedTaskResponse = await axios.get(
+          `http://localhost:5033/api/workspace/${task.workspace_id}/tasks`, //workspace/:workspace_id/tasks
           {
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
           }
         );
-        const updatedTasks = await updatedTaskResponse.json();
+
+        const updatedTasks = updatedTaskResponse.data.tasks;
         const updatedTask = updatedTasks.find(t => t.id === task.id);
         if (updatedTask) {
           setEditedTask(updatedTask);
@@ -222,6 +227,7 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
           </div>
           <div className="flex-1 relative">
             <div className="flex flex-wrap gap-2 mb-2 transition-all duration-300">
+              
               {(editedTask.assignees || []).map((assignee) => (
                 <div
                   key={assignee.id}
@@ -283,6 +289,8 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
             )}
           </div>
         </div>
+        
+        <SubtaskList taskId={task.id} />
 
         <div className="flex items-start gap-4">
           <div className="flex items-center gap-2 text-gray-400 w-[140px] flex-shrink-0 mt-1">
