@@ -8,6 +8,7 @@ import { SquareLibrary , Funnel, Save, Trash2, X} from "lucide-react";
 import { toast } from 'react-hot-toast';
 import { updateTask } from "../../api/taskApi";
 
+
 const formatDateLocal = (dateStr) => {
   const date = new Date(dateStr);
   const year = date.getFullYear();
@@ -26,6 +27,7 @@ function TaskListView({ tasks, setTasks, refreshTasks }) {
   const [editingTaskId, setEditingTaskId] = useState(null);
   const [editingField, setEditingField] = useState(null);
   const [editedTitle, setEditedTitle] = useState("");
+
 
   // Dropdown state for inline status/priority dropdowns
   const [dropdownPosition, setDropdownPosition] = useState(null);

@@ -3,8 +3,8 @@ import { toast } from 'react-hot-toast';
 import { getAllWorkspaceMembers } from '../../api/workspace';
 import { ChevronRight, Text, AlignLeft, Flag, CheckSquare, Calendar, User } from 'lucide-react';
 import { assignTaskToMembers, removeAssignee, updateTask } from '../../api/taskApi';
-import SubtaskList from './subtaskList';
 import axios from 'axios';
+import NotesEditor from './NotesEditor';
 
 function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
   const [editedTask, setEditedTask] = useState(task);
@@ -15,6 +15,7 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
   
   useEffect(() => {
     setEditedTask(task);
+    setNotes(task?.notes || "");
     setNewlyAddedAssigneeIds([]);
   }, [task]);
   
@@ -25,6 +26,24 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
       onClose();
     }, 300);
   };
+
+  const [notes, setNotes] = useState((task && task.notes) || "");
+  
+    const handleNotesUpdate = async (newNotes) => {
+      setNotes(newNotes);
+      console.log("Updating notes:", newNotes);
+      const token = localStorage.getItem('token');
+      try {
+        await axios.put(`http://localhost:5033/api/task/${task.id}/notes`, {notes: newNotes},{
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }catch (error) {
+        console.error("Error updating notes:", error);
+        toast.error("Failed to update notes");
+      }
+    }
 
   if (!isOpen || !task || !editedTask) return null;
 
@@ -290,8 +309,6 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
           </div>
         </div>
         
-        <SubtaskList taskId={task.id} />
-
         <div className="flex items-start gap-4">
           <div className="flex items-center gap-2 text-gray-400 w-[140px] flex-shrink-0 mt-1">
             <User size={16} />
@@ -323,6 +340,13 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
               hover:border-gray-600"
             placeholder="Add task description..."
           />
+        </div>
+        <div>
+            <label htmlFor="notes" className="text-gray-400 uppercase tracking-wide font-semibold text-xs select-none">Notes</label>
+            <NotesEditor className=""
+              initialContent={notes}
+              onUpdate={(newContent) => handleNotesUpdate(newContent)}
+            />
         </div>
       </div>
 

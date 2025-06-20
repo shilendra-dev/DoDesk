@@ -9,13 +9,18 @@ const { createApi } = require("../utils/router");
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email) return res.status(400).json({ message: "Email is required" });
-  if (!password)
-    //return res.status(400).json({ message: "Password is required" });
+  if (!email) {
+    return {
+      status: 400,
+      message: "Email is required"
+    };
+  }
+  if (!password) {
     return {
       status: 400,
       message: "Password is required"
     };
+  }
 
   try {
     // query to check if user exists

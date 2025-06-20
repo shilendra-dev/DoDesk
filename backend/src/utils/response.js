@@ -1,4 +1,4 @@
-export const respondOk = (data, message) => {
+exports.respondOk = (data, message) => {
     return {
         status: 200,
         entity: data,
@@ -7,7 +7,7 @@ export const respondOk = (data, message) => {
     }
 }
 
-export const respondError = (status, message) => {
+exports.respondError = (status, message) => {
     return {
         status,
         message,

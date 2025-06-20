@@ -5,7 +5,7 @@ const { createApi } = require("../utils/router");
 const getComments = async (req, res) => {
     try{
         // Extracting taskId from request parameters
-        const {taskId} = req.params.taskId;
+        const {taskId} = req.params;
         
         // Check if taskId is provided
         if(!taskId) {
@@ -21,7 +21,7 @@ const getComments = async (req, res) => {
             SELECT comments.*, users.name AS user_name
             FROM comments
             LEFT JOIN users ON comments.user_id = users.id
-            WEHRE comments.task_id = $1
+            WHERE comments.task_id = $1
             ORDER BY comments.created_at ASC
             `, [taskId]
         );
@@ -54,7 +54,7 @@ exports.createComment = async (req, res) => {
         // Extracting taskId from request parameters
         const {taskId} = req.params;
         // Extracting userId and content from request body
-        const { user_id, content } = req.body;
+        const { user_id, content, parent_id } = req.body;
     
         // Check if taskId, user_id, and content are provided
         if(!taskId || !user_id || !content) {
@@ -68,10 +68,10 @@ exports.createComment = async (req, res) => {
         // Insert the new comment into the database query
         const {rows} = await pool.query(
             `
-            INSERT INTO comments (task_id, user_id, content)
-            VALUES ($1, $2, $3)
+            INSERT INTO comments (task_id, user_id, content, parent_id)
+            VALUES ($1, $2, $3, $4)
             RETURNING *    
-            `, [taskId, user_id, content]
+            `, [taskId, user_id, content, parent_id]
         );
 
         // Check if the insertion was successful

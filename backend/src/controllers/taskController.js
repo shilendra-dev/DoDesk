@@ -112,6 +112,7 @@ const getTasksByWorkspace = async (req, res) => {
     const tasksWithAssignees = tasks.map(task => ({
       ...task,
       assignees: assigneeMap[task.id] || [],
+      notes: task.notes || "",
     }));
 
     // res.json(tasksWithAssignees);
@@ -344,3 +345,47 @@ const removeAssignee = async (req, res) => {
   }
 }
 createApi().delete("/task/:taskId/removeAssignee").authSecure(removeAssignee); // for removing an assignee from a task
+
+// to update note for a task
+const updateTaskNotes = async (req, res) => {
+  const { taskId } = req.params;
+  const { notes } = req.body;
+
+  // Validate taskId and notes
+  if(!taskId || !notes) {
+    
+    return {
+      status: 400,
+      message: "Task ID and notes are required",
+    }
+  }
+
+  try {
+    const result = await pool.query(
+      `UPDATE tasks
+            SET notes = $1, updated_at = NOW()
+            WHERE id = $2 
+            RETURNING *`,
+      [notes, taskId]
+    );
+    if (result.rows.length === 0) {
+      return {
+        status: 404,
+        message: "Task not found",
+      };
+    }
+    return {
+      status: 200,
+      message: "Task notes updated successfully",
+      task: result.rows[0],
+    };
+  }catch(error) {
+    console.error("Error updating task notes: ", error);
+    return {
+      status: 500,
+      message: "Failed to update task notes",
+      error: error.message
+    };
+  }
+}
+createApi().put("/task/:taskId/notes").authSecure(updateTaskNotes); // for updating task notes

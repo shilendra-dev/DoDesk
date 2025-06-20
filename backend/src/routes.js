@@ -1,6 +1,5 @@
 require('./controllers/authController')
 require('./controllers/savedFilterController')
-require('./controllers/subtaskController')
 require('./controllers/taskController')
 require('./controllers/userController')
 require('./controllers/commentController')
