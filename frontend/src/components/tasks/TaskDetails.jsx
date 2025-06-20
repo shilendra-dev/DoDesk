@@ -1,10 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { toast } from 'react-hot-toast';
-import { getAllWorkspaceMembers } from '../../api/workspace';
-import { ChevronRight, Text, AlignLeft, Flag, CheckSquare, Calendar, User } from 'lucide-react';
-import { assignTaskToMembers, removeAssignee, updateTask } from '../../api/taskApi';
-import axios from 'axios';
-import NotesEditor from './NotesEditor';
+import React, { useState, useEffect, useRef } from "react";
+import { toast } from "react-hot-toast";
+import { getAllWorkspaceMembers } from "../../api/workspace";
+import {
+  ChevronRight,
+  Text,
+  AlignLeft,
+  Flag,
+  CheckSquare,
+  Calendar,
+  User,
+} from "lucide-react";
+import {
+  assignTaskToMembers,
+  removeAssignee,
+  updateTask,
+} from "../../api/taskApi";
+
+import axios from "axios";
+import NotesEditor from "./NotesEditor";
+import BadgeLabel from "../atoms/BadgeLabel";
 
 function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
   const [editedTask, setEditedTask] = useState(task);
@@ -12,13 +26,55 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
   const [dropdownMembers, setDropdownMembers] = useState([]);
   const [newlyAddedAssigneeIds, setNewlyAddedAssigneeIds] = useState([]);
   const [isClosing, setIsClosing] = useState(false);
-  
+
+  //for badge label
+  const [dropdownType, setDropdownType] = useState(null);
+  const badgeDropdownRef = useRef(null);
+
+  // Auto-close badge dropdown on outside click
+  useEffect(() => {
+    if (!dropdownType) return;
+    const handleClick = (e) => {
+      if (
+        badgeDropdownRef.current &&
+        !badgeDropdownRef.current.contains(e.target)
+      ) {
+        setDropdownType(null);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [dropdownType]);
+
   useEffect(() => {
     setEditedTask(task);
     setNotes(task?.notes || "");
     setNewlyAddedAssigneeIds([]);
   }, [task]);
-  
+
+  //for badge label
+  const handleBadgeClick = (type, e) => {
+    e.stopPropagation();
+    setDropdownType(type);
+  };
+
+  // handler for badge dropdown select
+  const handleBadgeSelect = async (type, value) => {
+    const updated = { ...editedTask, [type]: value };
+    setEditedTask(updated);
+    setDropdownType(null);
+    try {
+      await updateTask(updated.id, updated);
+      setTasks((prevTasks) =>
+        prevTasks.map((t) =>
+          t.id === updated.id ? { ...t, [type]: value } : t
+        )
+      );
+    } catch (err) {
+      console.error("Error updating task:", err);
+    }
+  };
+
   const handleClose = () => {
     setIsClosing(true);
     setTimeout(() => {
@@ -28,22 +84,26 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
   };
 
   const [notes, setNotes] = useState((task && task.notes) || "");
-  
-    const handleNotesUpdate = async (newNotes) => {
-      setNotes(newNotes);
-      console.log("Updating notes:", newNotes);
-      const token = localStorage.getItem('token');
-      try {
-        await axios.put(`http://localhost:5033/api/task/${task.id}/notes`, {notes: newNotes},{
+
+  const handleNotesUpdate = async (newNotes) => {
+    setNotes(newNotes);
+    console.log("Updating notes:", newNotes);
+    const token = localStorage.getItem("token");
+    try {
+      await axios.put(
+        `http://localhost:5033/api/task/${task.id}/notes`,
+        { notes: newNotes },
+        {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        });
-      }catch (error) {
-        console.error("Error updating notes:", error);
-        toast.error("Failed to update notes");
-      }
+        }
+      );
+    } catch (error) {
+      console.error("Error updating notes:", error);
+      toast.error("Failed to update notes");
     }
+  };
 
   if (!isOpen || !task || !editedTask) return null;
 
@@ -52,11 +112,11 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
 
     const updated = { ...editedTask, [name]: value };
     setEditedTask(updated);
-    
+
     try {
       await updateTask(updated.id, updated);
-      setTasks(prevTasks =>
-        prevTasks.map(t =>
+      setTasks((prevTasks) =>
+        prevTasks.map((t) =>
           t.id === updated.id ? { ...t, [name]: value } : t
         )
       );
@@ -73,21 +133,35 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
         const updatedTaskResponse = await axios.get(
           `http://localhost:5033/api/workspace/${task.workspace_id}/tasks`, //workspace/:workspace_id/tasks
           {
-            headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
           }
         );
 
         const updatedTasks = updatedTaskResponse.data.tasks;
-        const updatedTask = updatedTasks.find(t => t.id === task.id);
+        const updatedTask = updatedTasks.find((t) => t.id === task.id);
         if (updatedTask) {
           setEditedTask(updatedTask);
         }
       }
 
-      setTasks(prevTasks =>
-        prevTasks.map(t =>
+      setTasks((prevTasks) =>
+        prevTasks.map((t) =>
           t.id === taskId
-            ? { ...t, assignees: [...(t.assignees || []), ...dropdownMembers.filter(m => assigneeIds.includes(m.user_id)).map(m => ({ id: m.id, user_id: m.user_id, name: m.name }))] }
+            ? {
+                ...t,
+                assignees: [
+                  ...(t.assignees || []),
+                  ...dropdownMembers
+                    .filter((m) => assigneeIds.includes(m.user_id))
+                    .map((m) => ({
+                      id: m.id,
+                      user_id: m.user_id,
+                      name: m.name,
+                    })),
+                ],
+              }
             : t
         )
       );
@@ -110,14 +184,19 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
     try {
       await removeAssignee(task.id, userId);
       toast.success("Assignee removed successfully");
-      setEditedTask(prev => ({
+      setEditedTask((prev) => ({
         ...prev,
-        assignees: (prev.assignees || []).filter(assignee => assignee.id !== userId)
+        assignees: (prev.assignees || []).filter(
+          (assignee) => assignee.id !== userId
+        ),
       }));
-      setTasks(prevTasks =>
-        prevTasks.map(t =>
+      setTasks((prevTasks) =>
+        prevTasks.map((t) =>
           t.id === task.id
-            ? { ...t, assignees: (t.assignees || []).filter(a => a.id !== userId) }
+            ? {
+                ...t,
+                assignees: (t.assignees || []).filter((a) => a.id !== userId),
+              }
             : t
         )
       );
@@ -128,12 +207,16 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
   };
 
   return (
-    <div className={`fixed top-0 right-0 w-[480px] max-w-full h-full bg-[#0f172a] z-50 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${isClosing ? 'translate-x-full' : 'translate-x-0'} task-details-enter`}>
+    <div
+      className={`fixed top-0 right-0 w-[1000px] max-w-full h-full bg-[#0f172a] z-50 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
+        isClosing ? "translate-x-full" : "translate-x-0"
+      } task-details-enter`}
+    >
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800 bg-[#0f172a]/95 backdrop-blur-sm sticky top-0 z-10">
         <h2 className="text-xl font-semibold text-white truncate flex items-center gap-2">
           <span className="text-blue-400">#</span>
-          {editedTask?.title || 'Untitled Task'}
+          {editedTask?.title || "Untitled Task"}
         </h2>
         <button
           onClick={handleClose}
@@ -149,74 +232,115 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-gray-400 w-[140px] flex-shrink-0">
             <Text size={16} />
-            <label htmlFor="title" className="uppercase tracking-wide font-semibold text-xs select-none">
+            <label
+              htmlFor="title"
+              className="uppercase tracking-wide font-semibold text-xs select-none"
+            >
               Title
             </label>
           </div>
           <input
             id="title"
             name="title"
-            value={editedTask?.title || ''}
+            value={editedTask?.title || ""}
             onChange={handleAutoSaveChange}
-            className="flex-1 bg-[#1e293b] text-white text-lg font-medium rounded-lg px-4 py-2.5 
-              placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:text-xl 
-              transition-all duration-200 ease-in-out border border-gray-700 hover:border-gray-600"
+            className="flex-1 text-white py-2 bg-transparent border-none outline-none text-l font-medium rounded-lg px-4 
+              placeholder-gray-500 hover:bg-gray-700 transition-all"
             placeholder="Enter task title"
           />
         </div>
 
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-gray-400 w-[140px] flex-shrink-0">
+            <div className="flex items-center gap-2 py-1 text-gray-400 w-[140px] flex-shrink-0">
               <CheckSquare size={16} />
-              <label htmlFor="status" className="uppercase tracking-wide font-semibold text-xs select-none">
+              <label
+                htmlFor="status"
+                className="uppercase tracking-wide font-semibold text-xs select-none"
+              >
                 Status
               </label>
             </div>
-            <select
-              id="status"
-              name="status"
-              value={editedTask?.status || ''}
-              onChange={handleAutoSaveChange}
-              className="flex-1 bg-[#1e293b] text-white rounded-lg px-4 py-2.5 
-                focus:outline-none focus:ring-2 focus:ring-blue-500 
-                transition-all duration-200 ease-in-out border border-gray-700 
-                hover:border-gray-600 cursor-pointer"
-            >
-              <option value="pending" className="bg-[#1e293b]">Pending</option>
-              <option value="in-progress" className="bg-[#1e293b]">In Progress</option>
-              <option value="completed" className="bg-[#1e293b]">Completed</option>
-            </select>
+            <div className="relative" ref={badgeDropdownRef}>
+              <div
+                className="cursor-pointer px-2 py-1"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDropdownType(dropdownType === "status" ? null : "status");
+                }}
+              >
+                <BadgeLabel type="status" value={editedTask?.status || ""} className="text-base px-4 py-1.5 font-semibold"/>
+              </div>
+              {dropdownType === "status" && (
+                <div
+                  className="absolute left-0 top-full mt-1 bg-[#1f2937] border border-gray-700 rounded shadow-md p-1 min-w-max z-50"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {["pending", "in-progress", "completed"].map((option) => (
+                    <div
+                      key={option}
+                      onClick={() => handleBadgeSelect("status", option)}
+                      className="px-2 py-1 hover:bg-gray-600 cursor-pointer rounded"
+                    >
+                      <BadgeLabel type="status" value={option} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-gray-400 w-[140px] flex-shrink-0">
+            <div className="flex items-center gap-2 py-1 text-gray-400 w-[140px] flex-shrink-0">
               <Flag size={16} />
-              <label htmlFor="priority" className="uppercase tracking-wide font-semibold text-xs select-none">
+              <label
+                htmlFor="priority"
+                className="uppercase tracking-wide font-semibold text-xs select-none"
+              >
                 Priority
               </label>
             </div>
-            <select
-              id="priority"
-              name="priority"
-              value={editedTask?.priority || ''}
-              onChange={handleAutoSaveChange}
-              className="flex-1 bg-[#1e293b] text-white rounded-lg px-4 py-2.5 
-                focus:outline-none focus:ring-2 focus:ring-blue-500 
-                transition-all duration-200 ease-in-out border border-gray-700 
-                hover:border-gray-600 cursor-pointer"
-            >
-              <option value="low" className="bg-[#1e293b]">Low</option>
-              <option value="mid" className="bg-[#1e293b]">Mid</option>
-              <option value="high" className="bg-[#1e293b]">High</option>
-            </select>
+            <div className="relative" ref={badgeDropdownRef} >
+              <div
+                className="cursor-pointer px-2 py-1 mt-2"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDropdownType(dropdownType === "priority" ? null : "priority");
+                }}
+              >
+                <BadgeLabel
+                  type="priority"
+                  value={editedTask?.priority || ""}
+                  className="text-base px-4 py-1.5 font-semibold"
+                />
+              </div>
+              {dropdownType === "priority" && (
+                <div
+                  className="absolute left-0 top-full mt-1 bg-[#1f2937] border border-gray-700 rounded shadow-md p-1 min-w-max z-50"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {["high", "mid", "low"].map((option) => (
+                    <div
+                      key={option}
+                      onClick={() => handleBadgeSelect("priority", option)}
+                      className="px-2 py-1 hover:bg-gray-600 cursor-pointer rounded"
+                    >
+                      <BadgeLabel type="priority" value={option} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 text-gray-400 w-[140px] flex-shrink-0">
             <Calendar size={16} />
-            <label htmlFor="due_date" className="uppercase tracking-wide font-semibold text-xs select-none">
+            <label
+              htmlFor="due_date"
+              className="uppercase py-1 tracking-wide font-semibold text-xs select-none"
+            >
               Due Date
             </label>
           </div>
@@ -226,14 +350,13 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
             type="date"
             value={
               editedTask?.due_date
-                ? new Date(editedTask.due_date).toISOString().split('T')[0]
-                : ''
+                ? new Date(editedTask.due_date).toISOString().split("T")[0]
+                : ""
             }
             onChange={handleAutoSaveChange}
-            className="flex-1 bg-[#1e293b] text-white rounded-lg px-4 py-2.5 
-              focus:outline-none focus:ring-2 focus:ring-blue-500 
-              transition-all duration-200 ease-in-out border border-gray-700 
-              hover:border-gray-600"
+            className="flex-1 bg-transparent text-white rounded-lg px-4 py-1 
+              focus:outline-none
+              transition-all  border-none"
           />
         </div>
 
@@ -245,13 +368,16 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
             </label>
           </div>
           <div className="flex-1 relative">
-            <div className="flex flex-wrap gap-2 mb-2 transition-all duration-300">
-              
+            <div className="flex flex-wrap gap-2 mb-2 px-1 transition-all duration-300">
               {(editedTask.assignees || []).map((assignee) => (
                 <div
                   key={assignee.id}
-                  className={`group inline-flex items-center justify-center h-7 px-3 bg-blue-600 text-white text-sm font-medium rounded-full hover:bg-blue-700 transition-all duration-300 ease-in-out transform ${newlyAddedAssigneeIds.includes(assignee.id) ? 'fade-in' : ''}`}
-                  style={{ transitionProperty: 'background, color, opacity, transform' }}
+                  className={`group inline-flex items-center justify-center h-7 px-4 bg-[#1b319e] text-white text-sm font-medium rounded-full hover:bg-blue-700 transition-all duration-300 ease-in-out transform ${
+                    newlyAddedAssigneeIds.includes(assignee.id) ? "fade-in" : ""
+                  }`}
+                  style={{
+                    transitionProperty: "background, color, opacity, transform",
+                  }}
                 >
                   <div className="relative flex items-center justify-center group">
                     <span className="text-white transition-opacity duration-200 group-hover:opacity-60 whitespace-nowrap">
@@ -271,9 +397,15 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
                 type="button"
                 onClick={async () => {
                   try {
-                    const members = await getAllWorkspaceMembers(task.workspace_id);
-                    const currentAssigneeIds = new Set((editedTask.assignees || []).map(a => a.user_id));
-                    const unassignedMembers = members.filter(member => !currentAssigneeIds.has(member.user_id));
+                    const members = await getAllWorkspaceMembers(
+                      task.workspace_id
+                    );
+                    const currentAssigneeIds = new Set(
+                      (editedTask.assignees || []).map((a) => a.user_id)
+                    );
+                    const unassignedMembers = members.filter(
+                      (member) => !currentAssigneeIds.has(member.user_id)
+                    );
                     setDropdownMembers(unassignedMembers);
                     setShowAssigneeDropdown((prev) => !prev);
                   } catch (err) {
@@ -288,13 +420,17 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
               </button>
             </div>
             {showAssigneeDropdown && (
-              <div className="absolute top-full left-0 mt-2 w-56 bg-[#1e293b] text-white 
+              <div
+                className="absolute top-full left-0 mt-2 w-56 bg-[#1e293b] text-white 
                 rounded-lg shadow-xl border border-gray-700 z-50 max-h-48 overflow-y-auto
-                backdrop-blur-sm bg-opacity-95">
+                backdrop-blur-sm bg-opacity-95"
+              >
                 {dropdownMembers?.map((member) => (
                   <div
                     key={member.id}
-                    onClick={() => handleAssign(editedTask.id, [member.user_id])}
+                    onClick={() =>
+                      handleAssign(editedTask.id, [member.user_id])
+                    }
                     className="px-4 py-2.5 hover:bg-blue-600/50 cursor-pointer text-sm
                       transition-colors duration-200 flex items-center gap-2"
                   >
@@ -308,7 +444,7 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
             )}
           </div>
         </div>
-        
+
         <div className="flex items-start gap-4">
           <div className="flex items-center gap-2 text-gray-400 w-[140px] flex-shrink-0 mt-1">
             <User size={16} />
@@ -317,11 +453,14 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
             </label>
           </div>
           <div className="flex-1">
-            <p className="text-white font-medium">{task.created_by_name || '—'}</p>
+            <p className="text-white font-medium">
+              {task.created_by_name || "—"}
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        {/* Task Description */}
+        {/* <div className="flex items-start gap-4">
           <div className="flex items-center gap-2 text-gray-400 w-[140px] flex-shrink-0">
             <AlignLeft size={16} />
             <label htmlFor="description" className="uppercase tracking-wide font-semibold text-xs select-none">
@@ -333,20 +472,18 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
             name="description"
             value={editedTask?.description || ''}
             onChange={handleAutoSaveChange}
-            className="flex-1 bg-[#1e293b] text-gray-200 rounded-lg px-4 py-3 
-              min-h-[120px] resize-none placeholder-gray-500 
-              focus:outline-none focus:ring-2 focus:ring-blue-500 
-              transition-all duration-200 ease-in-out border border-gray-700 
-              hover:border-gray-600"
-            placeholder="Add task description..."
+            className="flex-1 text-white bg-transparent border-none outline-none text-l font-medium rounded-lg px-4 
+              placeholder-gray-500 transition-all resize-none"
+            placeholder="Enter the description"
           />
-        </div>
+        </div> */}
+
         <div>
-            <label htmlFor="notes" className="text-gray-400 uppercase tracking-wide font-semibold text-xs select-none">Notes</label>
-            <NotesEditor className=""
-              initialContent={notes}
-              onUpdate={(newContent) => handleNotesUpdate(newContent)}
-            />
+          <NotesEditor
+            className=""
+            initialContent={notes}
+            onUpdate={(newContent) => handleNotesUpdate(newContent)}
+          />
         </div>
       </div>
 
