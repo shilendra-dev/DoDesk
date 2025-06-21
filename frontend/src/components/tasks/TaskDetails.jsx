@@ -17,7 +17,7 @@ import {
 } from "../../api/taskApi";
 
 import axios from "axios";
-import NotesEditor from "./NotesEditor";
+import NotesEditor from "./richTextEditor/NotesEditor";
 import BadgeLabel from "../atoms/BadgeLabel";
 
 function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
@@ -208,12 +208,12 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
 
   return (
     <div
-      className={`fixed top-0 right-0 w-[1000px] max-w-full h-full bg-[#0f172a] z-50 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
+      className={`fixed top-0 right-0 w-[1000px] max-w-full h-full border-l border-l-[#15162a] bg-[#0f101e] z-50 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
         isClosing ? "translate-x-full" : "translate-x-0"
       } task-details-enter`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800 bg-[#0f172a]/95 backdrop-blur-sm sticky top-0 z-10">
+      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800 bg-[#141528] backdrop-blur-sm sticky top-0 z-10">
         <h2 className="text-xl font-semibold text-white truncate flex items-center gap-2">
           <span className="text-blue-400">#</span>
           {editedTask?.title || "Untitled Task"}
@@ -453,7 +453,7 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
             </label>
           </div>
           <div className="flex-1">
-            <p className="text-white font-medium">
+            <p className="text-white font-medium px-4">
               {task.created_by_name || "—"}
             </p>
           </div>
