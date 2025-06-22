@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import dashboardMockup from '../assets/dashboardMockup.png';
-import Login from './Login';
-import SignUpForm from '../components/SignUpForm';
-import LoginForm from '../components/LoginForm';
+import dashboardMockup from '../assets/logos/DashboardMockup.png';
+
+import SignUpForm from '../features/auth/SignUpForm';
+import LoginForm from '../features/auth/LoginForm';
 
 export default function LandingPage() {
 
