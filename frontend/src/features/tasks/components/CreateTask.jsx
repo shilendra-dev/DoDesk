@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { X, Text, AlignLeft, Flag, CheckSquare, Calendar, PlusCircle } from 'lucide-react';
 import axios from 'axios';
+import TextArea from '../../../shared/components/atoms/TextArea';
+import Select from '../../../shared/components/atoms/Select';
+import Input from '../../../shared/components/atoms/Input';
 
 function CreateTask({ isOpen, onClose, onTaskCreated, workspaceId }) {
     const [formData, setFormData] = useState({
@@ -58,15 +61,12 @@ function CreateTask({ isOpen, onClose, onTaskCreated, workspaceId }) {
                             Title
                         </label>
                     </div>
-                    <input
+                    <Input
                         id="title"
                         type="text"
                         name="title"
                         placeholder="Enter task title"
                         required
-                        className="flex-1 bg-[#1e293b] text-white text-lg font-medium rounded-lg px-4 py-2.5 
-                            placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:text-xl 
-                            transition-all duration-200 ease-in-out border border-gray-700 hover:border-gray-600"
                         onChange={handleChange}
                     />
                 </div>
@@ -79,20 +79,16 @@ function CreateTask({ isOpen, onClose, onTaskCreated, workspaceId }) {
                                 Status
                             </label>
                         </div>
-                        <select
+                        <Select
                             id="status"
                             name="status"
                             defaultValue="pending"
-                            className="flex-1 bg-[#1e293b] text-white rounded-lg px-4 py-2.5 
-                                focus:outline-none focus:ring-2 focus:ring-blue-500 
-                                transition-all duration-200 ease-in-out border border-gray-700 
-                                hover:border-gray-600 cursor-pointer"
                             onChange={handleChange}
                         >
                             <option value="pending" className="bg-[#1e293b]">Pending</option>
                             <option value="in-progress" className="bg-[#1e293b]">In Progress</option>
                             <option value="completed" className="bg-[#1e293b]">Completed</option>
-                        </select>
+                        </Select>
                     </div>
 
                     <div className="flex items-center gap-4">
@@ -102,20 +98,16 @@ function CreateTask({ isOpen, onClose, onTaskCreated, workspaceId }) {
                                 Priority
                             </label>
                         </div>
-                        <select
+                        <Select
                             id="priority"
                             name="priority"
                             defaultValue="mid"
-                            className="flex-1 bg-[#1e293b] text-white rounded-lg px-4 py-2.5 
-                                focus:outline-none focus:ring-2 focus:ring-blue-500 
-                                transition-all duration-200 ease-in-out border border-gray-700 
-                                hover:border-gray-600 cursor-pointer"
                             onChange={handleChange}
                         >
                             <option value="low" className="bg-[#1e293b]">Low</option>
                             <option value="mid" className="bg-[#1e293b]">Mid</option>
                             <option value="high" className="bg-[#1e293b]">High</option>
-                        </select>
+                        </Select>
                     </div>
                 </div>
 
@@ -126,14 +118,10 @@ function CreateTask({ isOpen, onClose, onTaskCreated, workspaceId }) {
                             Due Date
                         </label>
                     </div>
-                    <input
+                    <Input
                         id="due_date"
                         type="date"
                         name="due_date"
-                        className="flex-1 bg-[#1e293b] text-white rounded-lg px-4 py-2.5 
-                            focus:outline-none focus:ring-2 focus:ring-blue-500 
-                            transition-all duration-200 ease-in-out border border-gray-700 
-                            hover:border-gray-600"
                         onChange={handleChange}
                     />
                 </div>
@@ -145,16 +133,13 @@ function CreateTask({ isOpen, onClose, onTaskCreated, workspaceId }) {
                             Description
                         </label>
                     </div>
-                    <textarea
-                        id="description"
-                        name="description"
-                        placeholder="Add task description..."
-                        rows="4"
-                        className="flex-1 bg-[#1e293b] text-gray-200 rounded-lg px-4 py-3 
-                            min-h-[120px] resize-none placeholder-gray-500 
-                            focus:outline-none focus:ring-2 focus:ring-blue-500 
-                            transition-all duration-200 ease-in-out border border-gray-700 
-                            hover:border-gray-600"
+                    
+                    <TextArea 
+                        id = "description"
+                        name = "description"
+                        placeholder = "Add task description..."
+                        rows = {4}
+                        value={formData.description}
                         onChange={handleChange}
                     />
                 </div>

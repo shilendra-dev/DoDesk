@@ -7,7 +7,10 @@ import TaskDetails from "../../features/tasks/TaskDetails";
 import { SquareLibrary , Funnel, Save, Trash2, X} from "lucide-react";
 import { toast } from 'react-hot-toast';
 import { updateTask } from "../../features/tasks/taskApi";
-
+import HeadlessButton from "../../shared/components/atoms/headlessUI/HeadlessButton";
+import HeadlessInput from "../../shared/components/atoms/headlessUI/HeadlessInput";
+import Select from "../../shared/components/atoms/Select";
+import Label from "../../shared/components/atoms/Label";
 
 const formatDateLocal = (dateStr) => {
   const date = new Date(dateStr);
@@ -164,39 +167,41 @@ function TaskListView({ tasks, setTasks, refreshTasks }) {
 
     return (
       <>
-        <div className="flex items-center gap-2 px-4 py-2 bg-[#101221]/60 backdrop-blur border-b border-gray-800">
+        <div className="flex items-center gap-2 px-4 py-2 bg-[var(--color-bg)] dark:bg-[var(--color-bg)] backdrop-blur border-b border-[var(--color-border)] dark:border-[var(--color-border)]">
           <div className="flex items-center gap-2">
-            <Funnel className="text-gray-400" size={16} />
+            <Funnel className="text-gray-500" size={16} />
             {hasActiveFilters ? (
               <div className="flex items-center gap-2">
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-gray-500">
                   {statusFilter !== 'All' && `Status: ${statusFilter}`}
                   {priorityFilter !== 'All' && ` • Priority: ${priorityFilter}`}
                   {assigneeFilter !== 'All' && ` • Assignee: ${assigneeFilter}`}
                   {sortOption !== 'None' && ` • Sort: ${sortOption}`}
                 </span>
                 {selectedViewId === 'none' ? (
-                  <button
+                  <HeadlessButton
                     onClick={() => setShowSaveFilterModal(true)}
-                    className="flex items-center gap-1 px-2 py-1 text-xs bg-gray-700 text-gray-200 rounded hover:bg-gray-600 transition-colors"
+                    size="sm"
+                    className="flex items-center gap-1 px-2 py-1 text-xs"
                     title="Save this view"
                   >
-                    <Save className="text-gray-400" size={16} />
+                    <Save className="text-gray-500" size={16} />
                     Save View
-                  </button>
+                  </HeadlessButton>
                 ) : (
-                  <button
+                  <HeadlessButton
                     onClick={handleDeleteView}
-                    className="flex items-center gap-1 px-2 py-1 text-xs bg-red-600/20 text-red-400 rounded hover:bg-red-600/30 transition-colors"
+                    className="flex items-center gap-1 px-2 py-1 text-xs"
+                    size="sm"
                     title="Delete selected view"
                   >
                     <Trash2 className="text-red-400" size={16} />
                     Delete View
-                  </button>
+                  </HeadlessButton>
                 )}
               </div>
             ) : (
-              <span className="text-xs text-gray-400 italic">
+              <span className="text-xs text-gray-500 italic">
                 No filters applied
               </span>
             )}
@@ -205,11 +210,10 @@ function TaskListView({ tasks, setTasks, refreshTasks }) {
           {/* Ensure dropdown is rendered if savedFilters is an array and has length > 0 */}
           {Array.isArray(savedFilters) && savedFilters.length > 0 && (
             <div className="ml-auto flex items-center gap-2">
-              <span className="text-xs text-gray-400">View:</span>
-              <select
+              <span className="text-xs text-[var(--color-text)] dark:text-[var(--color-text)]">View:</span>
+              <Select
                 onChange={handleViewSelect}
                 value={selectedViewId}
-                className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
               >
                 <option value="none">None</option>
                 {savedFilters.map(filter => (
@@ -217,41 +221,42 @@ function TaskListView({ tasks, setTasks, refreshTasks }) {
                     {filter.name}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           )}
         </div>
 
         {/* Save View Modal */}
         {showSaveFilterModal && createPortal(
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999]">
-            <div className="bg-gray-800 rounded-lg p-6 w-96 shadow-xl">
-              <h3 className="text-lg font-medium text-gray-100 mb-4">Save Current View</h3>
-              <input
+          <div className="fixed inset-0 bg-[var(--color-bg-overlay)] dark:bg-[var(--color-bg-overlay)] backdrop-blur-sm flex items-center justify-center z-[9999]">
+            <div className="bg-[var(--color-bg)] dark:bg-[var(--color-bg)] rounded-lg p-6 w-96 shadow-xl">
+              <h3 className="text-lg font-medium text-[var(--color-text)] dark:text-[var(--color-text)] mb-4">Save Current View</h3>
+              <HeadlessInput
                 type="text"
                 value={newFilterName}
                 onChange={(e) => setNewFilterName(e.target.value)}
+                className=""
                 placeholder="Enter view name"
-                className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 autoFocus
               />
               <div className="flex justify-end gap-2 mt-4">
-                <button
+                <HeadlessButton
                   onClick={() => {
                     setShowSaveFilterModal(false);
                     setNewFilterName('');
                   }}
-                  className="px-4 py-2 text-sm text-gray-300 hover:text-gray-100"
+                  className="px-4 py-2 text-sm"
                 >
                   Cancel
-                </button>
-                <button
+                </HeadlessButton>
+                <HeadlessButton
                   onClick={handleSaveFilter}
                   disabled={!newFilterName.trim()}
-                  className="px-4 py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 text-sm"
+                  variant="secondary"
                 >
                   Save
-                </button>
+                </HeadlessButton>
               </div>
             </div>
           </div>,
@@ -365,7 +370,7 @@ function TaskListView({ tasks, setTasks, refreshTasks }) {
   return (
     <div className="h-full flex flex-col" onClick={() => setDropdownPosition(null)}>
       <div className="overflow-auto flex-1 flex flex-col border border-transparent relative z-0">
-        <div className="max-h-[620px] overflow-y-auto flex flex-col border border-transparent relative z-0">
+        <div className="max-h-fit overflow-y-auto flex flex-col border border-transparent relative z-0">
           {loading && (
             <div className="text-center py-4 text-gray-500">
               <span>Loading...</span>
@@ -375,48 +380,45 @@ function TaskListView({ tasks, setTasks, refreshTasks }) {
           {/* Add the filter view section */}
           {renderFilterView()}
 
-          <div className="flex justify-between items-center flex-wrap gap-4 px-4 py-3 bg-[#101221]/60 backdrop-blur">
+          <div className="flex justify-between items-center flex-wrap gap-4 px-4 py-3 bg-[var(--color-bg)] dark:bg-[var(--color-bg)] backdrop-blur">
             <div className="flex gap-4 items-center">
               {/* Status Filter */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                <label htmlFor="statusFilter" className="text-sm font-medium text-gray-300">Status</label>
-                <select
+                <Label htmlFor="statusFilter" className="text-sm font-medium text-[var(--color-text)] dark:text-[var(--color-text)]">Status</Label>
+                <Select
                   id="statusFilter"
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
                 >
                   <option>All</option>
                   <option>Pending</option>
                   <option>In-Progress</option>
                   <option>Completed</option>
-                </select>
+                </Select>
               </div>
 
               {/* Priority Filter */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                <label htmlFor="priorityFilter" className="text-sm font-medium text-gray-300">Priority</label>
-                <select
+                <Label htmlFor="priorityFilter" className="text-sm font-medium text-[var(--color-text)] dark:text-[var(--color-text)]">Priority</Label>
+                <Select
                   id="priorityFilter"
                   value={priorityFilter}
                   onChange={(e) => setPriorityFilter(e.target.value)}
-                  className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
                 >
                   <option>All</option>
                   <option>High</option>
                   <option>Mid</option>
                   <option>Low</option>
-                </select>
+                </Select>
               </div>
 
               {/* Assignee Filter */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                <label htmlFor="assigneeFilter" className="text-sm font-medium text-gray-300">Assignee</label>
-                <select
+                <Label htmlFor="assigneeFilter" className="text-sm font-medium text-[var(--color-text)] dark:text-[var(--color-text)]">Assignee</Label>
+                <Select
                   id="assigneeFilter"
                   value={assigneeFilter}
-                  onChange={(e) => setAssigneeFilter(e.target.value)}
-                  className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+                  onChange={(e) => setAssigneeFilter(e.target.value)}                
                 >
                   <option>All</option>
                   {tasks
@@ -430,18 +432,17 @@ function TaskListView({ tasks, setTasks, refreshTasks }) {
                         {assignee.name}
                       </option>
                     ))}
-                </select>
+                </Select>
               </div>
             </div>
             <div className="flex items-center gap-4">
               {/* Sort Option */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-                <label htmlFor="sortOption" className="text-sm font-medium text-gray-300">Sort by</label>
-                <select
+                <Label htmlFor="sortOption" className="text-sm w-20 font-medium text-[var(--color-text)] dark:text-[var(--color-text)]">Sort by</Label>
+                <Select
                   id="sortOption"
                   value={sortOption}
                   onChange={(e) => setSortOption(e.target.value)}
-                  className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
                 >
                   <option>None</option>
                   <option>Due Date (Asc)</option>
@@ -452,7 +453,7 @@ function TaskListView({ tasks, setTasks, refreshTasks }) {
                   <option>Title (Z → A)</option>
                   <option>Date Created (Newest)</option>
                   <option>Date Created (Oldest)</option>
-                </select>
+                </Select>
               </div>
 
               {/* Clear Button - Shows when any filter or sort is applied */}
@@ -473,9 +474,9 @@ function TaskListView({ tasks, setTasks, refreshTasks }) {
             </div>
           </div>
 
-          <table className="w-auto bg-[#101221]/50 backdrop-blur-md shadow-md">
+          <table className="w-auto bg-[var(--color-bg)] dark:bg-[var(--color-bg)]) backdrop-blur-md shadow-md">
             {/* Table Header */}
-            <thead className="sticky top-0 z-10 bg-[#090E12]/90 backdrop-blur-md border-b border-b-gray-800 text-gray-100 text-left text-sm">
+            <thead className="sticky top-0 z-10 bg-[var(--color-bg-secondary)] dark:bg-[var(--color-bg-secondary)] backdrop-blur-md border-b border-[var(--color-border)] dark:border-[var(--color-border)] text-[var(--color-text)] dark:text-[var(--color-text)] text-left text-sm">
             <tr>
               <th className="px-5 py-2 text-left align-middle">Title</th>
               <th className="px-3 py-2 text-left align-middle">Description</th>
@@ -493,7 +494,7 @@ function TaskListView({ tasks, setTasks, refreshTasks }) {
               currentTasks.map((task) => (
                 <tr
                   key={task.id}
-                  className="group border-b border-b-gray-800 hover:bg-[#090E12] text-sm text-gray-200 bg-[#101221]/30 backdrop-blur-sm py-2 transition-all duration-200 overflow-visible transform hover:scale-[1.01]"
+                  className="group border-b-1 border-[var(--color-border)] dark:border-[var(--color-border)] text-sm text-[var(--color-text)] dark:text-[var(--color-text)] bg-[var(--color-bg)] dark:bg-[var(--color-bg)] hover:bg-[var(--color-bg-secondary)] dark:hover:bg-[var(--color-bg-secondary)] py-2 transition-all duration-200 overflow-visible transform hover:scale-[1.01]"
                 >
                   <td className="px-3 py-2 text-left align-middle">
                     <div className="flex justify-between items-center gap-2 group-hover:opacity-100">
@@ -507,13 +508,13 @@ function TaskListView({ tasks, setTasks, refreshTasks }) {
                           onKeyDown={(e) => {
                             if (e.key === "Enter") handleInlineEdit(task.id, "title", editedTitle);
                           }}
-                          className="bg-transparent  text-white text-sm rounded w-full focus:outline-none"
+                          className="bg-transparent text-[var(--color-text)] dark:text-[var(--color-text)] text-sm rounded w-full focus:outline-none"
                           autoFocus
                         />
                       ) : (
                         <>
                           <span
-                            className="text-gray-200 cursor-pointer ml-2"
+                            className="text-[var(--color-text)] dark:text-[var(--color-text)] cursor-pointer ml-2"
                             onClick={() => {
                               setEditingTaskId(task.id);
                               setEditedTitle(task.title);
@@ -524,7 +525,7 @@ function TaskListView({ tasks, setTasks, refreshTasks }) {
                           </span>
                           <SquareLibrary
                             size={16}
-                            className="text-gray-400 opacity-0 group-hover:opacity-100 transform transition-all duration-150 ease-in-out scale-100 group-hover:scale-125 cursor-pointer ml-2"
+                            className="text-[var(--color-text)] dark:text-[var(--color-text)] opacity-0 group-hover:opacity-100 transform transition-all duration-150 ease-in-out scale-100 group-hover:scale-125 cursor-pointer ml-2"
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedTask(task);
@@ -554,13 +555,13 @@ function TaskListView({ tasks, setTasks, refreshTasks }) {
                         onKeyDown={(e) => {
                           if (e.key === "Enter") handleInlineEdit(task.id, "description", task.description);
                         }}
-                        className="bg-transparent px-2 py-1 text-white text-sm rounded w-full focus:outline-none whitespace-nowrap overflow-hidden text-ellipsis"
+                        className="bg-transparent px-2 py-1 text-[var(--color-text)] dark:text-[var(--color-text)]text-sm rounded w-full focus:outline-none whitespace-nowrap overflow-hidden text-ellipsis"
                         autoFocus
                         maxLength={100}
                       />
                     ) : (
                       <span
-                        className="text-gray-300 cursor-pointer max-w-[250px] truncate block whitespace-nowrap overflow-hidden"
+                        className="text-[var(--color-text)] dark:text-[var(--color-text)] cursor-pointer max-w-[250px] truncate block whitespace-nowrap overflow-hidden"
                         onClick={() => {
                           setEditingTaskId(task.id);
                           setEditingField("description");
@@ -583,7 +584,7 @@ function TaskListView({ tasks, setTasks, refreshTasks }) {
                               style={{ zIndex: task.assignees.length - index }}
                             >
                               <div
-                                className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs font-bold flex items-center justify-center ring-2 ring-gray-900 shadow-lg hover:scale-105 transition-transform duration-150"
+                                className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs font-bold flex items-center justify-center ring-1 ring-gray-900 shadow-lg hover:scale-105 transition-transform duration-150"
                                 title={assignee.name}
                                 onMouseEnter={(e) => showTooltip(assignee.name, e)}
                                 onMouseLeave={hideTooltip}
@@ -608,7 +609,7 @@ function TaskListView({ tasks, setTasks, refreshTasks }) {
                               onMouseLeave={hideTooltip}
                             >
                               <div
-                                className="w-8 h-8 rounded-full bg-gray-600 text-white text-xs font-bold flex items-center justify-center ring-2 ring-gray-900 shadow-lg"
+                                className="w-8 h-8 rounded-full bg-gray-600 text-white text-xs font-bold flex items-center justify-center ring-1 ring-gray-900 shadow-lg"
                                 title={`${task.assignees.length - 3} more`}
                               >
                                 +{task.assignees.length - 3}
@@ -618,7 +619,7 @@ function TaskListView({ tasks, setTasks, refreshTasks }) {
                         </>
                       ) : (
                         <div
-                          className="w-8 h-8 rounded-full bg-red-800 text-white text-xs font-bold flex items-center justify-center ring-2 ring-gray-900 shadow-lg"
+                          className="w-8 h-8 rounded-full bg-red-800 text-white text-xs font-bold flex items-center justify-center ring-1 ring-gray-900 shadow-lg"
                           title="Not Assigned"
                         >
                           NA
@@ -669,7 +670,7 @@ function TaskListView({ tasks, setTasks, refreshTasks }) {
                       min={new Date().toISOString().split("T")[0]}
                       defaultValue={task.due_date ? formatDateLocal(task.due_date) : ""}
                       onChange={(e) => handleInlineEdit(task.id, "due_date", e.target.value)}
-                      className="bg-transparent text-white text-sm rounded focus:outline-none px-2 py-1 cursor-pointer appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
+                      className="bg-transparent text-[var(--color-text)] dark:text-[var(--color-text)] text-sm rounded focus:outline-none px-2 py-1 cursor-pointer appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
                       onFocus={(e) => e.target.showPicker && e.target.showPicker()}
                     />
                   </td>
@@ -693,11 +694,11 @@ function TaskListView({ tasks, setTasks, refreshTasks }) {
           </table>
           
         {/* Pagination - sticky inside scroll container */}
-        <div className="sticky bottom-0 left-0 w-full bg-[#101221]/90 backdrop-blur-sm pt-2 pb-2 flex justify-center items-center space-x-2 text-sm text-gray-200 z-10 border-t border-gray-700">
+        <div className="sticky bottom-0 left-0 w-full bg-[var(--color-bg)] dark:bg-[var(--color-bg)] backdrop-blur-sm pt-2 pb-2 flex justify-center items-center space-x-2 text-sm text-[var(--color-text)] dark:text-[var(--color-text)] z-10 border-t border-[var(--color-border)] dark:border-[var(--color-border)]">
           <button
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
-            className="px-3 py-1 rounded-md border border-gray-600 bg-[#86909f] hover:bg-[#374151] transition disabled:opacity-30"
+            className="px-3 py-1 rounded-md border border-[var(--color-border)] dark:border-[var(--color-border)] bg-[#86909f] hover:bg-[#374151] transition disabled:opacity-30"
           >
             Previous
           </button>
@@ -705,10 +706,10 @@ function TaskListView({ tasks, setTasks, refreshTasks }) {
             <button
               key={index}
               onClick={() => setCurrentPage(index + 1)}
-              className={`px-3 py-1 rounded-md border border-gray-600 transition ${
+              className={`px-3 py-1 rounded-md border text-[var(--color-text)] dark:text-[var(--color-text)] border-gray-600 hover:bg-[var(--color-bg-secondary)] transition ${
                 currentPage === index + 1
-                  ? "bg-indigo-600 text-white"
-                  : "bg-[#1f2937] hover:bg-[#374151]"
+                  ? "bg-indigo-600 text-[var(--color-text)] dark:text-[var(--color-text)]"
+                  : " hover:bg-[#374151]"
               }`}
             >
               {index + 1}
@@ -717,7 +718,7 @@ function TaskListView({ tasks, setTasks, refreshTasks }) {
           <button
             onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
-            className="px-3 py-1 rounded-md border border-gray-600 bg-[#1f2937] hover:bg-[#374151] transition disabled:opacity-30"
+            className="px-3 py-1 rounded-md border text-[var(--color-text)] dark:text-[var(--color-text)] border-gray-600 hover:bg-[var(--color-bg-secondary)] transition disabled:opacity-30"
           >
             Next
           </button>

@@ -20,12 +20,12 @@ function Dashboard() {
   }, [workspaceId, defaultWorkspaceId, navigate]);
 
   return (
-    <div className="flex bg-[#090D11] h-screen overflow-hidden">
+    <div className="flex bg-[var(--color-bg)] dark:bg-[var(--color-bg)] h-screen overflow-hidden">
       <Sidebar />
       <div className='flex flex-col flex-1 overflow-hidden'>
         <Header />
-        
-        <div className="flex-1 p-4 text-white overflow-hidden">
+
+        <div className="flex-1 text-[var(--color-text)] dark:text-[var(--color-text)] overflow-hidden">
           <Outlet />
         </div>
       </div>

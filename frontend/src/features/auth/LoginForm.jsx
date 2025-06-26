@@ -2,6 +2,9 @@ import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useWorkspace } from "../../providers/WorkspaceContext"; // adjust path if needed
+import Label from "../../shared/components/atoms/Label";
+import Input from "../../shared/components/atoms/Input";
+
 
 function LoginForm() {
   const navigate = useNavigate();
@@ -76,36 +79,28 @@ function LoginForm() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label
-              htmlFor="email"
-              className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
+            <Label htmlFor="email">
               Email
-            </label>
-            <input
+            </Label>
+            <Input
               type="email"
               name="email"
               value={data.email}
               onChange={handleChange}
               placeholder="you@example.com"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
             />
           </div>
 
           <div>
-            <label
-              htmlFor="password"
-              className="block mb-1 text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
+            <Label htmlFor="password">
               Password
-            </label>
-            <input
+            </Label>
+            <Input
               type="password"
               name="password"
               value={data.password}
               onChange={handleChange}
               placeholder="********"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600"
             />
           </div>
 

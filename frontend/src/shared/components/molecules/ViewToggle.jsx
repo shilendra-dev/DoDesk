@@ -11,7 +11,7 @@ function ViewToggle({onToggle}) {
   return (
     <div>
         <label className="inline-flex items-center cursor-pointer">
-            <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300">
+            <span className="ms-3 text-sm font-medium text-[var(--color-text)] dark:text-[var(--color-text)]">
                 {isBoardView ? 'Board' : 'List'}
             </span>
             <input type="checkbox" checked={isBoardView} onChange={handleToggle} className="sr-only peer" />

@@ -1,9 +1,60 @@
 @import "tailwindcss";
+@import '@fontsource-variable/public-sans';
+@import '@fontsource/barlow/400.css';
+@import '@fontsource/barlow/500.css';
+@import '@fontsource/barlow/600.css';
+@import '@fontsource/barlow/700.css';
+@import '@fontsource/barlow/800.css';
 
-body{
-    background: #e8e8e8;
-    color: #ffffff;
+
+/* Basic reset & layout */
+html {
+  height: 100%;
+  -webkit-overflow-scrolling: touch;
 }
+body, #root, #root__layout {
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 100%;
+  flex-direction: column;
+}
+img {
+  max-width: 100%;
+  vertical-align: middle;
+}
+ul {
+  margin: 0;
+  padding: 0;
+  list-style-type: none;
+}
+input[type="number"] { appearance: none; }
+/* Remove spinner */
+
+:root {
+  --color-bg: #f6f6f6;
+  --color-bg-secondary: #d6d5dc;
+  --color-button: #443f5f;
+  --color-button-hover: #6f64ab;
+  --color-text: #0f172a;
+  --color-primary: #3b82f6;
+  --color-accent: #443f5f;
+  --color-border: #8c8c8c;
+  --color-bright: #bfb4ff;
+  --color-ghost: #c0c0c0;
+}
+
+.dark {
+  --color-bg: #111112;
+  --color-bg-secondary: #222427;
+  --color-button: #222427;
+  --color-text: #e2e8f0;
+  --color-primary: #3b82f6;
+  --color-accent: #6c649b;
+  --color-border: #404449;
+  --color-ghost: #242424;
+  --color-bright: #bfb4ff;
+}
+
 /* WebKit Browsers */
 ::-webkit-scrollbar {
   width: 8px;

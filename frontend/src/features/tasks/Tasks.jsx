@@ -67,16 +67,16 @@ function Tasks() {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col h-full bg-[#101221] rounded-xl border-gray-800 border-[0.5px] p-4">
+      <div className="flex flex-col h-full bg-[var(--color-bg)] dark:bg-[var(--color-bg)] border-[var(--color-border)] dark:border-[var(--color-border)] border-[0.5px]">
         <div className="flex justify-center items-center h-full">
-          <p className="text-white text-xl">Loading tasks...</p>
+          <p className="text-[var(--color-text)] dark:text-[var(--color-text)] text-xl">Loading tasks...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col flex-1 h-full max-w-lvw bg-[#101221] rounded-xl border-gray-800 border-[0.5px] overflow-hidden">
+    <div className="flex flex-col flex-1 h-full max-w-lvw bg-[var(--color-bg)] dark:bg-[var(--color-bg)] border-[var(--color-border)] dark:border-[var(--color-border)] overflow-hidden">
       {/* Top bar */}
       <div className="flex justify-between items-center p-4 border-b-[0.5px] border-b-gray-800">
         <h1 className="text-xl font-semibold">Tasks</h1>
@@ -113,14 +113,14 @@ function Tasks() {
         </div>
 
         {/* Pagination controls */}
-        <div className="flex justify-center mt-4">
+        <div className="flex justify-center ">
           {/* Add your pagination controls here */}
         </div>
       </div>
 
       {/* Task Details */}
       {selectedTask && (
-        <div className="w-[400px] border-l border-gray-200 overflow-y-auto">
+        <div className="w-fit border-l border-[var(--color-border)] dark:border-[var(--color-border)] overflow-y-auto">
           <TaskDetails task={selectedTask} onClose={() => setSelectedTask(null)} />
         </div>
       )}

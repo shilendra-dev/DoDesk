@@ -7,6 +7,7 @@ import { AuthProvider } from '../providers/AuthContext.jsx'
 import { WorkspaceProvider } from '../providers/WorkspaceContext.jsx'
 import { WorkspaceMembersProvider } from "../providers/WorkspaceMembers.jsx";
 import { SavedFilterProvider } from '../providers/SavedFilterContext';
+import { ThemeProvider } from '../providers/ThemeContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -15,7 +16,9 @@ createRoot(document.getElementById('root')).render(
         <WorkspaceProvider>
           <WorkspaceMembersProvider>
             <SavedFilterProvider>
-              <App />
+              <ThemeProvider>
+                <App />
+              </ThemeProvider>
             </SavedFilterProvider>
           </WorkspaceMembersProvider>
         </WorkspaceProvider>

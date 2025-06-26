@@ -208,7 +208,7 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
 
   return (
     <div
-      className={`fixed top-0 right-0 w-[1000px] max-w-full h-full border-l border-l-[#15162a] bg-[#0f101e] z-50 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
+      className={`fixed top-0 right-0 w-[1000px] max-w-full h-full border-l border-[var(--color-border)] dark:border-[var(--color-border)] bg-[#0f101e] z-50 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
         isClosing ? "translate-x-full" : "translate-x-0"
       } task-details-enter`}
     >
