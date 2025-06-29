@@ -208,19 +208,19 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
 
   return (
     <div
-      className={`fixed top-0 right-0 w-[1000px] max-w-full h-full border-l border-[var(--color-border)] dark:border-[var(--color-border)] bg-[#0f101e] z-50 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
+      className={`fixed top-0 right-0 w-[1000px] max-w-full h-full border-l border-[var(--color-border)] dark:border-[var(--color-border)] bg-[var(--color-bg)] z-50 shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${
         isClosing ? "translate-x-full" : "translate-x-0"
       } task-details-enter`}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 border-b border-gray-800 bg-[#141528] backdrop-blur-sm sticky top-0 z-10">
-        <h2 className="text-xl font-semibold text-white truncate flex items-center gap-2">
-          <span className="text-blue-400">#</span>
+      <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--color-border)] bg-[var(--color-bg-secondary)] backdrop-blur-sm sticky top-0 z-10">
+        <h2 className="text-xl font-semibold text-[var(--color-text)] truncate flex items-center gap-2">
+          <span className="text-[var(--color-text)]">#</span>
           {editedTask?.title || "Untitled Task"}
         </h2>
         <button
           onClick={handleClose}
-          className="text-gray-400 hover:text-white transition-all duration-150 transform hover:scale-110 hover:rotate-90 flex items-center"
+          className="text-[var(--color-text)] hover:text-white transition-all duration-150 transform hover:scale-110 hover:rotate-90 flex items-center"
           aria-label="Close drawer"
         >
           <ChevronRight size={20} />
@@ -230,7 +230,7 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
       {/* Scrollable Content */}
       <div className="flex-1 overflow-y-auto p-6 pt-3 space-y-6">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-gray-400 w-[140px] flex-shrink-0">
+          <div className="flex items-center gap-2 text-[var(--color-text-secondary)] w-[140px] flex-shrink-0">
             <Text size={16} />
             <label
               htmlFor="title"
@@ -244,7 +244,7 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
             name="title"
             value={editedTask?.title || ""}
             onChange={handleAutoSaveChange}
-            className="flex-1 text-white py-2 bg-transparent border-none outline-none text-l font-medium rounded-lg px-4 
+            className="flex-1 text-[var(--color-text)] py-2 bg-transparent border-none outline-none text-l font-medium rounded-lg px-4 
               placeholder-gray-500 hover:bg-gray-700 transition-all"
             placeholder="Enter task title"
           />
@@ -252,7 +252,7 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
 
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 py-1 text-gray-400 w-[140px] flex-shrink-0">
+            <div className="flex items-center gap-2 py-1 text-[var(--color-text-secondary)] w-[140px] flex-shrink-0">
               <CheckSquare size={16} />
               <label
                 htmlFor="status"

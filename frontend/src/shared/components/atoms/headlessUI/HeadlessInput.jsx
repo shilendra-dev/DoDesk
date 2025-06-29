@@ -13,6 +13,7 @@ const HeadlessInput = ({
         default: " text-[var(--color-text)] dark:text-[var(--color-text)] placeholder-gray-500 block w-full rounded-lg border text-sm",
         light: "text-black placeholder-gray-400",
         ghost: "text-white placeholder-gray-400 border-none focus:ring-0",
+        secondary: "dark:bg-[var(--color-bg-secondary)] dark:hover:bg-[var(--color-bg-secondary)] focus:outline-none text-[var(--color-text)] bg-[var(--color-bg-secondary)] hover:bg-[var(--color-bg-secondary-hover)]",
     };
 
     const errorClasses = error

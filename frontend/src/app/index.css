@@ -36,23 +36,42 @@ input[type="number"] { appearance: none; }
   --color-button: #443f5f;
   --color-button-hover: #6f64ab;
   --color-text: #0f172a;
+  --color-text-secondary: #4b5563;
   --color-primary: #3b82f6;
   --color-accent: #443f5f;
   --color-border: #8c8c8c;
   --color-bright: #bfb4ff;
   --color-ghost: #c0c0c0;
+  
+  --status-pending: #a84122;
+  --status-in-progress: #103b7f;
+  --status-completed: #007e17;
+  --priority-low: #0039b3;
+  --priority-mid: #5e4794;
+  --priority-high: #be2d2d;
+  --color-badge: #16122c31;
 }
 
 .dark {
   --color-bg: #111112;
   --color-bg-secondary: #222427;
   --color-button: #222427;
+  --color-button-hover:rgb(203, 203, 203)b;
   --color-text: #e2e8f0;
+  --color-text-secondary: #9ca3af;
   --color-primary: #3b82f6;
   --color-accent: #6c649b;
   --color-border: #404449;
   --color-ghost: #242424;
   --color-bright: #bfb4ff;
+
+  --status-pending: #ffc765;
+  --status-in-progress: #cc7ff2;
+  --status-completed: #4ebe77;
+  --priority-low: #76a0fb;
+  --priority-mid: #bda0ff;
+  --priority-high: #d64c4c;
+  --color-badge: #443f5f53;
 }
 
 /* WebKit Browsers */

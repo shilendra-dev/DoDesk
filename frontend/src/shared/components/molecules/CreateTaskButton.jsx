@@ -8,6 +8,7 @@ function CreateTaskButton({onClick}) {
       <HeadlessButton
         type="button"
         onClick={onClick}
+        size='sm'
       >
 
         <SquarePlus className="h-4 w-4" />

@@ -16,6 +16,7 @@ const HeadlessButton =({
         secondary: "text-gray-900 bg-gray-700 hover:bg-gray-200 focus:ring-gray-300",
         success: "text-white bg-green-700 hover:bg-green-700 hover:bg-green-800 focus:ring-green-300",
         navigation: "text-[var(--color-text)] dark:text-[var(--color-text)] bg-transparent hover:bg-[var(--color-bg-secondary)] focus:ring-[var(--color-bg-secondary)] focus:ring-opacity-50",
+        ghost: "text-gray-400 hover:text-white transition-all duration-150 transform hover:scale-110 hover:rotate-90 flex items-center bg-transparent",
     };
 
     const sizes = {

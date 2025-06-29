@@ -78,7 +78,7 @@ function Tasks() {
   return (
     <div className="flex flex-col flex-1 h-full max-w-lvw bg-[var(--color-bg)] dark:bg-[var(--color-bg)] border-[var(--color-border)] dark:border-[var(--color-border)] overflow-hidden">
       {/* Top bar */}
-      <div className="flex justify-between items-center p-4 border-b-[0.5px] border-b-gray-800">
+      <div className="flex justify-between items-center pl-4 pr-4 pt-2 pb-2 border-b-[0.5px] border-b-gray-800">
         <h1 className="text-xl font-semibold">Tasks</h1>
         <div className="flex items-center gap-4">
           <ViewToggle onToggle={(mode) => setView(mode)} />
