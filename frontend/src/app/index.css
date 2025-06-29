@@ -56,7 +56,7 @@ input[type="number"] { appearance: none; }
   --color-bg: #111112;
   --color-bg-secondary: #222427;
   --color-button: #222427;
-  --color-button-hover:rgb(203, 203, 203)b;
+  --color-button-hover: #6f64ab;
   --color-text: #e2e8f0;
   --color-text-secondary: #9ca3af;
   --color-primary: #3b82f6;
