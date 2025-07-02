@@ -220,7 +220,7 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
         </h2>
         <button
           onClick={handleClose}
-          className="text-[var(--color-text)] hover:text-white transition-all duration-150 transform hover:scale-110 hover:rotate-90 flex items-center"
+          className="text-[var(--color-text)] hover:text-[var(--color-text-hover)] transition-all duration-150 transform hover:scale-110 hover:rotate-90 flex items-center"
           aria-label="Close drawer"
         >
           <ChevronRight size={20} />
@@ -245,7 +245,7 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
             value={editedTask?.title || ""}
             onChange={handleAutoSaveChange}
             className="flex-1 text-[var(--color-text)] py-2 bg-transparent border-none outline-none text-l font-medium rounded-lg px-4 
-              placeholder-gray-500 hover:bg-gray-700 transition-all"
+              placeholder-[var(--color-placeholder-text)] hover:bg-[var(--color-bg-secondary)] transition-all"
             placeholder="Enter task title"
           />
         </div>
@@ -273,14 +273,14 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
               </div>
               {dropdownType === "status" && (
                 <div
-                  className="absolute left-0 top-full mt-1 bg-[#1f2937] border border-gray-700 rounded shadow-md p-1 min-w-max z-50"
+                  className="absolute left-0 top-full mt-1 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-md shadow-md  min-w-max z-50"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {["pending", "in-progress", "completed"].map((option) => (
                     <div
                       key={option}
                       onClick={() => handleBadgeSelect("status", option)}
-                      className="px-2 py-1 hover:bg-gray-600 cursor-pointer rounded"
+                      className="px-2 w-full py-1 hover:bg-[var(--color-bg)] rounded border-b-[0.1px] border-[var(--color-accent)] cursor-pointer"
                     >
                       <BadgeLabel type="status" value={option} />
                     </div>
@@ -291,7 +291,7 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 py-1 text-gray-400 w-[140px] flex-shrink-0">
+            <div className="flex items-center gap-2 py-1 text-[var(--color-text-secondary)] w-[140px] flex-shrink-0">
               <Flag size={16} />
               <label
                 htmlFor="priority"
@@ -316,14 +316,14 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
               </div>
               {dropdownType === "priority" && (
                 <div
-                  className="absolute left-0 top-full mt-1 bg-[#1f2937] border border-gray-700 rounded shadow-md p-1 min-w-max z-50"
+                  className="absolute left-0 top-full mt-1 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded shadow-md min-w-max z-50"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {["high", "mid", "low"].map((option) => (
                     <div
                       key={option}
                       onClick={() => handleBadgeSelect("priority", option)}
-                      className="px-2 py-1 hover:bg-gray-600 cursor-pointer rounded"
+                      className="px-2 py-1 hover:bg-[var(--color-bg)] border-b-[0.1px] border-[var(--color-accent)] cursor-pointer rounded"
                     >
                       <BadgeLabel type="priority" value={option} />
                     </div>
@@ -335,7 +335,7 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
         </div>
 
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 text-gray-400 w-[140px] flex-shrink-0">
+          <div className="flex items-center gap-2 text-[var(--color-text-secondary)] w-[140px] flex-shrink-0">
             <Calendar size={16} />
             <label
               htmlFor="due_date"
@@ -354,25 +354,25 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
                 : ""
             }
             onChange={handleAutoSaveChange}
-            className="flex-1 bg-transparent text-white rounded-lg px-4 py-1 
+            className="flex-1 bg-transparent text-[var(--color-text)] rounded-lg px-4 py-1 
               focus:outline-none
               transition-all  border-none"
           />
         </div>
 
         <div className="flex items-start gap-4">
-          <div className="flex items-center gap-2 text-gray-400 w-[140px] flex-shrink-0 mt-1">
+          <div className="flex items-center gap-2 text-[var(--color-text-secondary)] w-[140px] flex-shrink-0 mt-1">
             <User size={16} />
             <label className="uppercase tracking-wide font-semibold text-xs select-none">
               Assignees
             </label>
           </div>
           <div className="flex-1 relative">
-            <div className="flex flex-wrap gap-2 mb-2 px-1 transition-all duration-300">
+            <div className="flex items-center flex-wrap gap-2 mb-2 px-1 transition-all duration-300">
               {(editedTask.assignees || []).map((assignee) => (
                 <div
                   key={assignee.id}
-                  className={`group inline-flex items-center justify-center h-7 px-4 bg-[#1b319e] text-white text-sm font-medium rounded-full hover:bg-blue-700 transition-all duration-300 ease-in-out transform ${
+                  className={`group inline-flex items-center justify-center h-6 px-4 bg-[var(--color-badge)] text-[var(--color-text)] text-sm font-medium rounded-full hover:bg-[var(--color-ghost)] transition-all duration-300 ease-in-out transform ${
                     newlyAddedAssigneeIds.includes(assignee.id) ? "fade-in" : ""
                   }`}
                   style={{
@@ -380,11 +380,11 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
                   }}
                 >
                   <div className="relative flex items-center justify-center group">
-                    <span className="text-white transition-opacity duration-200 group-hover:opacity-60 whitespace-nowrap">
+                    <span className="text-[var(--color-text-secondary)] transition-opacity duration-200 group-hover:opacity-60 whitespace-nowrap">
                       {assignee.name}
                     </span>
                     <button
-                      className="absolute inset-0 m-auto w-4 h-4 flex items-center justify-center text-white bg-red-600 hover:bg-red-700 rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+                      className="absolute inset-0 m-auto w-4 h-4 flex items-center justify-center cursor-pointer text-white bg-red-600 hover:bg-red-700 rounded-full text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
                       title="Remove"
                       onClick={() => handleRemoveAssignee(assignee.id)}
                     >
@@ -412,8 +412,8 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
                     console.error("Error fetching members:", err);
                   }
                 }}
-                className="h-7 w-7 rounded-full bg-gray-700 hover:bg-gray-600 
-                  text-white flex items-center justify-center text-sm
+                className="h-7 w-7 rounded-full bg-[var(--color-bg-secondary)] hover:bg-[var(--color-button-hover)] cursor-pointer
+                  text-[var(--color-text)] flex items-center justify-center text-sm
                   transition-all duration-200 hover:scale-110 shadow-md"
               >
                 +
@@ -421,8 +421,8 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
             </div>
             {showAssigneeDropdown && (
               <div
-                className="absolute top-full left-0 mt-2 w-56 bg-[#1e293b] text-white 
-                rounded-lg shadow-xl border border-gray-700 z-50 max-h-48 overflow-y-auto
+                className="absolute top-full left-0 mt-2 w-56 bg-[var(--color-bg)] text-[var(--color-text)] 
+                rounded-lg shadow-xl border border-[var(--color-border)] z-50 max-h-48 overflow-y-auto
                 backdrop-blur-sm bg-opacity-95"
               >
                 {dropdownMembers?.map((member) => (
@@ -431,10 +431,10 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
                     onClick={() =>
                       handleAssign(editedTask.id, [member.user_id])
                     }
-                    className="px-4 py-2.5 hover:bg-blue-600/50 cursor-pointer text-sm
+                    className="px-4 py-2.5 hover:bg-[var(--color-ghost)] cursor-pointer text-sm
                       transition-colors duration-200 flex items-center gap-2"
                   >
-                    <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-xs">
+                    <div className="w-6 h-6 rounded-full bg-[var(--color-accent)] flex items-center justify-center text-xs">
                       {member.name.charAt(0).toUpperCase()}
                     </div>
                     {member.name}
@@ -446,14 +446,14 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
         </div>
 
         <div className="flex items-start gap-4">
-          <div className="flex items-center gap-2 text-gray-400 w-[140px] flex-shrink-0 mt-1">
+          <div className="flex items-center gap-2 text-[var(--color-text-secondary)] w-[140px] flex-shrink-0 mt-1">
             <User size={16} />
             <label className="uppercase tracking-wide font-semibold text-xs select-none">
               Created By
             </label>
           </div>
           <div className="flex-1">
-            <p className="text-white font-medium px-4">
+            <p className="text-[var(--color-text)] font-medium px-4">
               {task.created_by_name || "—"}
             </p>
           </div>

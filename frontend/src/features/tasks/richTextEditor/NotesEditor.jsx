@@ -122,8 +122,8 @@ const NotesEditor = memo(({ initialContent, onUpdate }) => {
             onClick={() =>
               handleButtonClick(() => editor.chain().focus().toggleBold().run())
             }
-            className={`p-1 pl-0 text-gray-400 hover:text-white ${
-              editor.isActive("bold") ? "text-white" : ""
+            className={`p-1 pl-0 text-[var(--color-placeholder-text)] hover:text-[var(--color-text)] ${
+              editor.isActive("bold") ? "text-[var(--color-text)]" : ""
             }`}
           >
             <Bold size={20} />
@@ -135,8 +135,8 @@ const NotesEditor = memo(({ initialContent, onUpdate }) => {
                 editor.chain().focus().toggleItalic().run()
               )
             }
-            className={`p-1 text-gray-400 hover:text-white ${
-              editor.isActive("italic") ? "text-white" : ""
+            className={`p-1 text-[var(--color-placeholder-text)] hover:text-[var(--color-text)] ${
+              editor.isActive("italic") ? "text-[var(--color-text)]" : ""
             }`}
           >
             <Italic size={20} />
@@ -148,8 +148,8 @@ const NotesEditor = memo(({ initialContent, onUpdate }) => {
                 editor.chain().focus().toggleBulletList().run()
               )
             }
-            className={`p-1 text-gray-400 hover:text-white ${
-              editor.isActive("bulletList") ? "text-white" : ""
+            className={`p-1 text-[var(--color-placeholder-text)] hover:text-[var(--color-text)] ${
+              editor.isActive("bulletList") ? "text-[var(--color-text)]" : ""
             }`}
           >
             <List size={20} />
@@ -159,7 +159,7 @@ const NotesEditor = memo(({ initialContent, onUpdate }) => {
             onClick={() =>
               handleButtonClick(() => editor.chain().focus().undo().run())
             }
-            className="p-1 text-gray-400 hover:text-white"
+            className="p-1 text-[var(--color-placeholder-text)] hover:text-[var(--color-text)]"
           >
             <Undo size={20} />
           </button>
@@ -168,13 +168,13 @@ const NotesEditor = memo(({ initialContent, onUpdate }) => {
             onClick={() =>
               handleButtonClick(() => editor.chain().focus().redo().run())
             }
-            className="p-1 text-gray-400 hover:text-white"
+            className="p-1 text-[var(--color-placeholder-text)] hover:text-[var(--color-text)]"
           >
             <Redo size={20} />
           </button>
         </div>
         {/* Editor Content */}
-        <div className="bg-transparent text-gray-200  py-3  w-full border-none">
+        <div className="bg-transparent text-[var(--color-text)] placeholder-[var(--color-placeholder-text)] py-3  w-full border-none">
           <EditorContent editor={editor} />
           {menuPos && (
             <SlashMenu

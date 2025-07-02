@@ -24,7 +24,7 @@
 .ProseMirror p.is-empty::before {
   content: attr(data-placeholder);
   float: left;
-  color: #94a3b8;
+  color: #5a5a5a;
   opacity: 0.5;
   pointer-events: none;
   height: 0;
@@ -84,7 +84,7 @@
 /* Checked state */
 .ProseMirror ul[data-type="taskList"] input[type="checkbox"]:checked {
   background-color: transparent;
-  border-color: #3b82f6;
+  border-color: #8776e7;
 }
 
 /* Checkmark */
@@ -93,7 +93,7 @@
   position: absolute;
   top: -2px;
   left: 1px;
-  color: #3b82f6;
+  color: #8776e7;
   font-size: 12px;
   font-weight: bold;
 }
