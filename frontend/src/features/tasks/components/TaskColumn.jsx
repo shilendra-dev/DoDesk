@@ -20,7 +20,7 @@ function TaskColumn({ column, tasks, onTaskSelect}) {
   const Tooltip = ({ children, position }) =>
     createPortal(
       <div
-        className="fixed px-2 py-1 text-xs text-white bg-gray-800 z-50 rounded shadow-lg whitespace-nowrap pointer-events-none"
+        className="fixed px-2 py-1 text-xs text-[var(--color-text)] bg-[var(--color-bg-secondary)] z-50 rounded shadow-lg whitespace-nowrap pointer-events-none"
         style={position}
       >
         {children}
@@ -29,23 +29,23 @@ function TaskColumn({ column, tasks, onTaskSelect}) {
     );
 
   return (
-    <div className="relative w-full max-w-[400px] bg-[#1c243a] rounded-lg overflow-visible shadow p-3 flex flex-col">
+    <div className="relative w-full max-w-[400px] bg-[var(--color-bg-secondary)] rounded-lg overflow-visible shadow p-3 flex flex-col">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <h2 className="text-lg font-semibold capitalize text-gray-100">{column.title}</h2>
+          <h2 className="text-lg font-semibold capitalize text-[var(--color-text)]">{column.title}</h2>
           <BadgeLabel type="status" value={column.id} />
-          <span className="text-sm text-gray-400">({localTasks.length})</span>
+          <span className="text-sm text-[var(--color-placeholder-text)]">({localTasks.length})</span>
         </div>
 
-        <div className="flex items-center gap-2 relative">
-          {/* Column Menu Button */}
+        {/* <div className="flex items-center gap-2 relative">
+          FOR MENU ICOND
           <button
             onClick={() => setShowColumnMenu(!showColumnMenu)}
             className="p-1 rounded hover:bg-gray-700 transition-colors"
           >
             <MoreVertical size={16} className="text-gray-400" />
           </button>
-        </div>
+        </div> */}
       </div>
 
       <Droppable droppableId={column.id}>
@@ -53,7 +53,7 @@ function TaskColumn({ column, tasks, onTaskSelect}) {
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`flex flex-col flex-1 h-full bg-[#1c243a] overflow-visible rounded-lg shadow transition-colors duration-300 min-w-0 ${
+            className={`flex flex-col flex-1 h-full bg-[var(--color-bg-secondary)] overflow-visible rounded-lg shadow transition-colors duration-300 min-w-0 ${
               snapshot.isDraggingOver ? 'bg-blue-900/20' : ''
             }`}
           >
@@ -65,18 +65,18 @@ function TaskColumn({ column, tasks, onTaskSelect}) {
                       ref={provided.innerRef}
                       {...provided.draggableProps}
                       {...provided.dragHandleProps}
-                      className={`bg-[#0e172d] w-full max-h-full rounded-lg p-4 mb-2 shadow cursor-pointer border border-transparent hover:border-blue-500 transition-all ${
+                      className={`bg-[var(--color-bg)] w-full max-h-full rounded-lg p-4 mb-2 shadow cursor-pointer border border-transparent hover:border-blue-500 transition-all ${
                         snapshot.isDragging ? 'ring-2 border-blue-400' : ''
                       }`}
                       onClick={() => onTaskSelect && onTaskSelect(task)}
                     >
-                      <div className="font-medium text-white mb-1">{task.title}</div>
-                      <div className="text-xs text-gray-400 mb-2 truncate">{task.description}</div>
+                      <div className="font-medium text-[var(--color-text)] mb-1">{task.title}</div>
+                      <div className="text-xs text-[var(--color-placeholder-text)] mb-2 truncate">{task.description}</div>
 
                       <div className="flex gap-2 items-center">
-                        <div className="text-xs text-gray-300">Priority:</div>
+                        <div className="text-xs text-[var(--color-text)]">Priority:</div>
                         <BadgeLabel type="priority" value={task.priority} />
-                        <span className="text-xs text-gray-300">
+                        <span className="text-xs text-[var(--color-text)] flex items-center gap-1">
                           <p>Due date: {task.due_date && new Date(task.due_date).toLocaleDateString()}</p>
                         </span>
                         <button
@@ -84,14 +84,14 @@ function TaskColumn({ column, tasks, onTaskSelect}) {
                             e.stopPropagation();
                             setSelectedTask(task);
                           }}
-                          className="ml-auto p-1 rounded hover:bg-gray-700 transition"
+                          className="ml-auto p-1 rounded hover:bg-[var(--color-accent)] cursor-pointer transition"
                           title="View Task Details"
                         >
                           <Eye size={16} className="text-gray-400" />
                         </button>
                       </div>
 
-                      <div className="text-xs text-gray-400 mt-2 mb-2 truncate">
+                      <div className="text-xs text-[var(--color-placeholder-text)] mt-2 mb-2 truncate">
                         Created by: {task.created_by_name}
                       </div>
 
@@ -109,7 +109,7 @@ function TaskColumn({ column, tasks, onTaskSelect}) {
                               >
                                 {/* Assignee Avatar */}
                                 <div
-                                  className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs font-bold flex items-center justify-center ring-2 ring-gray-900 shadow-lg hover:scale-105 transition-transform duration-150"
+                                  className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white text-xs font-bold flex items-center justify-center ring-1 ring-gray-800 shadow-lg hover:scale-105 transition-transform duration-150"
                                   title={assignee.name}
                                   onMouseEnter={(e) => {
                                     const rect = e.currentTarget.getBoundingClientRect();
@@ -154,7 +154,7 @@ function TaskColumn({ column, tasks, onTaskSelect}) {
                               >
                                 {/* Additional Assignees Avatar */}
                                 <div
-                                  className="w-8 h-8 rounded-full bg-gray-600 text-white text-xs font-bold flex items-center justify-center ring-2 ring-gray-900 shadow-lg"
+                                  className="w-7 h-7 rounded-full bg-gray-600 text-white text-xs font-bold flex items-center justify-center ring-1 ring-gray-900 shadow-lg"
                                   title={`${task.assignees.length - 3} more`}
                                 >
                                   +{task.assignees.length - 3}
@@ -169,7 +169,7 @@ function TaskColumn({ column, tasks, onTaskSelect}) {
                           </>
                         ) : (
                           <div
-                            className="w-8 h-8 rounded-full bg-red-800 text-white text-xs font-bold flex items-center justify-center ring-2 ring-gray-900 shadow-lg"
+                            className="w-7 h-7 rounded-full bg-red-700/80 text-white text-xs font-bold flex items-center justify-center ring-1 ring-gray-900 shadow-lg"
                             title="Not Assigned"
                           >
                             NA

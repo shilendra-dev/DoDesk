@@ -6,6 +6,8 @@ import TaskDetails from './TaskDetails';
 import { updateTask } from '../../features/tasks/taskApi';
 import { toast } from 'react-hot-toast';
 import {Trash2} from 'lucide-react';
+import Label from '../../shared/components/atoms/Label';
+import Select from '../../shared/components/atoms/Select';
 
 const COLUMNS = {
   PENDING: {
@@ -123,54 +125,51 @@ function TaskBoardView({ tasks, setTasks }) {
   return (
     <div className="h-full flex flex-col relative overflow-visible">
       {/* Filter and Sort UI */}
-      <div className="flex justify-between items-center p-4 bg-[#101221] border-b border-gray-800">
+      <div className="flex justify-between items-center p-4 bg-[var(--color-bg)] border-b border-[var(--color-border)]">
         <div className="flex gap-4 items-center">
           {/* Status Filter */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-            <label htmlFor="statusFilter" className="text-sm font-medium text-gray-300">
+            <Label htmlFor="statusFilter" >
               Status
-            </label>
-            <select
+            </Label>
+            <Select
               id="statusFilter"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             >
               <option>All</option>
               <option>Pending</option>
               <option>In Progress</option>
               <option>Completed</option>
-            </select>
+            </Select>
           </div>
 
           {/* Priority Filter */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-            <label htmlFor="priorityFilter" className="text-sm font-medium text-gray-300">
+            <Label htmlFor="priorityFilter">
               Priority
-            </label>
-            <select
+            </Label>
+            <Select
               id="priorityFilter"
               value={priorityFilter}
               onChange={(e) => setPriorityFilter(e.target.value)}
-              className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
             >
               <option>All</option>
               <option>High</option>
               <option>Mid</option>
               <option>Low</option>
-            </select>
+            </Select>
           </div>
 
           {/* Assignee Filter */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-            <label htmlFor="assigneeFilter" className="text-sm font-medium text-gray-300">
+            <Label htmlFor="assigneeFilter">
               Assignee
-            </label>
-            <select
+            </Label>
+            <Select
               id="assigneeFilter"
               value={assigneeFilter}
-              onChange={(e) => setAssigneeFilter(e.target.value)}
-              className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+              onChange={(e) => setAssigneeFilter(e.target.value)}            
             >
               <option>All</option>
               {tasks
@@ -185,21 +184,21 @@ function TaskBoardView({ tasks, setTasks }) {
                     {assignee.name}
                   </option>
                 ))}
-            </select>
+            </Select>
           </div>
         </div>
 
         <div className="flex items-center gap-4">
           {/* Sort Option */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-            <label htmlFor="sortOption" className="text-sm font-medium text-gray-300">
+            <Label htmlFor="sortOption">
               Sort by
-            </label>
-            <select
+            </Label>
+            <Select
               id="sortOption"
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value)}
-              className="bg-gray-800 border border-gray-700 rounded-md px-2 py-1 text-xs text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+              className="px-2 py-1"
             >
               <option>None</option>
               <option>Due Date (Asc)</option>
@@ -208,7 +207,7 @@ function TaskBoardView({ tasks, setTasks }) {
               <option>Priority (Low → High)</option>
               <option>Title (A → Z)</option>
               <option>Title (Z → A)</option>
-            </select>
+            </Select>
           </div>
 
           {/* Clear Filters Button */}
@@ -225,7 +224,7 @@ function TaskBoardView({ tasks, setTasks }) {
                     setSortOption('None');
                     }
                   }
-                  className="flex items-center gap-1 px-3 py-1.5 text-xs bg-red-600/20 text-red-400 rounded hover:bg-red-600/30 transition-colors"
+                  className="flex items-center gap-1 px-3 py-1.5 text-xs bg-red-600/20 text-red-500 rounded hover:bg-red-600/30 transition-colors"
                   title="Clear all filters and view"
                 >
                   <Trash2 size={12} />
@@ -238,7 +237,7 @@ function TaskBoardView({ tasks, setTasks }) {
       {/* Task Columns */}
       <div className="overflow-visible flex-1">
         <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="relative flex flex-1 overflow-visible gap-4 p-4 bg-[#101221] min-w-fit">
+          <div className="relative flex flex-1 overflow-visible gap-4 p-4 bg-[var(--color-bg)] min-w-fit">
             {Object.values(COLUMNS).map((column) => (
               <TaskColumn
                 key={column.id}

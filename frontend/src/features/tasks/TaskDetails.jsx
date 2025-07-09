@@ -29,15 +29,17 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
 
   //for badge label
   const [dropdownType, setDropdownType] = useState(null);
-  const badgeDropdownRef = useRef(null);
+  const statusDropdownRef = useRef(null);
+  const priorityDropdownRef = useRef(null);
 
   // Auto-close badge dropdown on outside click
   useEffect(() => {
     if (!dropdownType) return;
     const handleClick = (e) => {
+      const currentRef = dropdownType === "status" ? statusDropdownRef : priorityDropdownRef;
       if (
-        badgeDropdownRef.current &&
-        !badgeDropdownRef.current.contains(e.target)
+        currentRef.current &&
+        !currentRef.current.contains(e.target)
       ) {
         setDropdownType(null);
       }
@@ -52,17 +54,14 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
     setNewlyAddedAssigneeIds([]);
   }, [task]);
 
-  //for badge label
-  const handleBadgeClick = (type, e) => {
-    e.stopPropagation();
-    setDropdownType(type);
-  };
-
   // handler for badge dropdown select
   const handleBadgeSelect = async (type, value) => {
+    console.log(`Updating ${type} to ${value}`); // Debug log
+    
     const updated = { ...editedTask, [type]: value };
     setEditedTask(updated);
     setDropdownType(null);
+    
     try {
       await updateTask(updated.id, updated);
       setTasks((prevTasks) =>
@@ -70,8 +69,12 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
           t.id === updated.id ? { ...t, [type]: value } : t
         )
       );
+      toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} updated successfully`);
     } catch (err) {
       console.error("Error updating task:", err);
+      toast.error(`Failed to update ${type}`);
+      // Revert the local state on error
+      setEditedTask(editedTask);
     }
   };
 
@@ -261,7 +264,7 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
                 Status
               </label>
             </div>
-            <div className="relative" ref={badgeDropdownRef}>
+            <div className="relative" ref={statusDropdownRef}>
               <div
                 className="cursor-pointer px-2 py-1"
                 onClick={(e) => {
@@ -300,7 +303,7 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
                 Priority
               </label>
             </div>
-            <div className="relative" ref={badgeDropdownRef} >
+            <div className="relative" ref={priorityDropdownRef} >
               <div
                 className="cursor-pointer px-2 py-1 mt-2"
                 onClick={(e) => {
@@ -421,7 +424,7 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
             </div>
             {showAssigneeDropdown && (
               <div
-                className="absolute top-full left-0 mt-2 w-56 bg-[var(--color-bg)] text-[var(--color-text)] 
+                className="absolute top-full left-0 mt-2 w-56 bg-[var(--color-bg-secondary)] text-[var(--color-text)] 
                 rounded-lg shadow-xl border border-[var(--color-border)] z-50 max-h-48 overflow-y-auto
                 backdrop-blur-sm bg-opacity-95"
               >
@@ -434,7 +437,7 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
                     className="px-4 py-2.5 hover:bg-[var(--color-ghost)] cursor-pointer text-sm
                       transition-colors duration-200 flex items-center gap-2"
                   >
-                    <div className="w-6 h-6 rounded-full bg-[var(--color-accent)] flex items-center justify-center text-xs">
+                    <div className="w-6 h-6 rounded-full bg-[var(--color-placeholder-text)] flex items-center justify-center text-xs">
                       {member.name.charAt(0).toUpperCase()}
                     </div>
                     {member.name}
