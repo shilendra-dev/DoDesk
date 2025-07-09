@@ -40,15 +40,20 @@ const FormField = ({
           name={name}
           value={value}
           onChange={onChange}
-          options={options}
           placeholder={placeholder}
           {...rest}
-        />
+        >
+          {options.map((option) => (
+            <option key={option.value} value={option.value} className="bg-[var(--color-bg-secondary)]">
+              {option.label}
+            </option>
+          ))}
+        </Select>
       );
     }
     
     return (
-      <Input
+      <HeadlessInput
         id={name}
         name={name}
         type={type}
@@ -61,24 +66,18 @@ const FormField = ({
   };
 
   return (
-    <div className="mb-4">
-      {label && (
-        <Label htmlFor={name}>
-          {label}
-        </Label>
-      )}
-      
-      <div className="flex items-center gap-2">
-        {Icon && (
-          <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">
-            <Icon size={18} />
-          </span>
-        )}
-        <div className="flex-1">
-          {renderInput()}
+    <div className="flex items-center gap-4">
+      {label && Icon && (
+        <div className="flex items-center gap-2 text-[var(--color-text-secondary)] w-[140px] flex-shrink-0">
+          <Icon size={16} />
+          <label htmlFor={name} className="uppercase tracking-wide font-semibold text-xs select-none">
+            {label}
+          </label>
         </div>
+      )}
+      <div className="flex-1">
+        {renderInput()}
       </div>
-
       {error && (
         <p className="text-sm text-red-500 mt-1">
           {error}
