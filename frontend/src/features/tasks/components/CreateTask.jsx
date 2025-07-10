@@ -1,39 +1,30 @@
-import React, { useState } from "react";
-import {
-  X,
-  Text,
-  AlignLeft,
-  Flag,
-  CheckSquare,
-  Calendar,
-  PlusCircle,
-} from "lucide-react";
+import {X, Text, AlignLeft, Flag, CheckSquare, Calendar, PlusCircle,} from "lucide-react";
 import axios from "axios";
 import FormField from "../../../shared/components/molecules/FormField";
 import HeadlessButton from "../../../shared/components/atoms/headlessUI/HeadlessButton";
+import { useForm } from 'react-hook-form';
+import { priorityOptions, statusOptions } from "../constants/taskOptions";
 
 function CreateTask({ isOpen, onClose, onTaskCreated, workspaceId }) {
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    status: "pending",
-    priority: "mid",
-    due_date: "",
+
+  // State to manage form data - react-hook-form will handle this
+  const { register, handleSubmit, formState: { errors }, reset } = useForm({
+    defaultValues: {
+        title: "",
+        description: "",
+        status: "pending",
+        priority: "mid",
+        due_date: "",
+    }
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const onSubmit = async (data) => {
     const token = localStorage.getItem("token");
     try {
       const res = await axios.post(
         `http://localhost:5033/api/workspaces/${workspaceId}/task`,
         {
-          ...formData,
+          ...data,
           workspace_id: workspaceId,
         },
         {
@@ -41,6 +32,7 @@ function CreateTask({ isOpen, onClose, onTaskCreated, workspaceId }) {
         }
       );
       onTaskCreated(res.data.task);
+      reset(); // Reset form fields after successful submission
       onClose();
     } catch (error) {
       console.error("Error creating task: ", error);
@@ -72,7 +64,7 @@ function CreateTask({ isOpen, onClose, onTaskCreated, workspaceId }) {
 
       {/* Form */}
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
         className="flex-1 overflow-y-auto p-6 pt-3 space-y-6"
       >
         <FormField
@@ -82,8 +74,7 @@ function CreateTask({ isOpen, onClose, onTaskCreated, workspaceId }) {
           className="w-full"
           type="text"
           placeholder="Enter task title"
-          onChange={handleChange}
-          required
+          {...register("title", { required: "Title is required" })}
           icon={Text}
         />
         <div className="flex flex-col gap-4">
@@ -92,27 +83,17 @@ function CreateTask({ isOpen, onClose, onTaskCreated, workspaceId }) {
             name="status"
             type="select"
             icon={CheckSquare}
-            value={formData.status}
-            onChange={handleChange}
-            options={[
-              { value: "pending", label: "Pending" },
-              { value: "in-progress", label: "In Progress" },
-              { value: "completed", label: "Completed" },
-            ]}
+            options={statusOptions}
+            {...register("status")}
           />
 
           <FormField
             label="Priority"
             name="priority"
             type="select"
-            icon={CheckSquare}
-            value={formData.priority}
-            onChange={handleChange}
-            options={[
-              { value: "low", label: "Low" },
-              { value: "mid", label: "Mid" },
-              { value: "high", label: "High" },
-            ]}
+            icon={Flag}
+            options={priorityOptions}
+            {...register("priority")}
           />
         </div>
 
@@ -122,9 +103,8 @@ function CreateTask({ isOpen, onClose, onTaskCreated, workspaceId }) {
           variant="secondary"
           type="date"
           icon={Calendar}
-          value={formData.due_date}
           className="cursor-pointer"
-          onChange={handleChange}
+          {...register("due_date")}
         />
 
         <FormField
@@ -135,8 +115,7 @@ function CreateTask({ isOpen, onClose, onTaskCreated, workspaceId }) {
           type="textarea"
           rows={4}
           icon={AlignLeft}
-          value={formData.description}
-          onChange={handleChange}
+          {...register("description")}
         />
 
         <div className="flex justify-end pt-6">
