@@ -113,6 +113,7 @@ export const SavedFilterProvider = ({ children }) => {
         savedFilters,
         defaultFilter,
         selectedViewId,
+        setSelectedViewId,
         loading,
         error,
         fetchSavedFilters,

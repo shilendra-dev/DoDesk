@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { DragDropContext } from '@hello-pangea/dnd';
 import TaskColumn from './components/TaskColumn';
 import TaskDetails from './TaskDetails';
-
+import { useTaskContext } from '../../providers/TaskContext';
 import { updateTask } from '../../features/tasks/taskApi';
 import { toast } from 'react-hot-toast';
 import {Trash2} from 'lucide-react';
@@ -27,8 +27,8 @@ const COLUMNS = {
   },
 };
 
-function TaskBoardView({ tasks, setTasks }) {
-  
+function TaskBoardView() {
+  const {tasks, setTasks} = useTaskContext();
 
   // Filters and Sorting States
   const [statusFilter, setStatusFilter] = useState('All');
@@ -122,6 +122,7 @@ function TaskBoardView({ tasks, setTasks }) {
     }
   };
 
+  
   return (
     <div className="h-full flex flex-col relative overflow-visible">
       {/* Filter and Sort UI */}

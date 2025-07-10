@@ -19,8 +19,10 @@ import {
 import axios from "axios";
 import NotesEditor from "./richTextEditor/NotesEditor";
 import BadgeLabel from "../../shared/components/atoms/BadgeLabel";
+import { useTaskContext } from "../../providers/TaskContext"; // Custom hook to access task context
 
-function TaskDetails({ task, isOpen, onClose, onAddAssignee, setTasks }) {
+function TaskDetails({ task, isOpen, onClose, onAddAssignee }) {
+  const { setTasks } = useTaskContext();
   const [editedTask, setEditedTask] = useState(task);
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false);
   const [dropdownMembers, setDropdownMembers] = useState([]);

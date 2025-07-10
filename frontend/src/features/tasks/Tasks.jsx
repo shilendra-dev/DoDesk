@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import LoadingSpinner from "../../shared/components/atoms/LoadingSpinner";
 import TopBar from "./components/TopBar";
 import TaskContainer from "./components/TaskContainer";
+import { TaskContext } from "../../providers/TaskContext"; // Custom context for tasks
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5033";
 
@@ -74,13 +75,13 @@ function Tasks() {
     
       <div className="flex flex-1 h-full overflow-hidden flex-col">
         {/* Scrollable tasks area */}
-        <TaskContainer
-          view={view}
-          tasks={tasks}
-          setTasks={setTasks}
-          onTaskSelect={setSelectedTask}
-          refreshTasks={fetchTasks}
-        />
+        <TaskContext.Provider value={{ tasks, setTasks }}>
+          <TaskContainer
+            view={view}
+            onTaskSelect={setSelectedTask}
+            refreshTasks={fetchTasks}
+          />
+        </TaskContext.Provider>
       </div>
 
       {selectedTask && (
