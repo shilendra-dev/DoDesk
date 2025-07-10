@@ -1,6 +1,5 @@
 import React from "react";
 import { Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils"; // Optional: classNames utility
 
 const SIZE_MAP = {
   sm: "h-4 w-4",
@@ -11,10 +10,7 @@ const SIZE_MAP = {
 const LoadingSpinner = ({ size = "md", fullScreen = false }) => {
   const spinnerIcon = (
     <Loader2
-      className={cn(
-        "animate-spin text-blue-600 dark:text-blue-400",
-        SIZE_MAP[size]
-      )}
+      className={`animate-spin text-[var(--color-accent)] ${SIZE_MAP[size]}`}
     />
   );
 
