@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useMemo, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { useWorkspace } from "../../providers/WorkspaceContext";
 import { SavedFilterContext } from "../../providers/SavedFilterContext";
@@ -42,7 +42,10 @@ function TaskListView() {
   // Load saved filters on workspace change
   useEffect(() => {
     if (selectedWorkspace?.id) {
-      fetchSavedFilters(selectedWorkspace.id);
+      fetchSavedFilters(selectedWorkspace.id).catch(error => {
+        console.error("Error fetching saved filters:", error);
+        toast.error("Failed to load saved filters");
+      });
     }
   }, [selectedWorkspace?.id, fetchSavedFilters]);
 
@@ -50,7 +53,7 @@ function TaskListView() {
   const { statusFilter, setStatusFilter, priorityFilter, setPriorityFilter, sortOption, setSortOption, assigneeFilter, setAssigneeFilter, filteredTasks, handleClearAll, handleViewSelect, hasActiveFilters, currentFilterConfig, uniqueAssignees, filterSummary } = useTaskFiltering(tasks, savedFilters, defaultFilter, filtersLoading, clearSelectedView, setSelectedViewId, selectedViewId);
 
   // Configure filter options for the filter bar
-  const filterConfigs = [
+  const filterConfigs = useMemo(() => [
     {
       label: "Status",
       id: "statusFilter",
@@ -72,10 +75,10 @@ function TaskListView() {
       onChange: (e) => setAssigneeFilter(e.target.value),
       options: uniqueAssignees.map((a) => ({ value: a.name, label: a.name })),
     },
-  ];
+  ], [statusFilter, setStatusFilter, priorityFilter, setPriorityFilter, assigneeFilter, setAssigneeFilter, uniqueAssignees]);
 
   // Handle saving a new filter
-  const handleSaveFilter = async () => {
+  const handleSaveFilter = useCallback(async () => {
     if (!newFilterName.trim()) return;
     setLoading(true);
     try {
@@ -89,11 +92,14 @@ function TaskListView() {
       setNewFilterName("");
     } catch (error) {
       console.error("Error saving filter:", error);
+      toast.error("Error saving filter");
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [newFilterName, currentFilterConfig, selectedWorkspace?.id, createFilter, setShowSaveFilterModal, setNewFilterName, setLoading]);
 
   // Handle deleting a filter view
-  const handleDeleteView = async () => {
+  const handleDeleteView = useCallback(async () => {
     setLoading(true);
     try {
       await removeFilter(selectedWorkspace.id, selectedViewId);
@@ -101,18 +107,54 @@ function TaskListView() {
     } catch (error) {
       toast.error("Error deleting filter");
       console.error("Error deleting filter:", error);
+    } finally {
+      setLoading(false);
     }
-  };
+  }, [selectedWorkspace?.id, selectedViewId, removeFilter, setLoading]);
 
   // Pagination setup
   const tasksPerPage = 15;
   const { currentPage, setCurrentPage, totalPages, currentItems: currentTasks } = usePagination(filteredTasks, tasksPerPage);
 
   // Grouped props for TaskFilterBar
-  const filterBarProps = { filterConfigs, statusFilter, priorityFilter, assigneeFilter, sortOption, setSortOption, sortOptions, selectedViewId, savedFilters, handleViewSelect, hasActiveFilters, filterSummary, showSaveFilterModal, setShowSaveFilterModal, newFilterName, setNewFilterName, handleSaveFilter, handleDeleteView, handleClearAll };
+  const filterBarProps = useMemo(() => ({ 
+    filterConfigs, 
+    statusFilter, 
+    priorityFilter, 
+    assigneeFilter, 
+    sortOption, 
+    setSortOption, 
+    sortOptions, 
+    selectedViewId, 
+    savedFilters, 
+    handleViewSelect, 
+    hasActiveFilters, 
+    filterSummary, 
+    showSaveFilterModal, 
+    setShowSaveFilterModal, 
+    newFilterName, 
+    setNewFilterName, 
+    handleSaveFilter, 
+    handleDeleteView, 
+    handleClearAll 
+  }), [filterConfigs, statusFilter, priorityFilter, assigneeFilter, sortOption, setSortOption, selectedViewId, savedFilters, handleViewSelect, hasActiveFilters, filterSummary, showSaveFilterModal, setShowSaveFilterModal, newFilterName, setNewFilterName, handleSaveFilter, handleDeleteView, handleClearAll]);
 
   // Grouped props for TaskTable
-  const taskTableProps = { tasks: currentTasks, editingTaskId, editingField, editedTitle, setEditingTaskId, setEditingField, setEditedTitle, handleInlineEdit, showTooltip, hideTooltip, setSelectedTask, setDropdownPosition, setDropdownType };
+  const taskTableProps = useMemo(() => ({ 
+    tasks: currentTasks, 
+    editingTaskId, 
+    editingField, 
+    editedTitle, 
+    setEditingTaskId, 
+    setEditingField, 
+    setEditedTitle, 
+    handleInlineEdit, 
+    showTooltip, 
+    hideTooltip, 
+    setSelectedTask, 
+    setDropdownPosition, 
+    setDropdownType 
+  }), [currentTasks, editingTaskId, editingField, editedTitle, setEditingTaskId, setEditingField, setEditedTitle, handleInlineEdit, showTooltip, hideTooltip, setSelectedTask, setDropdownPosition, setDropdownType]);
 
   return (
     <div
@@ -121,7 +163,7 @@ function TaskListView() {
     >
       <div className="overflow-auto flex-1 flex flex-col border border-transparent relative z-0">
         <div className="max-h-fit overflow-y-auto flex flex-col border border-transparent relative z-0">
-          {loading && (
+          {(loading || filtersLoading) && (
             <div className="text-center py-4 text-gray-500">
               <span>Loading...</span>
             </div>
