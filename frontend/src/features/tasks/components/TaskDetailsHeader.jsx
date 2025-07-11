@@ -10,7 +10,7 @@ function TaskDetailsHeader({ title, onClose }) {
       </h2>
       <button
         onClick={onClose}
-        className="text-[var(--color-text)] hover:text-[var(--color-text-hover)] transition-all duration-150 transform hover:scale-110 hover:rotate-90 flex items-center"
+        className="text-[var(--color-text)] hover:text-[var(--color-text-hover)] transition-all duration-150 transform hover:scale-110 hover:rotate-90 cursor-pointer flex items-center"
         aria-label="Close drawer"
       >
         <ChevronRight size={20} />

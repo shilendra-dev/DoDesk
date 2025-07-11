@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import { Text, AlignLeft, Flag, CheckSquare, Calendar, User } from "lucide-react";
 
-import NotesEditor from "./richTextEditor/NotesEditor";
+
 import useTaskEditor from "./hooks/useTaskEditor";
 import TaskDetailsHeader from "./components/TaskDetailsHeader";
 import InputField from "./components/InputField";
 import BadgeDropdownField from "./components/BadgeDropdownField";
 import AssigneesField from "./components/AssigneesField";
 import TaskField from "./components/TaskField";
+import ModernEditor from "./richTextEditor/ModernEditor";
 
 function TaskDetails({ task, isOpen, onClose, onAddAssignee }) {
   const {
@@ -120,11 +121,12 @@ function TaskDetails({ task, isOpen, onClose, onAddAssignee }) {
         </TaskField>
 
         <div>
-          <NotesEditor
+          <ModernEditor
             initialContent={notes}
             onUpdate={(newContent) => handleNotesUpdate(newContent)}
           />
         </div>
+        
       </div>
 
       {/* Keep your existing styles */}

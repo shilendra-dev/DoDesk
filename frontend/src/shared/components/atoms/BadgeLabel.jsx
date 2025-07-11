@@ -27,7 +27,7 @@ const BadgeLabel = ({ type, value, className = "" }) => {
   const badgeClass = getBadgeClass(type, value.toLowerCase());
 
   return (
-    <span className={`text-xs font-medium px-2.5 py-0.5 rounded-full ${badgeClass} ${className}`}>
+    <span className={`text-xs font-medium select-none px-2.5 py-0.5 rounded-full ${badgeClass} ${className}`}>
       {formatLabel(value)}
     </span>
   );

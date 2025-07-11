@@ -26,7 +26,6 @@ class TaskService {
         );
       }
       
-      toast.success(`${this._formatFieldName(fieldName)} updated successfully`);
       return updatedTask;
     } catch (error) {
       console.error(`Error updating ${fieldName}:`, error);
@@ -50,6 +49,16 @@ class TaskService {
           },
         }
       );
+      
+      // Update state if available
+      if (this.setTasks) {
+        this.setTasks((prevTasks) =>
+          prevTasks.map((t) =>
+            t.id === taskId ? { ...t, notes } : t
+          )
+        );
+      }
+      
     } catch (error) {
       console.error("Error updating notes:", error);
       toast.error("Failed to update notes");
