@@ -1,4 +1,3 @@
-
 function Pagination({ currentPage, totalPages, onPageChange }) {
   return (
     <div className="sticky bottom-0 left-0 w-full bg-[var(--color-bg)] backdrop-blur-sm pt-2 pb-2 flex justify-center items-center space-x-2 text-sm text-[var(--color-text)] dark:text-[var(--color-text)] z-10 border-t border-[var(--color-border)] dark:border-[var(--color-border)]">

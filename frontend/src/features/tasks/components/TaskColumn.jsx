@@ -2,12 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Droppable, Draggable } from '@hello-pangea/dnd';
 import BadgeLabel from '../../../shared/components/atoms/BadgeLabel';
-import { MoreVertical, Eye } from 'lucide-react';
+import { Eye } from 'lucide-react';
 import TaskDetails from "../TaskDetails";
 
 function TaskColumn({ column, tasks, onTaskSelect}) {
   const [localTasks, setLocalTasks] = useState(tasks);
-  const [showColumnMenu, setShowColumnMenu] = useState(false);
   const [showTooltip, setShowTooltip] = useState(null);
   const [tooltipPosition, setTooltipPosition] = useState({});
   const [hoveredTaskId, setHoveredTaskId] = useState(null);
@@ -36,16 +35,6 @@ function TaskColumn({ column, tasks, onTaskSelect}) {
           <BadgeLabel type="status" value={column.id} />
           <span className="text-sm text-[var(--color-placeholder-text)]">({localTasks.length})</span>
         </div>
-
-        {/* <div className="flex items-center gap-2 relative">
-          FOR MENU ICOND
-          <button
-            onClick={() => setShowColumnMenu(!showColumnMenu)}
-            className="p-1 rounded hover:bg-gray-700 transition-colors"
-          >
-            <MoreVertical size={16} className="text-gray-400" />
-          </button>
-        </div> */}
       </div>
 
       <Droppable droppableId={column.id}>

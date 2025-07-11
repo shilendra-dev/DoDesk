@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import { DragDropContext } from '@hello-pangea/dnd';
 import TaskColumn from './components/TaskColumn';
 import TaskDetails from './TaskDetails';
+import TaskFilterBar from './components/TaskFilterBar';
 import { useTaskContext } from '../../providers/TaskContext';
+import { useWorkspace } from '../../providers/WorkspaceContext';
+import { SavedFilterContext } from '../../providers/SavedFilterContext';
 import { updateTask } from '../../features/tasks/taskApi';
 import { toast } from 'react-hot-toast';
-import {Trash2} from 'lucide-react';
-import Label from '../../shared/components/atoms/Label';
-import Select from '../../shared/components/atoms/Select';
+import { useTaskFiltering } from '../../shared/hooks/useTaskFiltering';
+import { statusOptions, priorityOptions, sortOptions } from './constants/taskOptions';
+import { useSaveFilterModal } from './hooks/useSaveFilterModal';
 
 const COLUMNS = {
   PENDING: {
@@ -28,63 +31,130 @@ const COLUMNS = {
 };
 
 function TaskBoardView() {
-  const {tasks, setTasks} = useTaskContext();
-
-  // Filters and Sorting States
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [priorityFilter, setPriorityFilter] = useState('All');
-  const [assigneeFilter, setAssigneeFilter] = useState('All');
-  const [sortOption, setSortOption] = useState('None');
+  const { tasks, setTasks } = useTaskContext();
   const [selectedTask, setSelectedTask] = useState(null);
+  const { selectedWorkspace } = useWorkspace();
 
-  // Filtering Logic
-  const filteredTasks = tasks.filter((task) => {
-    const statusMatch =
-      statusFilter === 'All' || task.status.toLowerCase() === statusFilter.toLowerCase();
-    const priorityMatch =
-      priorityFilter === 'All' || task.priority.toLowerCase() === priorityFilter.toLowerCase();
-    const assigneeMatch =
-      assigneeFilter === 'All' ||
-      (task.assignees &&
-        task.assignees.some((assignee) =>
-          assignee.name.toLowerCase().includes(assigneeFilter.toLowerCase())
-        ));
-    return statusMatch && priorityMatch && assigneeMatch;
-  });
+  // Use SavedFilterContext for all filter state and actions
+  const { 
+    savedFilters, 
+    defaultFilter, 
+    selectedViewId, 
+    loading: filtersLoading, 
+    fetchSavedFilters, 
+    createFilter, 
+    removeFilter, 
+    setSelectedViewId, 
+    clearSelectedView 
+  } = useContext(SavedFilterContext);
 
-  // Sorting Logic
-  const priorityOrder = { high: 3, mid: 2, low: 1 };
-  const sortedTasks = [...filteredTasks].sort((a, b) => {
-    switch (sortOption) {
-      case 'Due Date (Asc)':
-        return new Date(a.due_date) - new Date(b.due_date);
-      case 'Due Date (Desc)':
-        return new Date(b.due_date) - new Date(a.due_date);
-      case 'Priority (High → Low)':
-        return priorityOrder[b.priority] - priorityOrder[a.priority];
-      case 'Priority (Low → High)':
-        return priorityOrder[a.priority] - priorityOrder[b.priority];
-      case 'Title (A → Z)':
-        return a.title.localeCompare(b.title);
-      case 'Title (Z → A)':
-        return b.title.localeCompare(a.title);
-      default:
-        return 0;
+  // useSaveFilterModal hook manages save filter modal state and actions
+  const { 
+    showSaveFilterModal, 
+    setShowSaveFilterModal, 
+    newFilterName, 
+    setNewFilterName 
+  } = useSaveFilterModal();
+
+
+
+  // Load saved filters on workspace change
+  useEffect(() => {
+    if (selectedWorkspace?.id) {
+      fetchSavedFilters(selectedWorkspace.id).catch(error => {
+        console.error("Error fetching saved filters:", error);
+        toast.error("Failed to load saved filters");
+      });
     }
-  });
+  }, [selectedWorkspace?.id, fetchSavedFilters]);
 
-  // Group tasks by status
-  const groupedTasks = sortedTasks.reduce((acc, task) => {
-    const status = task.status.toLowerCase();
-    if (!acc[status]) {
-      acc[status] = [];
+  // useTaskFiltering hook handles all filtering logic
+  const { 
+    statusFilter, 
+    setStatusFilter, 
+    priorityFilter, 
+    setPriorityFilter, 
+    sortOption, 
+    setSortOption, 
+    assigneeFilter, 
+    setAssigneeFilter, 
+    filteredTasks, 
+    handleClearAll, 
+    handleViewSelect, 
+    hasActiveFilters, 
+    currentFilterConfig, 
+    uniqueAssignees, 
+    filterSummary 
+  } = useTaskFiltering(tasks, savedFilters, defaultFilter, filtersLoading, clearSelectedView, setSelectedViewId, selectedViewId);
+
+  // Configure filter options for the filter bar
+  const filterConfigs = useMemo(() => [
+    {
+      label: "Status",
+      id: "statusFilter",
+      value: statusFilter,
+      onChange: (e) => setStatusFilter(e.target.value),
+      options: statusOptions,
+    },
+    {
+      label: "Priority",
+      id: "priorityFilter",
+      value: priorityFilter,
+      onChange: (e) => setPriorityFilter(e.target.value),
+      options: priorityOptions,
+    },
+    {
+      label: "Assignee",
+      id: "assigneeFilter",
+      value: assigneeFilter,
+      onChange: (e) => setAssigneeFilter(e.target.value),
+      options: uniqueAssignees.map((a) => ({ value: a.name, label: a.name })),
+    },
+  ], [statusFilter, setStatusFilter, priorityFilter, setPriorityFilter, assigneeFilter, setAssigneeFilter, uniqueAssignees]);
+
+  // Handle saving a new filter
+  const handleSaveFilter = useCallback(async () => {
+    if (!newFilterName.trim()) return;
+    try {
+      const filterConfig = currentFilterConfig;
+      const filterData = {
+        name: newFilterName.trim(),
+        filter_config: filterConfig,
+      };
+      await createFilter(selectedWorkspace.id, filterData);
+      setShowSaveFilterModal(false);
+      setNewFilterName("");
+    } catch (error) {
+      console.error("Error saving filter:", error);
+      toast.error("Error saving filter");
     }
-    acc[status].push(task);
-    return acc;
-  }, {});
+  }, [newFilterName, currentFilterConfig, selectedWorkspace?.id, createFilter, setShowSaveFilterModal, setNewFilterName]);
+
+  // Handle deleting a filter view
+  const handleDeleteView = useCallback(async () => {
+    try {
+      await removeFilter(selectedWorkspace.id, selectedViewId);
+      toast.success("Filter deleted successfully");
+    } catch (error) {
+      toast.error("Error deleting filter");
+      console.error("Error deleting filter:", error);
+    }
+  }, [selectedWorkspace?.id, selectedViewId, removeFilter]);
+
+  // Group filtered tasks by status
+  const groupedTasks = useMemo(() => {
+    return filteredTasks.reduce((acc, task) => {
+      const status = task.status.toLowerCase();
+      if (!acc[status]) {
+        acc[status] = [];
+      }
+      acc[status].push(task);
+      return acc;
+    }, {});
+  }, [filteredTasks]);
 
   // Handle drag end
-  const handleDragEnd = async (result) => {
+  const handleDragEnd = useCallback(async (result) => {
     const { destination, source, draggableId } = result;
 
     // If dropped outside droppable area, do nothing
@@ -120,125 +190,40 @@ function TaskBoardView() {
       console.error('Error updating task status:', error);
       toast.error('Failed to update task status');
     }
-  };
+  }, [tasks, setTasks]);
 
-  
+  // Grouped props for TaskFilterBar
+  const filterBarProps = useMemo(() => ({ 
+    filterConfigs, 
+    statusFilter, 
+    priorityFilter, 
+    assigneeFilter, 
+    sortOption, 
+    setSortOption, 
+    sortOptions, 
+    selectedViewId, 
+    savedFilters, 
+    handleViewSelect, 
+    hasActiveFilters, 
+    filterSummary, 
+    showSaveFilterModal, 
+    setShowSaveFilterModal, 
+    newFilterName, 
+    setNewFilterName, 
+    handleSaveFilter, 
+    handleDeleteView, 
+    handleClearAll 
+  }), [filterConfigs, statusFilter, priorityFilter, assigneeFilter, sortOption, setSortOption, sortOptions, selectedViewId, savedFilters, handleViewSelect, hasActiveFilters, filterSummary, showSaveFilterModal, setShowSaveFilterModal, newFilterName, setNewFilterName, handleSaveFilter, handleDeleteView, handleClearAll]);
+
   return (
     <div className="h-full flex flex-col relative overflow-visible">
-      {/* Filter and Sort UI */}
-      <div className="flex justify-between items-center p-4 bg-[var(--color-bg)] border-b border-[var(--color-border)]">
-        <div className="flex gap-4 items-center">
-          {/* Status Filter */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-            <Label htmlFor="statusFilter" >
-              Status
-            </Label>
-            <Select
-              id="statusFilter"
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-            >
-              <option>All</option>
-              <option>Pending</option>
-              <option>In Progress</option>
-              <option>Completed</option>
-            </Select>
-          </div>
-
-          {/* Priority Filter */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-            <Label htmlFor="priorityFilter">
-              Priority
-            </Label>
-            <Select
-              id="priorityFilter"
-              value={priorityFilter}
-              onChange={(e) => setPriorityFilter(e.target.value)}
-            >
-              <option>All</option>
-              <option>High</option>
-              <option>Mid</option>
-              <option>Low</option>
-            </Select>
-          </div>
-
-          {/* Assignee Filter */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-            <Label htmlFor="assigneeFilter">
-              Assignee
-            </Label>
-            <Select
-              id="assigneeFilter"
-              value={assigneeFilter}
-              onChange={(e) => setAssigneeFilter(e.target.value)}            
-            >
-              <option>All</option>
-              {tasks
-                .flatMap((task) => task.assignees || [])
-                .filter(
-                  (assignee, index, self) =>
-                    assignee.name && index === self.findIndex((a) => a.name === assignee.name)
-                )
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .map((assignee) => (
-                  <option key={assignee.name} value={assignee.name}>
-                    {assignee.name}
-                  </option>
-                ))}
-            </Select>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          {/* Sort Option */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
-            <Label htmlFor="sortOption">
-              Sort by
-            </Label>
-            <Select
-              id="sortOption"
-              value={sortOption}
-              onChange={(e) => setSortOption(e.target.value)}
-              className="px-2 py-1"
-            >
-              <option>None</option>
-              <option>Due Date (Asc)</option>
-              <option>Due Date (Desc)</option>
-              <option>Priority (High → Low)</option>
-              <option>Priority (Low → High)</option>
-              <option>Title (A → Z)</option>
-              <option>Title (Z → A)</option>
-            </Select>
-          </div>
-
-          {/* Clear Filters Button */}
-          {(statusFilter !== 'All' || 
-                priorityFilter !== 'All' || 
-                assigneeFilter !== 'All' || 
-                sortOption !== 'None'
-                ) && (
-                <button
-                  onClick ={() => {
-                    setStatusFilter('All');
-                    setPriorityFilter('All');
-                    setAssigneeFilter('All');
-                    setSortOption('None');
-                    }
-                  }
-                  className="flex items-center gap-1 px-3 py-1.5 text-xs bg-red-600/20 text-red-500 rounded hover:bg-red-600/30 transition-colors"
-                  title="Clear all filters and view"
-                >
-                  <Trash2 size={12} />
-                  Clear
-                </button>
-              )}
-        </div>
-      </div>
+      {/* Use TaskFilterBar component instead of custom filter UI */}
+      <TaskFilterBar {...filterBarProps} />
 
       {/* Task Columns */}
       <div className="overflow-visible flex-1">
         <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="relative flex flex-1 overflow-visible gap-4 p-4 bg-[var(--color-bg)] min-w-fit">
+          <div className="relative flex flex-1 overflow-visible gap-3 pb-2 pl-3 pr-3 bg-[var(--color-bg)] min-w-fit">
             {Object.values(COLUMNS).map((column) => (
               <TaskColumn
                 key={column.id}
@@ -250,6 +235,7 @@ function TaskBoardView() {
           </div>
         </DragDropContext>
       </div>
+      
       {selectedTask && (
         <TaskDetails task={selectedTask} onClose={() => setSelectedTask(null)} />
       )}
