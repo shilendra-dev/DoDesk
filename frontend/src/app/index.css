@@ -1,3 +1,4 @@
+/* frontend/src/app/index.css */
 @import "tailwindcss";
 @import '@fontsource-variable/inter';
 
@@ -7,7 +8,7 @@
   --color-bg: #fafbfc;
   --color-bg-secondary: #f6f8fa;
   --color-bg-tertiary: #ffffff;
-  --color-bg-hover: #f3f4f6;
+  --color-bg-hover: #e5e7eb;
   --color-bg-accent: #f8fafc;
   
   /* Text Colors */
@@ -37,8 +38,52 @@
   --color-error: #cf222e;
   --color-error-light: #ffebe9;
   
+  /* ===== BALANCED SIZING (Linear-inspired but readable) ===== */
+  
+  /* Typography - Readable but clean */
+  --font-size-xs: 0.75rem;     /* 12px */
+  --font-size-sm: 0.875rem;    /* 14px */
+  --font-size-base: 0.9375rem; /* 15px - Good balance */
+  --font-size-md: 1rem;        /* 16px */
+  --font-size-lg: 1.125rem;    /* 18px */
+  --font-size-xl: 1.25rem;     /* 20px */
+  --font-size-2xl: 1.5rem;     /* 24px */
+  
+  /* Spacing - Comfortable but not excessive */
+  --spacing-1: 0.25rem;     /* 4px */
+  --spacing-2: 0.5rem;      /* 8px */
+  --spacing-3: 0.75rem;     /* 12px */
+  --spacing-4: 1rem;        /* 16px */
+  --spacing-5: 1.25rem;     /* 20px */
+  --spacing-6: 1.5rem;      /* 24px */
+  --spacing-8: 2rem;        /* 32px */
+  --spacing-10: 2.5rem;     /* 40px */
+  --spacing-12: 3rem;       /* 48px */
+  
+  /* Component Sizes - Balanced */
+  --button-height-sm: 2rem;     /* 32px */
+  --button-height-md: 2.25rem;  /* 36px */
+  --button-height-lg: 2.5rem;   /* 40px */
+  
+  --input-height-sm: 2rem;      /* 32px */
+  --input-height-md: 2.25rem;   /* 36px */
+  --input-height-lg: 2.5rem;    /* 40px */
+  
+  /* Icon Sizes - Readable */
+  --icon-xs: 0.875rem;   /* 14px */
+  --icon-sm: 1rem;       /* 16px */
+  --icon-md: 1.125rem;   /* 18px */
+  --icon-lg: 1.25rem;    /* 20px */
+  
+  /* Sidebar - Comfortable width */
+  --sidebar-width: 260px;  /* Between 240px and 280px */
+  
+  /* Border Radius - Subtle */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  
   /* ===== COMPATIBILITY VARIABLES ===== */
-  /* These match your existing code */
   --color-text: var(--color-text-primary);
   --color-border: var(--color-border-primary);
   --color-placeholder-text: var(--color-text-placeholder);
@@ -60,35 +105,30 @@
   --priority-high: #cf222e;
 }
 
-/* Dark mode - triggered by .dark class on html element */
+/* Dark mode */
 .dark {
-  /* Background Colors */
   --color-bg: #0d1117;
   --color-bg-secondary: #161b22;
   --color-bg-tertiary: #21262d;
   --color-bg-hover: #262c36;
   --color-bg-accent: #1c2128;
   
-  /* Text Colors */
   --color-text-primary: #f0f6fc;
   --color-text-secondary: #8b949e;
   --color-text-tertiary: #6e7681;
   --color-text-placeholder: #484f58;
   --color-text-disabled: #3c4146;
   
-  /* Border Colors */
   --color-border-primary: #30363d;
-  --color-border-secondary: #21262d;
+  --color-border-secondary: #19191f;
   --color-border-tertiary: #1c2128;
   --color-border-focus: #388bfd;
   
-  /* Accent Colors */
   --color-accent-primary: #7c3aed;
   --color-accent-secondary: #8b5cf6;
   --color-accent-tertiary: #a855f7;
   --color-accent-light: #1e1b4b;
   
-  /* Status Colors */
   --color-success: #3fb950;
   --color-success-light: #0f2419;
   --color-warning: #fb8500;
@@ -96,8 +136,7 @@
   --color-error: #f85149;
   --color-error-light: #2d0d0e;
   
-  /* ===== COMPATIBILITY VARIABLES ===== */
-  /* These match your existing code */
+  /* Same compatibility variables for dark mode */
   --color-text: var(--color-text-primary);
   --color-border: var(--color-border-primary);
   --color-placeholder-text: var(--color-text-placeholder);
@@ -108,26 +147,36 @@
   --color-button-hover: var(--color-accent-secondary);
   --color-overlay: rgba(0, 0, 0, 0.7);
   
-  /* Status Badge Colors */
   --status-pending: #fb8500;
   --status-in-progress: #388bfd;
   --status-completed: #3fb950;
   
-  /* Priority Badge Colors */
   --priority-low: #3fb950;
   --priority-mid: #fb8500;
   --priority-high: #f85149;
 }
 
-/* Base styles */
+/* Base styles - Readable and clean */
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-size: var(--font-size-base);  /* 15px - good balance */
+  line-height: 1.5;  /* Comfortable line height */
+  font-weight: 400;
+  letter-spacing: -0.011em;  /* Subtle letter spacing */
   background-color: var(--color-bg);
   color: var(--color-text-primary);
   transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Custom utility classes */
+/* Utility classes */
+.text-xs { font-size: var(--font-size-xs); line-height: 1.4; }
+.text-sm { font-size: var(--font-size-sm); line-height: 1.5; }
+.text-base { font-size: var(--font-size-base); line-height: 1.5; }
+.text-md { font-size: var(--font-size-md); line-height: 1.5; }
+.text-lg { font-size: var(--font-size-lg); line-height: 1.4; }
+.text-xl { font-size: var(--font-size-xl); line-height: 1.4; }
+.text-2xl { font-size: var(--font-size-2xl); line-height: 1.3; }
+
 .bg-primary { background-color: var(--color-bg); }
 .bg-secondary { background-color: var(--color-bg-secondary); }
 .bg-tertiary { background-color: var(--color-bg-tertiary); }
@@ -135,7 +184,22 @@ body {
 .text-secondary { color: var(--color-text-secondary); }
 .border-primary { border-color: var(--color-border-primary); }
 
-/* Rest of your existing styles... */
+/* Balanced spacing utilities */
+.p-1 { padding: var(--spacing-1); }
+.p-2 { padding: var(--spacing-2); }
+.p-3 { padding: var(--spacing-3); }
+.p-4 { padding: var(--spacing-4); }
+.p-5 { padding: var(--spacing-5); }
+.p-6 { padding: var(--spacing-6); }
+
+.m-1 { margin: var(--spacing-1); }
+.m-2 { margin: var(--spacing-2); }
+.m-3 { margin: var(--spacing-3); }
+.m-4 { margin: var(--spacing-4); }
+.m-5 { margin: var(--spacing-5); }
+.m-6 { margin: var(--spacing-6); }
+
+/* Rest of existing styles... */
 html {
   height: 100%;
   -webkit-overflow-scrolling: touch;
@@ -163,7 +227,6 @@ input[type="number"] {
   appearance: none; 
 }
 
-/* Smooth transitions */
 * {
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }

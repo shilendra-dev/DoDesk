@@ -2,7 +2,6 @@ import Sidebar from '../../shared/components/organisms/Sidebar';
 import { Outlet, useParams, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useWorkspace } from '../../providers/WorkspaceContext';
-import Header from '../../shared/components/organisms/Header';
 
 function Dashboard() {
   const { defaultWorkspaceId } = useWorkspace(); // use your default workspace logic here
@@ -20,14 +19,10 @@ function Dashboard() {
   }, [workspaceId, defaultWorkspaceId, navigate]);
 
   return (
-    <div className="flex bg-[var(--color-bg)] dark:bg-[var(--color-bg)] h-screen overflow-hidden">
+    <div className="flex h-screen bg-primary overflow-hidden">
       <Sidebar />
-      <div className='flex flex-col flex-1 overflow-hidden'>
-        <Header />
-
-        <div className="flex-1 text-[var(--color-text)] dark:text-[var(--color-text)] overflow-hidden">
-          <Outlet />
-        </div>
+      <div className="flex-1 m-2 rounded-md border border-[var(--color-border-secondary)]  flex flex-col overflow-hidden">
+        <Outlet />
       </div>
     </div>
   );

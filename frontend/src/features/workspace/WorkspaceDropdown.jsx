@@ -46,23 +46,23 @@ function WorkspaceDropdown() {
   };
 
   return (
-    <div className="relative w-full max-w-xs mb-6">
+    <div className="relative w-full">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full text-white bg-[var(--color-accent)] focus:outline-none font-medium rounded-lg text-sm px-5 py-2.5 text-left inline-flex items-center justify-between outline-none"
+        className="w-full bg-transparent focus:outline-none font-medium text-sm px-0 py-1 text-left inline-flex items-center justify-between outline-none text-[var(--color-text-primary)] hover:text-[var(--color-text-secondary)] hover:bg-[var(--color-bg-hover)] rounded transition-all duration-200 ease-in-out"
       >
         {selectedWorkspace ? selectedWorkspace.name : "Select Workspace"}
-        <ChevronDown className="w-4 h-4 ml-2" />
+        <ChevronDown className="w-4 h-4 ml-2 text-[var(--color-text-tertiary)]" />
       </button>
 
       {isOpen && (
-        <div className="absolute z-10 mt-2 bg-[var(--color-bg)] border-1 border-[var(--color-border)] rounded-lg shadow w-full">
-          <ul className="py-2 text-sm text-[var(--color-text)] ">
+        <div className="absolute z-10 mt-1 bg-[var(--color-bg-tertiary)] border border-[var(--color-border-primary)] rounded-lg shadow-lg w-full">
+          <ul className="py-1 text-sm">
             {workspaces.map((workspace) => (
               <li key={workspace.id}>
                 <button
                   onClick={() => handleSelect(workspace)}
-                  className="w-full text-left block px-4 py-2 hover:bg-[var(--color-ghost)] border-b border-[var(--color-border)]"
+                  className="w-full text-left block px-3 py-2 hover:bg-[var(--color-bg-hover)] text-[var(--color-text-primary)] hover:text-[var(--color-text-primary)] transition-colors"
                 >
                   {workspace.name}
                 </button>
