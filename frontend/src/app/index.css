@@ -1,108 +1,169 @@
 @import "tailwindcss";
-@import '@fontsource-variable/public-sans';
-@import '@fontsource/barlow/400.css';
-@import '@fontsource/barlow/500.css';
-@import '@fontsource/barlow/600.css';
-@import '@fontsource/barlow/700.css';
-@import '@fontsource/barlow/800.css';
+@import '@fontsource-variable/inter';
 
+/* Base theme variables (Light mode) */
+:root {
+  /* Background Colors */
+  --color-bg: #fafbfc;
+  --color-bg-secondary: #f6f8fa;
+  --color-bg-tertiary: #ffffff;
+  --color-bg-hover: #f3f4f6;
+  --color-bg-accent: #f8fafc;
+  
+  /* Text Colors */
+  --color-text-primary: #0d1117;
+  --color-text-secondary: #656d76;
+  --color-text-tertiary: #8b949e;
+  --color-text-placeholder: #a8adb3;
+  --color-text-disabled: #d0d7de;
+  
+  /* Border Colors */
+  --color-border-primary: #d1d9e0;
+  --color-border-secondary: #e1e5e9;
+  --color-border-tertiary: #eaeff4;
+  --color-border-focus: #0969da;
+  
+  /* Accent Colors */
+  --color-accent-primary: #5e6ad2;
+  --color-accent-secondary: #4c63d2;
+  --color-accent-tertiary: #3949ab;
+  --color-accent-light: #f0f1ff;
+  
+  /* Status Colors */
+  --color-success: #1a7f37;
+  --color-success-light: #dafbe1;
+  --color-warning: #fb8500;
+  --color-warning-light: #fff8dc;
+  --color-error: #cf222e;
+  --color-error-light: #ffebe9;
+  
+  /* ===== COMPATIBILITY VARIABLES ===== */
+  /* These match your existing code */
+  --color-text: var(--color-text-primary);
+  --color-border: var(--color-border-primary);
+  --color-placeholder-text: var(--color-text-placeholder);
+  --color-accent: var(--color-accent-primary);
+  --color-ghost: var(--color-bg-hover);
+  --color-badge: var(--color-bg-secondary);
+  --color-button: var(--color-accent-primary);
+  --color-button-hover: var(--color-accent-secondary);
+  --color-overlay: rgba(0, 0, 0, 0.5);
+  
+  /* Status Badge Colors */
+  --status-pending: #fb8500;
+  --status-in-progress: #0969da;
+  --status-completed: #1a7f37;
+  
+  /* Priority Badge Colors */
+  --priority-low: #1a7f37;
+  --priority-mid: #fb8500;
+  --priority-high: #cf222e;
+}
 
-/* Basic reset & layout */
+/* Dark mode - triggered by .dark class on html element */
+.dark {
+  /* Background Colors */
+  --color-bg: #0d1117;
+  --color-bg-secondary: #161b22;
+  --color-bg-tertiary: #21262d;
+  --color-bg-hover: #262c36;
+  --color-bg-accent: #1c2128;
+  
+  /* Text Colors */
+  --color-text-primary: #f0f6fc;
+  --color-text-secondary: #8b949e;
+  --color-text-tertiary: #6e7681;
+  --color-text-placeholder: #484f58;
+  --color-text-disabled: #3c4146;
+  
+  /* Border Colors */
+  --color-border-primary: #30363d;
+  --color-border-secondary: #21262d;
+  --color-border-tertiary: #1c2128;
+  --color-border-focus: #388bfd;
+  
+  /* Accent Colors */
+  --color-accent-primary: #7c3aed;
+  --color-accent-secondary: #8b5cf6;
+  --color-accent-tertiary: #a855f7;
+  --color-accent-light: #1e1b4b;
+  
+  /* Status Colors */
+  --color-success: #3fb950;
+  --color-success-light: #0f2419;
+  --color-warning: #fb8500;
+  --color-warning-light: #2d1b00;
+  --color-error: #f85149;
+  --color-error-light: #2d0d0e;
+  
+  /* ===== COMPATIBILITY VARIABLES ===== */
+  /* These match your existing code */
+  --color-text: var(--color-text-primary);
+  --color-border: var(--color-border-primary);
+  --color-placeholder-text: var(--color-text-placeholder);
+  --color-accent: var(--color-accent-primary);
+  --color-ghost: var(--color-bg-hover);
+  --color-badge: var(--color-bg-secondary);
+  --color-button: var(--color-accent-primary);
+  --color-button-hover: var(--color-accent-secondary);
+  --color-overlay: rgba(0, 0, 0, 0.7);
+  
+  /* Status Badge Colors */
+  --status-pending: #fb8500;
+  --status-in-progress: #388bfd;
+  --status-completed: #3fb950;
+  
+  /* Priority Badge Colors */
+  --priority-low: #3fb950;
+  --priority-mid: #fb8500;
+  --priority-high: #f85149;
+}
+
+/* Base styles */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Custom utility classes */
+.bg-primary { background-color: var(--color-bg); }
+.bg-secondary { background-color: var(--color-bg-secondary); }
+.bg-tertiary { background-color: var(--color-bg-tertiary); }
+.text-primary { color: var(--color-text-primary); }
+.text-secondary { color: var(--color-text-secondary); }
+.border-primary { border-color: var(--color-border-primary); }
+
+/* Rest of your existing styles... */
 html {
   height: 100%;
   -webkit-overflow-scrolling: touch;
 }
+
 body, #root, #root__layout {
   display: flex;
   flex: 1 1 auto;
   min-height: 100%;
   flex-direction: column;
 }
+
 img {
   max-width: 100%;
   vertical-align: middle;
 }
+
 ul {
   margin: 0;
   padding: 0;
   list-style-type: none;
 }
-input[type="number"] { appearance: none; }
-/* Remove spinner */
 
-:root {
-  --color-bg: #f6f6f6;
-  --color-bg-secondary: #d6d5dc;
-  --color-button: #443f5f;
-  --color-button-hover: #6f64ab;
-  --color-text: #0f172a;
-  --color-text-hover: #65686d;
-  --color-placeholder-text : #9ca3af;
-  --color-text-secondary: #4b5563;
-  --color-primary: #3b82f6;
-  --color-accent: #443f5f;
-  --color-border: #8c8c8c;
-  --color-bright: #bfb4ff;
-  --color-ghost: #c0c0c0;
-  
-  --status-pending: #a84122;
-  --status-in-progress: #103b7f;
-  --status-completed: #007e17;
-  --priority-low: #0039b3;
-  --priority-mid: #5e4794;
-  --priority-high: #be2d2d;
-  --color-badge: #16122c31;
+input[type="number"] { 
+  appearance: none; 
 }
 
-.dark {
-  --color-bg: #111112;
-  --color-bg-secondary: #222427;
-  --color-button: #222427;
-  --color-button-hover: #6f64ab;
-  --color-text: #e2e8f0;
-  --color-text-secondary: #9ca3af;
-  --color-placeholder-text: #6b7280;
-  --color-text-hover: #9b9b9b;
-  --color-primary: #3b82f6;
-  --color-accent: #6c649b;
-  --color-border: #404449;
-  --color-ghost: #242424;
-  --color-bright: #bfb4ff;
-
-  --status-pending: #ffc765;
-  --status-in-progress: #cc7ff2;
-  --status-completed: #4ebe77;
-  --priority-low: #76a0fb;
-  --priority-mid: #bda0ff;
-  --priority-high: #d64c4c;
-  --color-badge: #443f5f53;
-}
-
-/* WebKit Browsers */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #4b5563;
-  border-radius: 4px;
-  visibility: hidden;
-  transition: visibility 0.2s ease-in-out;
-}
-
-/* Auto-hide behavior on scrollable elements */
-.scrollable:hover::-webkit-scrollbar-thumb,
-.scrollable:focus::-webkit-scrollbar-thumb {
-  visibility: visible;
-}
-
-/* Firefox */
+/* Smooth transitions */
 * {
-  scrollbar-width: thin;
-  scrollbar-color: #4b5563 transparent;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }

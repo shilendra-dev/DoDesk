@@ -6,7 +6,7 @@ const { createApi } = require("../utils/router");
 //Create a team
 const createTeam = async (req, res) => {
     const {name, key, description, color} = req.body;
-    const workspaceId = req.params;
+    const { workspace_id: workspaceId } = req.params;
     const userId = req.user.id;
 
     if(!name || !key) {
@@ -15,6 +15,17 @@ const createTeam = async (req, res) => {
             message: "Team name and key are required"
         };
     }
+
+    // Validate team key format (should be uppercase letters, 2-10 chars)
+    if(!/^[A-Z]{2,10}$/.test(key.toUpperCase())) {
+        return {
+            status: 400,
+            message: "Team key must be 2-10 uppercase letters"
+        };
+    }
+
+    // Set default color if not provided
+    const finalColor = color || '#6B7280';
 
     try{
         //Check if user is admin of the workspace
@@ -35,7 +46,7 @@ const createTeam = async (req, res) => {
         const team = await pool.query(
             `INSERT INTO teams (id, workspace_id, name, key, description, color, created_by)
             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-            [teamId, workspaceId, name, key.toUpperCase(), description, color, userId]
+            [teamId, workspaceId, name, key.toUpperCase(), description, finalColor, userId]
         );
 
         //Add creator/admin to team members
@@ -44,7 +55,7 @@ const createTeam = async (req, res) => {
             `INSERT INTO team_members (id, team_id, user_id, role)
             VALUES ($1, $2, $3, $4)`,
             [membershipId, teamId, userId, 'admin']
-        )
+        );
 
         return {
             status: 201,
@@ -66,7 +77,7 @@ createApi().post("/workspace/:workspace_id/teams").authSecure(createTeam);
 
 //Get workspace teams
 const getWorkspaceTeams = async (req, res) => {
-    const {workspaceId} = req.params;
+    const { workspace_id: workspaceId } = req.params;
     const userId = req.user.id;
 
     try{
@@ -119,7 +130,7 @@ createApi().get("/workspace/:workspace_id/teams").authSecure(getWorkspaceTeams);
 //Get user's teams
 const getUserTeams = async (req, res) => {
     const userId = req.user.id;
-    const {workspaceId} = req.params;
+    const { workspace_id: workspaceId } = req.params;
 
     try{
         const teams = await pool.query(

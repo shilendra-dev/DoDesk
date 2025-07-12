@@ -8,19 +8,22 @@ import { WorkspaceProvider } from '../providers/WorkspaceContext.jsx'
 import { WorkspaceMembersProvider } from "../providers/WorkspaceMembers.jsx";
 import { SavedFilterProvider } from '../providers/SavedFilterContext';
 import { ThemeProvider } from '../providers/ThemeContext.jsx';
+import { TeamProvider } from '../providers/TeamContext.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <Router>
       <AuthProvider>
         <WorkspaceProvider>
-          <WorkspaceMembersProvider>
-            <SavedFilterProvider>
-              <ThemeProvider>
-                <App />
-              </ThemeProvider>
-            </SavedFilterProvider>
-          </WorkspaceMembersProvider>
+          <TeamProvider>
+            <WorkspaceMembersProvider>
+              <SavedFilterProvider>
+                <ThemeProvider>
+                  <App />
+                </ThemeProvider>
+              </SavedFilterProvider>
+            </WorkspaceMembersProvider>
+          </TeamProvider>
         </WorkspaceProvider>
       </AuthProvider>
     </Router>
