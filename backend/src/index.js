@@ -11,7 +11,7 @@ require("./routes")
 
 //middleware
 app.use(cors({
-    origin: 'http://localhost:5173', // React app URL
+    origin: ['http://localhost:5173', 'http://localhost:3000'], // React app URL
     credentials: true // if you're using cookies or auth headers
   }));
 

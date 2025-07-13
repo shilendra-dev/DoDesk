@@ -1,16 +1,15 @@
 // app/page.tsx
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import { ChevronRight, Users, CheckCircle, ArrowRight, Shield, Zap } from 'lucide-react'
 import { Button } from '@/components/ui/atoms/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/molecules/card'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/organisms/dialog'
 import { ThemeToggle } from '@/components/ui/atoms/theme-toggle'
+import { useRouter } from 'next/navigation'
 
 export default function LandingPage() {
-  const [showSignup, setShowSignup] = useState(false)
-  const [showLogin, setShowLogin] = useState(false)
+  const router = useRouter()
 
   const features = [
     {
@@ -49,13 +48,13 @@ export default function LandingPage() {
               <ThemeToggle />
               <Button 
                 variant="ghost"
-                onClick={() => setShowLogin(true)}
+                onClick={() => router.push('/signin')}
                 className="text-sm font-medium"
               >
                 Log In
               </Button>
               <Button 
-                onClick={() => setShowSignup(true)}
+                onClick={() => router.push('/signup')}
                 className="text-sm font-medium"
               >
                 Get Started
@@ -86,7 +85,7 @@ export default function LandingPage() {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
             <Button 
               size="lg"
-              onClick={() => setShowSignup(true)}
+              onClick={() => router.push('/signup')}
               className="group"
             >
               Get Started
@@ -189,42 +188,6 @@ export default function LandingPage() {
           </div>
         </div>
       </div>
-
-      {/* Signup Dialog */}
-      <Dialog open={showSignup} onOpenChange={setShowSignup}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Get Started with DoDesk</DialogTitle>
-            <DialogDescription>
-              Create your account to start using DoDesk today.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-muted-foreground">Sign up form will be implemented next!</p>
-            <Button onClick={() => setShowSignup(false)} className="w-full">
-              Close
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Login Dialog */}
-      <Dialog open={showLogin} onOpenChange={setShowLogin}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Welcome Back</DialogTitle>
-            <DialogDescription>
-              Sign in to your DoDesk account to continue.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <p className="text-muted-foreground">Login form will be implemented next!</p>
-            <Button onClick={() => setShowLogin(false)} className="w-full">
-              Close
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
