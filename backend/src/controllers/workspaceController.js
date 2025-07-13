@@ -7,54 +7,95 @@ const { sendEmail } = require("../utils/sendEmail");
 const isValidEmail = require("../utils/isValidEmail");
 const { createApi } = require("../utils/router");
 
+
 //create workspace api
+// Remove this import - we don't need it anymore
+// const { generateUniqueSlug } = require("../utils/slugGenerate");
+
 const createWorkspace = async (req, res) => {
-  const { name } = req.body;
+  const { name, slug } = req.body;  // Accept both name and slug
   const userId = req.user.id;
 
-  if (!name) res.status(401).json({ Message: "Workspace name is required" });
+  // Validation
+  if (!name) {
+    return {
+      status: 400,
+      message: "Workspace name is required"
+    };
+  }
+
+  if (!slug) {
+    return {
+      status: 400,
+      message: "Workspace URL is required"
+    };
+  }
+
+  // Clean and validate slug format
+  const cleanSlug = slug
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9-]/g, '')  // Only allow letters, numbers, and hyphens
+    .replace(/^-+|-+$/g, '');    // Remove leading/trailing hyphens
+
+  if (cleanSlug.length < 3) {
+    return {
+      status: 400,
+      message: "Workspace URL must be at least 3 characters long"
+    };
+  }
+
+  if (cleanSlug !== slug.toLowerCase().trim()) {
+    return {
+      status: 400,
+      message: "Workspace URL can only contain letters, numbers, and hyphens"
+    };
+  }
 
   try {
-    //creating workspace and returning it
+    // Check if slug is already taken
+    const existingWorkspace = await pool.query(
+      `SELECT id FROM workspaces WHERE slug = $1`,
+      [cleanSlug]
+    );
+
+    if (existingWorkspace.rows.length > 0) {
+      return {
+        status: 409,
+        message: "This workspace URL is already taken. Please choose a different one."
+      };
+    }
+
+    // Create workspace
     const id = uuidv4();
     const newWorkspace = await pool.query(
-      `INSERT INTO workspaces (id, name, created_by) VALUES ($1, $2, $3) RETURNING *`,
-      [id, name, userId]
+      `INSERT INTO workspaces (id, name, slug, created_by) VALUES ($1, $2, $3, $4) RETURNING *`,
+      [id, name, cleanSlug, userId]
     );
-    //auto adding creator as member in the workspace_member table
+
+    // Auto adding creator as member in the workspace_member table
     const memberId = uuidv4();
     await pool.query(
       `INSERT INTO workspace_members (id, workspace_id, user_id, role) VALUES ($1, $2, $3, $4)`,
       [memberId, id, userId, "admin"]
     );
 
-    //setting up default_workspace_id
-    const { user } = req.body;
-    const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, {
-      expiresIn: "2h",
-    });
-
-    // await axios.get("http://localhost:5033/api/user", {
-    //   headers: {
-    //     Authorization: `Bearer ${token}`,
-    //   },
-    // });
-
     return {
       status: 201,
       message: "Workspace Successfully Created",
       workspace: newWorkspace.rows[0],
-    }
+    };
+
   } catch (err) {
     console.error(err);
-    //res.status(500).json({ message: "Error creating workspace" });
-    return{
+    return {
       status: 500,
       message: "Error creating workspace",
       error: err.message
-    }
+    };
   }
 };
+
 createApi().post("/user/:user_id/create-workspace").authSecure(createWorkspace); // create a workspace
 
 //get all workspaces of a user
@@ -63,7 +104,7 @@ const getUserWorkspaces = async (req, res) => {
     const userId = req.user.id;
 
     const workspaceResult = await pool.query(
-      `SELECT w.id, w.name, w.created_at 
+      `SELECT w.id, w.name, w.slug, w.created_at 
             FROM workspaces w
             JOIN workspace_members wm ON w.id = wm.workspace_id
             WHERE wm.user_id = $1`,
@@ -269,3 +310,83 @@ const setDefaultWorkspace = async (req, res) => {
   }
 }
 createApi().post("/user/set-default-workspace").authSecure(setDefaultWorkspace); // set default workspace for a user
+
+const getWorkspaceDetails = async (req, res) => {
+  const { workspace_id } = req.params;
+  const userId = req.user.id;
+
+  try {
+    const workspaceResult = await pool.query(
+      `SELECT w.id, w.name, w.slug, w.created_at, w.created_by, wm.role
+       FROM workspaces w
+       JOIN workspace_members wm ON w.id = wm.workspace_id
+       WHERE w.id = $1 AND wm.user_id = $2`,
+      [workspace_id, userId]
+    );
+
+    if (workspaceResult.rows.length === 0) {
+      return {
+        status: 404,
+        message: "Workspace not found or you don't have access"
+      };
+    }
+
+    return {
+      status: 200,
+      message: "Workspace details fetched successfully",
+      workspace: workspaceResult.rows[0]
+    };
+
+  } catch (err) {
+    console.error("Error fetching workspace details:", err);
+    return {
+      status: 500,
+      message: "Server error",
+      error: err.message
+    };
+  }
+};
+
+createApi().get("/workspaces/:workspace_id/details").authSecure(getWorkspaceDetails);
+
+const checkSlugAvailability = async (req, res) => {
+  const { slug } = req.params;
+  
+  // Clean slug same way as createWorkspace
+  const cleanSlug = slug
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/^-+|-+$/g, '');
+
+  if (cleanSlug.length < 3) {
+    return {
+      status: 400,
+      message: "Workspace URL must be at least 3 characters long",
+      available: false
+    };
+  }
+
+  try {
+    const existingWorkspace = await pool.query(
+      `SELECT id FROM workspaces WHERE slug = $1`,
+      [cleanSlug]
+    );
+
+    return {
+      status: 200,
+      available: existingWorkspace.rows.length === 0,
+      slug: cleanSlug
+    };
+
+  } catch (err) {
+    console.error(err);
+    return {
+      status: 500,
+      message: "Error checking slug availability",
+      error: err.message
+    };
+  }
+};
+
+createApi().get("/workspaces/check-slug/:slug").authSecure(checkSlugAvailability);
