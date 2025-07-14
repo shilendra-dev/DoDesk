@@ -175,7 +175,7 @@
   --destructive-foreground: oklch(1.0000 0 0);
   --border: oklch(0.8717 0.0093 258.3382);
   --input: oklch(0.8717 0.0093 258.3382);
-  --ring: oklch(0.5689 0.1812 294.1306);
+  --ring: oklch(0.8955 0.0617 294.1306);
   --chart-1: oklch(0.7090 0.1592 293.5412);
   --chart-2: oklch(0.8452 0.1299 164.9782);
   --chart-3: oklch(0.8369 0.1644 84.4286);
@@ -215,7 +215,7 @@
 .dark {
   --background: oklch(17.73% 0.013 264.15);
   --foreground: oklch(1.0000 0 0);
-  --card: oklch(0.2471 0.0269 262.5510);
+  --card: oklch(0.1927 0.0133 264.15);
   --card-foreground: oklch(1.0000 0 0);
   --popover: oklch(0.2686 0.0218 265.7834);
   --popover-foreground: oklch(1.0000 0 0);
@@ -229,8 +229,8 @@
   --accent-foreground: oklch(0.8761 0 0);
   --destructive: oklch(0.4797 0.1446 24.3915);
   --destructive-foreground: oklch(1.0000 0 0);
-  --border: oklch(0.4474 0.0343 261.3244);
-  --input: oklch(0.4474 0.0343 261.3244);
+  --border: oklch(0.2538 0.0343 261.3244);
+  --input: oklch(0.2584 0.0343 261.3244);
   --ring: oklch(0.4389 0.0513 264.4323);
   --chart-1: oklch(0.7090 0.1592 293.5412);
   --chart-2: oklch(0.8452 0.1299 164.9782);
@@ -269,7 +269,7 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring/20;
   }
   body {
     @apply bg-background text-foreground;

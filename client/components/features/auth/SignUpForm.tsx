@@ -5,10 +5,11 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/atoms/button'
 import { Input } from '@/components/ui/atoms/input'
 import { Label } from '@/components/ui/atoms/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/molecules/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/molecules/card'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import api from '@/lib/axios'
+import { signIn } from 'next-auth/react'
 
 export function SignUpForm() {
   const [formData, setFormData] = useState({
@@ -46,7 +47,19 @@ export function SignUpForm() {
         password: formData.password
       })
 
-      router.push('/signin?message=Account created successfully')
+      const result = await signIn('credentials', {
+        email: formData.email,
+        password: formData.password,
+        redirect: false
+      })
+  
+      if (result?.ok) {
+        // Redirect to onboarding
+        router.push('/onboarding')
+      } else {
+        setError('Account created but login failed. Please try signing in.')
+      }
+
     } catch (error) {
       setError((error as Error).message || 'Something went wrong')
     } finally {
@@ -57,10 +70,7 @@ export function SignUpForm() {
   return (
     <Card>
       <CardHeader className="text-center">
-        <CardTitle className="text-2xl">Create account</CardTitle>
-        <CardDescription>
-          Sign up to get started with DoDesk
-        </CardDescription>
+        <CardTitle className="text-2xl">Get started with dodesk</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">

@@ -1,4 +1,3 @@
-// lib/auth.ts - Fix line 1
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import api from "./axios"
@@ -22,14 +21,18 @@ export const authOptions: NextAuthOptions = {
             password: credentials.password
           })
 
-          const { user, token } = response.data
+          // 🔥 Using your actual response structure
+          const { status, token, user, workspaces } = response.data
 
-          if (user && token) {
+          if (status === 200 && user && token) {
             return {
               id: user.id,
               email: user.email,
               name: user.name,
-              accessToken: token
+              accessToken: token,
+              // 🔥 Include workspace data from your backend response
+              default_workspace_id: user.default_workspace_id,
+              workspaces: workspaces
             }
           }
           return null
@@ -41,17 +44,24 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   
-  // Add these callbacks to handle accessToken
   callbacks: {
     async jwt({ token, user }) {
-      if (user?.accessToken) {
+      if (user) {
         token.accessToken = user.accessToken
+        // 🔥 Add workspace data to JWT
+        token.default_workspace_id = user.default_workspace_id
+        token.workspaces = user.workspaces
       }
       return token
     },
     async session({ session, token }) {
       if (token.accessToken) {
         session.accessToken = token.accessToken
+      }
+      // 🔥 Add workspace data to session
+      if (session.user) {
+        session.user.default_workspace_id = token.default_workspace_id
+        session.user.workspaces = token.workspaces
       }
       return session
     },

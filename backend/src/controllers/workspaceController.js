@@ -80,6 +80,19 @@ const createWorkspace = async (req, res) => {
       [memberId, id, userId, "admin"]
     );
 
+    //setting default workspace for the user
+    const userCheck = await pool.query(
+      `SELECT default_workspace_id FROM users WHERE id = $1`,
+      [userId]
+    );
+    
+    if (!userCheck.rows[0].default_workspace_id) {
+      await pool.query(
+        `UPDATE users SET default_workspace_id = $1 WHERE id = $2`,
+        [id, userId]
+      );
+    }
+
     return {
       status: 201,
       message: "Workspace Successfully Created",
