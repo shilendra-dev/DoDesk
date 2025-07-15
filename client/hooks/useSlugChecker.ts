@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useWorkspace } from './useWorkspace';
+import { useWorkspaceOperations } from './useWorkspaceOperations';
 
 export const useSlugChecker = (slug: string) => {
   const [status, setStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'error'>('idle');
-  const { checkSlugAvailability } = useWorkspace();
+  const { checkSlugAvailability } = useWorkspaceOperations();
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {

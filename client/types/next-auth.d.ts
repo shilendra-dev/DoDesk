@@ -17,15 +17,12 @@ declare module "next-auth" {
     email: string
     name?: string
     accessToken?: string
-    default_workspace_id?: string | null
-    workspaces: Workspace[]
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
     accessToken?: string
-    default_workspace_id?: string | null
-    workspaces: Workspace[]
+    userId?: string
   }
 }

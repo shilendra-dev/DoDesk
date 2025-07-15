@@ -1,3 +1,4 @@
+
 'use client';
 
 import React from 'react';
@@ -6,19 +7,25 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/atoms/button';
 import { Card, CardContent } from '@/components/ui/molecules/card';
 import { PartyPopper, Lightbulb, Target, FileEdit } from 'lucide-react';
-import { useWorkspace } from '@/providers/WorkspaceContext';
 
 interface CompleteScreenProps {
   name: string;
+  workspace?: { id: string; name: string; slug: string } | null; // Add workspace prop
 }
 
-const CompleteScreen: React.FC<CompleteScreenProps> = ({ name }) => {
+const CompleteScreen: React.FC<CompleteScreenProps> = ({ name, workspace }) => {
   const router = useRouter();
-  const { getDefaultWorkspace } = useWorkspace();
 
   const handleGoToDashboard = () => {
-    const defaultWorkspace = getDefaultWorkspace();
-    router.push(`/${defaultWorkspace?.slug}/myissues`);
+    if (workspace?.slug) {
+      // Use workspace data from onboarding context
+      console.log('🎯 Using workspace from onboarding:', workspace);
+      router.replace(`/${workspace.slug}/myissues`);
+    } else {
+      // Fallback - this shouldn't happen in normal flow
+      console.log('⚠️ No workspace data available');
+      router.replace('/onboarding');
+    }
   };
 
   const quickTips = [
@@ -108,7 +115,7 @@ const CompleteScreen: React.FC<CompleteScreenProps> = ({ name }) => {
             size="lg"
             className="font-semibold"
           >
-            Go to Dashboard →
+            {workspace?.name ? `Go to ${workspace.name} →` : 'Go to Dashboard →'}
           </Button>
         </motion.div>
       </div>

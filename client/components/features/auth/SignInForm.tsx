@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/atoms/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/molecules/card'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { getWorkspaceRedirectUrl } from '@/lib/workspace-helpers'
+import api from '@/lib/axios'
 
 export function SignInForm() {
   const [email, setEmail] = useState('')
@@ -24,37 +24,54 @@ export function SignInForm() {
     e.preventDefault()
     setIsLoading(true)
     setError('')
-
+  
     try {
-      // Attempt to sign in
       const result = await signIn('credentials', {
         email,
         password,
-        redirect: false, // Don't redirect automatically
+        redirect: false,
       })
-
+  
       if (result?.error) {
         setError('Invalid email or password')
       } else if (result?.ok) {
-        // Login successful - get fresh session data
+        // ✅ Fetch workspace data after successful login to determine redirect
         const session = await getSession()
         
-        console.log('🔍 Session after login:', session)
-        
-        // Check if user has a workspace
-        if (session?.user?.default_workspace_id) {
-          const redirectUrl = callbackUrl || getWorkspaceRedirectUrl(session)
-          console.log('✅ User has workspace, redirecting to:', redirectUrl)
-          // User has workspace - redirect to callback URL or dashboard
-          router.push(redirectUrl)
-        } else {
-          console.log('⚠️ User has no workspace, redirecting to onboarding')
-          // User has no workspace - redirect to onboarding
-          router.push('/onboarding')
+        if (session?.user?.id) {
+          try {
+            // Fetch user data to check for default workspace
+            const userResponse = await api.get('/api/user')
+            const { default_workspace_id } = userResponse.data.user
+            
+            if (default_workspace_id) {
+              // User has workspace - get workspace list to find slug
+              const workspacesResponse = await api.get(`/api/workspaces`)
+              const workspaces = workspacesResponse.data.workspaces || []
+              
+              const defaultWorkspace = workspaces.find((ws: { id: string }) => ws.id === default_workspace_id)
+              
+              if (defaultWorkspace) {
+                // Redirect to default workspace
+                const redirectUrl = callbackUrl || `/${defaultWorkspace.slug}/myissues`
+                router.replace(redirectUrl)
+              } else {
+                // Default workspace not found - go to onboarding
+                router.replace('/onboarding')
+              }
+            } else {
+              // No default workspace - go to onboarding
+              router.replace('/onboarding')
+            }
+          } catch (error) {
+            console.error('Failed to fetch workspace data:', error)
+            // Fallback to onboarding if API fails
+            router.replace('/signin')
+          }
         }
       }
     } catch (error) {
-      console.error('❌ Login error:', error)
+      console.error('Login error:', error)
       setError('Something went wrong. Please try again.')
     } finally {
       setIsLoading(false)

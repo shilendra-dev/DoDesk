@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/atoms/button';
 import { Input } from '@/components/ui/atoms/input';
 import { Label } from '@/components/ui/atoms/label';
 import { SlugInput } from '@/components/ui/molecules/SlugInput';
-import { useWorkspace } from '@/hooks/useWorkspace';
+import { useWorkspaceOperations } from '@/hooks/useWorkspaceOperations';
 
 interface WorkspaceFormProps {
   onSuccess: (workspace: unknown) => void;
@@ -24,7 +24,7 @@ export const WorkspaceForm: React.FC<WorkspaceFormProps> = ({
 }) => {
   const [formData, setFormData] = useState({ name: '', slug: '' });
   const [slugStatus, setSlugStatus] = useState<'idle' | 'checking' | 'available' | 'taken' | 'error'>('idle');
-  const { createWorkspace, loading } = useWorkspace();
+  const { createWorkspace, loading } = useWorkspaceOperations();
   const [ isSlugManuallyEdited, setIsSlugManuallyEdited ] = useState(false);
 
   const generateSlugFromName = (name: string): string => {

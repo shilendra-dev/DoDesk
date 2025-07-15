@@ -1,26 +1,39 @@
-import { Session } from 'next-auth'
+import { Workspace } from '@/providers/WorkspaceContext'
 
-export const getDefaultWorkspaceSlug = (session: Session | null): string | null => {
-  if (!session?.user?.default_workspace_id || !session?.user?.workspaces) {
+// Updated to work with workspace context data instead of session
+export const getDefaultWorkspaceSlug = (
+  workspaces: Workspace[], 
+  defaultWorkspaceId: string | null
+): string | null => {
+  if (!defaultWorkspaceId || !workspaces.length) {
     return null
   }
   
-  const defaultWorkspace = session.user.workspaces.find(
-    ws => ws.id === session.user.default_workspace_id
-  )
-  
+  const defaultWorkspace = workspaces.find(ws => ws.id === defaultWorkspaceId)
   return defaultWorkspace?.slug || null
 }
 
-export const getWorkspaceRedirectUrl = (session: Session | null): string => {
-  const defaultSlug = getDefaultWorkspaceSlug(session)
+export const getWorkspaceRedirectUrl = (
+  workspaces: Workspace[], 
+  defaultWorkspaceId: string | null
+): string => {
+  const defaultSlug = getDefaultWorkspaceSlug(workspaces, defaultWorkspaceId)
   return defaultSlug ? `/${defaultSlug}/myissues` : '/onboarding'
 }
 
 export const validateWorkspaceAccess = (
-  session: Session | null, 
+  workspaces: Workspace[], 
   workspaceSlug: string
 ): boolean => {
-  if (!session?.user?.workspaces) return false
-  return session.user.workspaces.some(ws => ws.slug === workspaceSlug)
+  if (!workspaces.length) return false
+  return workspaces.some(ws => ws.slug === workspaceSlug)
+}
+
+// Helper to get workspace by slug
+export const getWorkspaceBySlug = (
+  workspaces: Workspace[], 
+  slug: string
+): Workspace | null => {
+  if (!slug || !workspaces.length) return null
+  return workspaces.find(ws => ws.slug === slug) || null
 }

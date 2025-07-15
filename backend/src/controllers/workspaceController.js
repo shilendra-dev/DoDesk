@@ -102,7 +102,7 @@ const createWorkspace = async (req, res) => {
   }
 };
 
-createApi().post("/user/:user_id/create-workspace").authSecure(createWorkspace); // create a workspace
+createApi().post("/workspace").authSecure(createWorkspace); // create a workspace
 
 //get all workspaces of a user
 const getUserWorkspaces = async (req, res) => {
@@ -139,7 +139,7 @@ const getUserWorkspaces = async (req, res) => {
     }
   }
 };
-createApi().get("/user/:user_id/workspaces").authSecure(getUserWorkspaces); // get all workspaces of a user
+createApi().get("/workspaces").authSecure(getUserWorkspaces); // get all workspaces of a user
 
 //INVITE MEMBERS TO WORKSPACE
 const inviteMember = async (req, res) => {

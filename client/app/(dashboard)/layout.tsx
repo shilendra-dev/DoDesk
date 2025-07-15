@@ -1,6 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { Sidebar } from "@/components/layout/Sidebar";
 
 export default async function DashboardLayout({
   children,
@@ -15,15 +16,13 @@ export default async function DashboardLayout({
     redirect('/signin');
   }
   
-  // if user needs onboarding
-  if (!session.user.default_workspace_id) {
-    redirect('/onboarding');
-  }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Dashboard-wide components can go here */}
-      {children}
+    <div className="flex h-screen bg-background">
+      <Sidebar />
+      <main className="flex-1 overflow-auto">
+        {children}
+      </main>
     </div>
   );
 }

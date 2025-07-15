@@ -112,29 +112,7 @@ const getCurrentUser = async (req, res) => {
 
     let user = userResult.rows[0];
 
-    // Check if default_workspace_id is already set
-    if (!user.default_workspace_id) {
-      // Get first workspace the user is a member of
-      const workspaceResult = await pool.query(
-        `SELECT workspace_id FROM workspace_members WHERE user_id = $1 ORDER BY joined_at ASC LIMIT 1`,
-        [userId]
-      );
-
-      const workspace =
-        workspaceResult.rows.length > 0 ? workspaceResult.rows[0] : null;
-
-      if (workspace && workspace.workspace_id) {
-        // 4. Update user's default_workspace_id
-        await pool.query(
-          `UPDATE users SET default_workspace_id = $1 WHERE id = $2`,
-          [workspace.workspace_id, userId]
-        );
-
-        user.default_workspace_id = workspace.workspace_id;
-      } else {
-        user.default_workspace_id = null;
-      }
-    }
+    // Don't auto-assign default workspace - let user choose or set during onboarding
 
     //res.json(user);
     return {
