@@ -5,15 +5,10 @@ declare module "next-auth" {
     accessToken?: string
     user: {
       id: string
+      email: string
+      name: string
       default_workspace_id?: string | null
-      workspaces?: Array<{
-        id: string
-        name: string
-        slug?: string
-        created_by: string
-        created_at: string
-        updated_at: string
-      }>
+      workspaces: Workspace[]
     } & DefaultSession["user"]
   }
 
@@ -23,14 +18,7 @@ declare module "next-auth" {
     name?: string
     accessToken?: string
     default_workspace_id?: string | null
-    workspaces?: Array<{
-      id: string
-      name: string
-      slug?: string
-      created_by: string
-      created_at: string
-      updated_at: string
-    }>
+    workspaces: Workspace[]
   }
 }
 
@@ -38,13 +26,6 @@ declare module "next-auth/jwt" {
   interface JWT {
     accessToken?: string
     default_workspace_id?: string | null
-    workspaces?: Array<{
-      id: string
-      name: string
-      slug?: string
-      created_by: string
-      created_at: string
-      updated_at: string
-    }>
+    workspaces: Workspace[]
   }
 }

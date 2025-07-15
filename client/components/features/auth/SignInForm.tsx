@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/atoms/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/molecules/card'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { getWorkspaceRedirectUrl } from '@/lib/workspace-helpers'
 
 export function SignInForm() {
   const [email, setEmail] = useState('')
@@ -17,7 +18,6 @@ export function SignInForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   
-  // Get callback URL from search params (for redirects after login)
   const callbackUrl = searchParams.get('callbackUrl')
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,9 +43,10 @@ export function SignInForm() {
         
         // Check if user has a workspace
         if (session?.user?.default_workspace_id) {
-          console.log('✅ User has workspace, redirecting to:', callbackUrl || '/dashboard')
+          const redirectUrl = callbackUrl || getWorkspaceRedirectUrl(session)
+          console.log('✅ User has workspace, redirecting to:', redirectUrl)
           // User has workspace - redirect to callback URL or dashboard
-          router.push(callbackUrl || '/dashboard')
+          router.push(redirectUrl)
         } else {
           console.log('⚠️ User has no workspace, redirecting to onboarding')
           // User has no workspace - redirect to onboarding

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/atoms/button';
 import { Card, CardContent } from '@/components/ui/molecules/card';
 import { PartyPopper, Lightbulb, Target, FileEdit } from 'lucide-react';
+import { useWorkspace } from '@/providers/WorkspaceContext';
 
 interface CompleteScreenProps {
   name: string;
@@ -13,9 +14,11 @@ interface CompleteScreenProps {
 
 const CompleteScreen: React.FC<CompleteScreenProps> = ({ name }) => {
   const router = useRouter();
+  const { getDefaultWorkspace } = useWorkspace();
 
   const handleGoToDashboard = () => {
-    router.push('/dashboard');
+    const defaultWorkspace = getDefaultWorkspace();
+    router.push(`/${defaultWorkspace?.slug}/myissues`);
   };
 
   const quickTips = [

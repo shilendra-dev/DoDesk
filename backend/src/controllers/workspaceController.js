@@ -1,19 +1,12 @@
 const express = require("express");
 const pool = require("../config/db");
 const { v4: uuidv4 } = require("uuid");
-const axios = require("axios");
-const jwt = require("jsonwebtoken");
 const { sendEmail } = require("../utils/sendEmail");
 const isValidEmail = require("../utils/isValidEmail");
 const { createApi } = require("../utils/router");
 
-
-//create workspace api
-// Remove this import - we don't need it anymore
-// const { generateUniqueSlug } = require("../utils/slugGenerate");
-
 const createWorkspace = async (req, res) => {
-  const { name, slug } = req.body;  // Accept both name and slug
+  const { name, slug } = req.body;  
   const userId = req.user.id;
 
   // Validation
@@ -324,6 +317,7 @@ const setDefaultWorkspace = async (req, res) => {
 }
 createApi().post("/user/set-default-workspace").authSecure(setDefaultWorkspace); // set default workspace for a user
 
+//get workspace details
 const getWorkspaceDetails = async (req, res) => {
   const { workspace_id } = req.params;
   const userId = req.user.id;

@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { ThemeProvider } from "@/providers/ThemeContext";
 import SessionProviderWrapper from "@/providers/SessionProviderWrapper";
+import { WorkspaceProvider } from "@/providers/WorkspaceContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -27,9 +28,11 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} antialiased`}>
         <SessionProviderWrapper session={session}>
-          <ThemeProvider>
-            {children}
-          </ThemeProvider>
+          <WorkspaceProvider>
+            <ThemeProvider>
+              {children}
+            </ThemeProvider>
+          </WorkspaceProvider>
         </SessionProviderWrapper>
       </body>
     </html>
