@@ -13,8 +13,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "DoDesk - Linear Alternative",
-  description: "Open source Linear alternative for team collaboration",
+  title: "DoDesk - Workspace",
+  description: "Open source project management tool for team collaboration",
 };
 
 export default async function RootLayout({

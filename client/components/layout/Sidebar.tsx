@@ -15,12 +15,13 @@ import { WorkspaceDropdown } from './WorkspaceDropdown'
 import { CollapsibleSection } from './CollapsibleSection'
 import { SidebarItem } from './SidebarItem'
 import { TeamsSection } from './TeamSection'
+import { useTheme } from '@/providers/ThemeContext'
 
 export function Sidebar() {
   const router = useRouter()
   const pathname = usePathname()
   const { currentWorkspace } = useWorkspace()
-  
+  const { toggleTheme } = useTheme()
   // State for collapsible sections
   const [expandedSections, setExpandedSections] = useState({
     workspace: true,
@@ -202,7 +203,7 @@ export function Sidebar() {
               variant="ghost"
               size="sm"
               className="p-1 h-auto"
-              onClick={() => console.log('Theme toggle')}
+              onClick={() => toggleTheme()}
             >
               <span className="text-sm">🌙</span>
             </Button>
