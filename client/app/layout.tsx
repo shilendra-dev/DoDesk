@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { ThemeProvider } from "@/providers/ThemeContext";
 import SessionProviderWrapper from "@/providers/SessionProviderWrapper";
+import { WorkspaceProvider } from "@/providers/WorkspaceContext";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -12,8 +13,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "DoDesk - Linear Alternative",
-  description: "Open source Linear alternative for team collaboration",
+  title: "DoDesk - Workspace",
+  description: "Open source project management tool for team collaboration",
 };
 
 export default async function RootLayout({
@@ -27,9 +28,11 @@ export default async function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.variable} antialiased`}>
         <SessionProviderWrapper session={session}>
-          <ThemeProvider>
-            {children}
-          </ThemeProvider>
+          <WorkspaceProvider>
+            <ThemeProvider>
+              {children}
+            </ThemeProvider>
+          </WorkspaceProvider>
         </SessionProviderWrapper>
       </body>
     </html>

@@ -30,7 +30,6 @@ const loginUser = async (req, res) => {
     );
     // if user does not exist, return error
     if (userResult.rows.length === 0) {
-      //return res.status(401).json({ message: "Invalid credentials" });
       return {
         status: 401,
         message: "Invalid credentials"
@@ -39,30 +38,26 @@ const loginUser = async (req, res) => {
 
     // if user exists, check password
     const user = userResult.rows[0];
-
-    // query to get workspaces for the user
-    const workspacesResult = await pool.query(
-      `SELECT workspaces.* 
-       FROM workspaces
-       JOIN workspace_members ON workspaces.id = workspace_members.workspace_id
-       WHERE workspace_members.user_id = $1`,
-      [user.id]
-    );
-
-    
-    const workspaces = workspacesResult.rows;
-
-    // compare password with hashed password in database
     const validPassword = await bcrypt.compare(password, user.password);
 
     // if password is invalid, return error
     if (!validPassword) {
-      //return res.status(401).json({ message: "Invalid credentials" });
       return {
         status: 401,
         message: "Invalid credentials"
       };
     }
+
+    const workspacesResult = await pool.query(
+      `SELECT w.id, w.name, w.slug 
+      FROM workspaces w
+      JOIN workspace_members wm ON w.id = wm.workspace_id
+      WHERE wm.user_id = $1
+      ORDER BY wm.joined_at DESC`,
+      [user.id]
+    );
+
+    const workspaces = workspacesResult.rows;
 
     // if password is valid, generate JWT token
     console.log("User logged in:", user.email);
@@ -72,14 +67,9 @@ const loginUser = async (req, res) => {
 
     console.log("Login successful");
 
-   
     if (!user.default_workspace_id) {
-      console.log(
-        "No default workspace found for user"
-      );
+      console.log("No default workspace found for user");
     }
-
-    console.log(user.default_workspace_id);
 
     return {
       status: 200,
@@ -88,15 +78,14 @@ const loginUser = async (req, res) => {
       user: {
         id: user.id,
         email: user.email,
-        name: user.name, // optional
+        name: user.name,
         default_workspace_id: user.default_workspace_id,
       },
-      workspaces: workspacesResult.rows
+      workspaces: workspaces  
     };
 
   } catch (err) {
     console.error("Login error:", err.message);
-    //res.status(500).json({ message: "Server error" });
     return {
       status: 500,
       message: "Server error",

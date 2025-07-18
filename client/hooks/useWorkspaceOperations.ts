@@ -1,18 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import { useSession } from 'next-auth/react';
+import { useState } from 'react'; 
 import api from '@/lib/axios';
 
-export const useWorkspace = () => {
-  const { data: session } = useSession();
+export const useWorkspaceOperations = () => {
+
   const [loading, setLoading] = useState(false);
 
   const createWorkspace = async (formData: { name: string; slug: string }) => {
     setLoading(true);
     try {
       const response = await api.post(
-        `/api/user/${session?.user?.id}/create-workspace`,
+        `/api/workspace`, 
         formData
       );
       return response.data;
@@ -25,7 +24,7 @@ export const useWorkspace = () => {
 
   const checkSlugAvailability = async (slug: string) => {
     try {
-      const response = await api.get(`/api/workspaces/check-slug/${slug}`);
+      const response = await api.get(`/api/workspaces/check-slug/${slug}`);  // ✅ Fixed: Remove /api prefix
       return response.data;
     } catch (error) {
       throw error;
