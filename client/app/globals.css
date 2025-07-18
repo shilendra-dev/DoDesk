@@ -157,6 +157,7 @@
 }
 
 :root {
+  --font-inter: var(--font-inter);
   --background: oklch(0.9551 0 0);
   --foreground: oklch(0 0 0);
   --card: oklch(0.9612 0 0);
@@ -265,6 +266,10 @@
   --shadow-lg: 0px 4px 0.75rem 0px hsl(0 0% 0% / 0.12), 0px 4px 6px -1px hsl(0 0% 0% / 0.12);
   --shadow-xl: 0px 4px 0.75rem 0px hsl(0 0% 0% / 0.12), 0px 8px 10px -1px hsl(0 0% 0% / 0.12);
   --shadow-2xl: 0px 4px 0.75rem 0px hsl(0 0% 0% / 0.30);
+}
+
+.font-sans {
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 @layer base {

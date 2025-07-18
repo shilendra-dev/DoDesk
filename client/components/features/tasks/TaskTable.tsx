@@ -10,6 +10,7 @@ import { MoreHorizontal, Calendar, User } from 'lucide-react'
 import { useTaskStore } from '@/stores/taskStore'
 //import { useTaskUIStore } from '@/stores/taskUIStore'
 import { cn } from '@/lib/utils'
+import { ClientDate } from '@/components/ui/atoms/ClientDate'
 
 interface TaskTableProps {
   tasks: Task[]
@@ -60,11 +61,6 @@ export function TaskTable({ tasks }: TaskTableProps) {
       case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
     }
-  }
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return '—'
-    return new Date(dateString).toLocaleDateString()
   }
 
   return (
@@ -127,41 +123,41 @@ export function TaskTable({ tasks }: TaskTableProps) {
               <td className="p-3">
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <Calendar size={14} />
-                  {formatDate(task.due_date)}
+                  <ClientDate dateString={task.due_date} />
                 </div>
               </td>
               
               <td className="p-3">
                 <div className="flex items-center gap-1">
-                  {task.assignees.length > 0 ? (
-                    <>
-                      <div className="flex -space-x-2">
-                        {task.assignees.slice(0, 3).map((assignee) => (
-                          <Avatar key={assignee.id} className="w-6 h-6 border-2 border-background">
-                            <AvatarFallback className="text-xs">
-                              {assignee.name.charAt(0).toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                        ))}
-                      </div>
-                      {task.assignees.length > 3 && (
-                        <span className="text-xs text-muted-foreground">
-                          +{task.assignees.length - 3}
-                        </span>
-                      )}
-                    </>
-                  ) : (
-                    <div className="flex items-center gap-1 text-muted-foreground">
-                      <User size={14} />
-                      <span className="text-sm">Unassigned</span>
+                {(task.assignees || []).length > 0 ? (
+                  <>
+                    <div className="flex -space-x-2">
+                      {(task.assignees || []).slice(0, 3).map((assignee) => (
+                        <Avatar key={assignee.id} className="w-6 h-6 border-2 border-background">
+                          <AvatarFallback className="text-xs">
+                            {assignee.name?.charAt(0).toUpperCase() || '?'}
+                          </AvatarFallback>
+                        </Avatar>
+                      ))}
                     </div>
-                  )}
+                    {(task.assignees || []).length > 3 && (
+                      <span className="text-xs text-muted-foreground">
+                        +{(task.assignees || []).length - 3}
+                      </span>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex items-center gap-1 text-muted-foreground">
+                    <User size={14} />
+                    <span className="text-sm">Unassigned</span>
+                  </div>
+                )}
                 </div>
               </td>
               
               <td className="p-3">
                 <span className="text-sm text-muted-foreground">
-                  {formatDate(task.created_at)}
+                  <ClientDate dateString={task.created_at} />
                 </span>
               </td>
               

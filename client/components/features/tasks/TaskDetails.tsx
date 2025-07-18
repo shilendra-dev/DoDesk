@@ -8,9 +8,15 @@ import { Input } from '@/components/ui/atoms/input'
 import { Label } from '@/components/ui/atoms/label'
 // import { Badge } from '@/components/ui/atoms/badge'
 import { AssigneesField } from '@/components/features/tasks/AssigneesField'
-import { TaskNotes } from '@/components/features/tasks/TaskNotes'
+// import { TaskNotes } from '@/components/features/tasks/TaskNotes'
 import { useTaskStore } from '@/stores/taskStore'
 import { cn } from '@/lib/utils'
+import dynamic from 'next/dynamic'
+
+const TaskNotes = dynamic(
+  () => import('@/components/features/tasks/TaskNotes').then(mod => mod.TaskNotes),
+  { ssr: false }
+)
 
 interface TaskDetailsProps {
   task: Task

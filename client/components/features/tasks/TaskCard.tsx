@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/atoms/avatar'
 import { Calendar, User } from 'lucide-react'
 import { useTaskStore } from '@/stores/taskStore'
 import { cn } from '@/lib/utils'
+import { ClientDate } from '@/components/ui/atoms/ClientDate'
 
 interface TaskCardProps {
   task: Task
@@ -22,11 +23,6 @@ export function TaskCard({ task }: TaskCardProps) {
       case 'low': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
     }
-  }
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return null
-    return new Date(dateString).toLocaleDateString()
   }
 
   const handleClick = () => {
@@ -61,7 +57,7 @@ export function TaskCard({ task }: TaskCardProps) {
       {task.due_date && (
         <div className="flex items-center gap-1 mb-3 text-xs text-muted-foreground">
           <Calendar size={12} />
-          {formatDate(task.due_date)}
+          <ClientDate dateString={task.due_date} />
         </div>
       )}
 

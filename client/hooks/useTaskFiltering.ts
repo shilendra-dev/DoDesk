@@ -102,20 +102,22 @@ export function useTaskFiltering(tasks: Task[]) {
       case 'Title (Z → A)':
         sorted.sort((a, b) => (b.title || '').localeCompare(a.title || ''))
         break
-      case 'Date Created (Newest)':
-        sorted.sort((a, b) => {
-          const aTime = a.created_at ? new Date(a.created_at).getTime() : 0
-          const bTime = b.created_at ? new Date(b.created_at).getTime() : 0
-          return bTime - aTime
-        })
-        break
-      case 'Date Created (Oldest)':
-        sorted.sort((a, b) => {
-          const aTime = a.created_at ? new Date(a.created_at).getTime() : 0
-          const bTime = b.created_at ? new Date(b.created_at).getTime() : 0
-          return aTime - bTime
-        })
-        break
+        case 'Date Created (Oldest)':
+            sorted.sort((a, b) => {
+              // Use string comparison instead of Date parsing for stability
+              const aDate = a.created_at || ''
+              const bDate = b.created_at || ''
+              return aDate.localeCompare(bDate)
+            })
+            break
+          
+          case 'Date Created (Newest)':
+            sorted.sort((a, b) => {
+              const aDate = a.created_at || ''
+              const bDate = b.created_at || ''
+              return bDate.localeCompare(aDate)
+            })
+            break
       default:
         break
     }

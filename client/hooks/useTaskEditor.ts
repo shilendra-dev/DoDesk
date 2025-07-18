@@ -38,11 +38,14 @@ export function useTaskEditor(initialTask: Task) {
   }, [dropdownType])
 
   // Reset state when task changes
-  useEffect(() => {
-    setEditedTask(initialTask)
-    setNotes(initialTask?.notes || '')
-    setNewlyAddedAssigneeIds([])
-  }, [initialTask])
+    const initialTaskRef = useRef(initialTask)
+    initialTaskRef.current = initialTask // Always has latest task
+    
+    useEffect(() => {
+        setEditedTask(initialTaskRef.current) // Uses current task
+        setNotes(initialTaskRef.current?.notes || '')
+        setNewlyAddedAssigneeIds([])
+    }, [initialTask.id]) 
 
   // Auto-save field changes
   const handleAutoSaveChange = async (e: React.ChangeEvent<HTMLInputElement>) => {

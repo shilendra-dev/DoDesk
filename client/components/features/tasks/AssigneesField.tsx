@@ -38,8 +38,8 @@ export function AssigneesField({ taskId, assignees, workspaceId }: AssigneesFiel
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        {assignees.length > 0 ? (
-          assignees.map((assignee) => (
+        {(assignees || []).length > 0 ? (
+          (assignees || []).map((assignee) => (
             <Badge
               key={assignee.id}
               variant="secondary"
@@ -47,10 +47,10 @@ export function AssigneesField({ taskId, assignees, workspaceId }: AssigneesFiel
             >
               <Avatar className="w-4 h-4">
                 <AvatarFallback className="text-xs">
-                  {assignee.name.charAt(0).toUpperCase()}
+                  {assignee.name?.charAt(0).toUpperCase() || '?'}
                 </AvatarFallback>
               </Avatar>
-              {assignee.name}
+              {assignee.name || 'Unknown'}
               <Button
                 variant="ghost"
                 size="sm"
@@ -84,15 +84,15 @@ export function AssigneesField({ taskId, assignees, workspaceId }: AssigneesFiel
                 <SelectValue placeholder="Select assignee" />
               </SelectTrigger>
               <SelectContent>
-                {dropdownMembers.map((member) => (
+                {(dropdownMembers || []).map((member) => (
                   <SelectItem key={member.id} value={member.id}>
                     <div className="flex items-center gap-2">
                       <Avatar className="w-4 h-4">
                         <AvatarFallback className="text-xs">
-                          {member.name.charAt(0).toUpperCase()}
+                          {member.name?.charAt(0).toUpperCase() || '?'}
                         </AvatarFallback>
                       </Avatar>
-                      {member.name}
+                      {member.name || 'Unknown'}
                     </div>
                   </SelectItem>
                 ))}

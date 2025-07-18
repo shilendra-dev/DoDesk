@@ -66,6 +66,7 @@ export default function MyIssuesPage() {
         {selectedTask && (
           <div className="w-[400px] border-l border-border">
             <TaskDetails 
+              key={`task-details-${selectedTask.id}`}
               task={selectedTask} 
               onClose={() => setSelectedTask(null)} 
             />
