@@ -6,8 +6,8 @@ Inspired by tools like Notion, Trello, and Asana — but fully custom-built from
 
 ---
 
-![Task List Preview](frontend/public/assets/taskView.png)
-![Task Board Preview](frontend/public/assets/boardView.png)
+![Task List Preview](client/public/list_view_screenshot.png)
+![Task Board Preview](client/public/board_view_screenshot.png)
 
 ## 🚀 Features
 
