@@ -6,9 +6,9 @@ import { Badge } from '@/components/ui/atoms/badge'
 import { Button } from '@/components/ui/atoms/button'
 import { Checkbox } from '@/components/ui/atoms/checkbox'
 import { Avatar, AvatarFallback } from '@/components/ui/atoms/avatar'
-import { MoreHorizontal, Calendar, User } from 'lucide-react'
+import { MoreHorizontal, Calendar, User, Copy, Trash2 } from 'lucide-react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/organisms/dropdown-menu'
 import { useTaskStore } from '@/stores/taskStore'
-//import { useTaskUIStore } from '@/stores/taskUIStore'
 import { cn } from '@/lib/utils'
 import { ClientDate } from '@/components/ui/atoms/ClientDate'
 
@@ -16,10 +16,10 @@ interface TaskTableProps {
   tasks: Task[]
 }
 
-export function TaskTable({ tasks }: TaskTableProps) {
-  const { setSelectedTask } = useTaskStore()
-//   const { editingTaskId, editingField, setEditingTask } = useTaskUIStore()
+const TaskTableComponent = ({ tasks }: TaskTableProps) => {
+  const { setSelectedTask, deleteTask } = useTaskStore()
   const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set())
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
 
   const handleTaskSelect = (task: Task) => {
     setSelectedTask(task)
@@ -43,6 +43,16 @@ export function TaskTable({ tasks }: TaskTableProps) {
     } else {
       setSelectedTasks(new Set())
     }
+  }
+
+  const handleDuplicateTask = async (task: Task) => {
+    // TODO: Implement task duplication
+    console.log('Duplicate task:', task.id)
+  }
+
+  const handleDeleteTask = async (taskId: string) => {
+    await deleteTask(taskId)
+    setOpenMenuId(null)
   }
 
   const getPriorityColor = (priority: string) => {
@@ -162,14 +172,34 @@ export function TaskTable({ tasks }: TaskTableProps) {
               </td>
               
               <td className="p-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => e.stopPropagation()}
-                  className="h-8 w-8 p-0"
+                <DropdownMenu 
+                  open={openMenuId === task.id} 
+                  onOpenChange={(open) => setOpenMenuId(open ? task.id : null)}
                 >
-                  <MoreHorizontal size={16} />
-                </Button>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => e.stopPropagation()}
+                      className="h-8 w-8 p-0"
+                    >
+                      <MoreHorizontal size={16} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleDuplicateTask(task)}>
+                      <Copy size={14} className="mr-2" />
+                      Duplicate
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleDeleteTask(task.id)}
+                      className="text-destructive"
+                    >
+                      <Trash2 size={14} className="mr-2" />
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </td>
             </tr>
           ))}
@@ -187,3 +217,6 @@ export function TaskTable({ tasks }: TaskTableProps) {
     </div>
   )
 }
+
+export const TaskTable = React.memo(TaskTableComponent)
+TaskTable.displayName = 'TaskTable'
