@@ -10,3 +10,6 @@ config.json
 node_modules
 
 .env
+
+#macOS hidden file
+.DS_Store

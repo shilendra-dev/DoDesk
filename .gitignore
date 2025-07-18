@@ -1,0 +1,8 @@
+#macOS hidden file
+.DS_Store
+
+#env files
+.env
+
+#node_modules
+node_modules
