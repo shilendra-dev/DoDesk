@@ -77,7 +77,7 @@ export function TaskFilterBar({
   }
 
   return (
-    <div className="border-b border-border p-4 bg-muted/30">
+    <div className="border-b border-border p-4 bg-50">
       <div className="flex items-center justify-between">
         {/* Filter Controls */}
         <div className="flex items-center gap-4">
