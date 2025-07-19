@@ -282,3 +282,32 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Custom scrollbar styling */
+* {
+  scrollbar-width: none; /* Firefox */
+  scrollbar-color: transparent transparent; /* Firefox */
+}
+
+/* WebKit custom scrollbar */
+*::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 0px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 0px;
+  border: 0px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: transparent;
+  border-radius: 0px;
+  border: 0px;
+}
