@@ -15,7 +15,7 @@ const TaskTableComponent = ({ tasks }: TaskTableProps) => {
   const [selectedTasks, setSelectedTasks] = useState<Set<string>>(new Set())
 
   const handleTaskSelect = (task: Task) => {
-    setSelectedTask(task)
+    setSelectedTask(task.id)
   }
 
   const handleTaskCheck = (taskId: string, checked: boolean) => {

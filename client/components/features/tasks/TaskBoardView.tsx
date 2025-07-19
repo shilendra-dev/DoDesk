@@ -48,7 +48,7 @@ export function TaskBoardView({ tasks }: TaskBoardViewProps) {
     handleClearAll,
     hasActiveFilters,
     filterSummary
-  } = useTaskFiltering(tasks)
+  } = useTaskFiltering()
 
   // Group filtered tasks by status
   const groupedTasks = useMemo(() => {

@@ -1,12 +1,15 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { Task, TaskFilter } from '@/types/task'
+import { Task, TaskFilter, Assignee } from '@/types/task'
 import { useSavedFilterStore } from '@/stores/savedFilterStore'
+import { useTaskStore } from '@/stores/taskStore'
 
-export function useTaskFiltering(tasks: Task[]) {
+export function useTaskFiltering() {
   const { savedFilters, defaultFilter, setSelectedViewId, clearSelectedView } = useSavedFilterStore()
   
+  const tasks = useTaskStore(state => state.tasks)
+
   const [statusFilter, setStatusFilter] = useState('All')
   const [priorityFilter, setPriorityFilter] = useState('All')
   const [sortOption, setSortOption] = useState('None')
@@ -45,7 +48,7 @@ export function useTaskFiltering(tasks: Task[]) {
 
   // Filtering Logic
   const filteredTasks = useMemo(() => {
-    return tasks.filter((task) => {
+    return Object.values(tasks).filter((task: Task) => {
       const statusMatch =
         statusFilter === 'All' ||
         (task.status && task.status.toLowerCase() === statusFilter.toLowerCase())
@@ -167,14 +170,14 @@ export function useTaskFiltering(tasks: Task[]) {
   }
 
   const uniqueAssignees = useMemo(() => {
-    return tasks
-      .flatMap((task) => task.assignees || [])
+    return Object.values(tasks)
+      .flatMap((task: Task) => task.assignees || [])    
       .filter(
-        (assignee, index, self) =>
-          assignee.name &&
-          index === self.findIndex((a) => a.name === assignee.name)
+        (assignee: Assignee, index: number, self: Assignee[]) =>
+          assignee?.name &&
+          self.findIndex((a: Assignee) => a.name === assignee.name) === index
       )
-      .sort((a, b) => a.name.localeCompare(b.name))
+      .sort((a: Assignee, b: Assignee) => a.name?.localeCompare(b.name) || 0)
   }, [tasks])
 
   const filterSummary = [
