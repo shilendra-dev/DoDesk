@@ -1,12 +1,15 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { Task, TaskFilter } from '@/types/task'
+import { Task, TaskFilter, Assignee } from '@/types/task'
 import { useSavedFilterStore } from '@/stores/savedFilterStore'
+import { useTaskStore } from '@/stores/taskStore'
 
-export function useTaskFiltering(tasks: Task[]) {
+export function useTaskFiltering() {
   const { savedFilters, defaultFilter, setSelectedViewId, clearSelectedView } = useSavedFilterStore()
   
+  const tasks = useTaskStore(state => state.tasks)
+
   const [statusFilter, setStatusFilter] = useState('All')
   const [priorityFilter, setPriorityFilter] = useState('All')
   const [sortOption, setSortOption] = useState('None')
@@ -45,7 +48,7 @@ export function useTaskFiltering(tasks: Task[]) {
 
   // Filtering Logic
   const filteredTasks = useMemo(() => {
-    return tasks.filter((task) => {
+    return Object.values(tasks).filter((task: Task) => {
       const statusMatch =
         statusFilter === 'All' ||
         (task.status && task.status.toLowerCase() === statusFilter.toLowerCase())
@@ -102,20 +105,22 @@ export function useTaskFiltering(tasks: Task[]) {
       case 'Title (Z → A)':
         sorted.sort((a, b) => (b.title || '').localeCompare(a.title || ''))
         break
-      case 'Date Created (Newest)':
-        sorted.sort((a, b) => {
-          const aTime = a.created_at ? new Date(a.created_at).getTime() : 0
-          const bTime = b.created_at ? new Date(b.created_at).getTime() : 0
-          return bTime - aTime
-        })
-        break
-      case 'Date Created (Oldest)':
-        sorted.sort((a, b) => {
-          const aTime = a.created_at ? new Date(a.created_at).getTime() : 0
-          const bTime = b.created_at ? new Date(b.created_at).getTime() : 0
-          return aTime - bTime
-        })
-        break
+        case 'Date Created (Oldest)':
+            sorted.sort((a, b) => {
+              // Use string comparison instead of Date parsing for stability
+              const aDate = a.created_at || ''
+              const bDate = b.created_at || ''
+              return aDate.localeCompare(bDate)
+            })
+            break
+          
+          case 'Date Created (Newest)':
+            sorted.sort((a, b) => {
+              const aDate = a.created_at || ''
+              const bDate = b.created_at || ''
+              return bDate.localeCompare(aDate)
+            })
+            break
       default:
         break
     }
@@ -165,14 +170,14 @@ export function useTaskFiltering(tasks: Task[]) {
   }
 
   const uniqueAssignees = useMemo(() => {
-    return tasks
-      .flatMap((task) => task.assignees || [])
+    return Object.values(tasks)
+      .flatMap((task: Task) => task.assignees || [])    
       .filter(
-        (assignee, index, self) =>
-          assignee.name &&
-          index === self.findIndex((a) => a.name === assignee.name)
+        (assignee: Assignee, index: number, self: Assignee[]) =>
+          assignee?.name &&
+          self.findIndex((a: Assignee) => a.name === assignee.name) === index
       )
-      .sort((a, b) => a.name.localeCompare(b.name))
+      .sort((a: Assignee, b: Assignee) => a.name?.localeCompare(b.name) || 0)
   }, [tasks])
 
   const filterSummary = [

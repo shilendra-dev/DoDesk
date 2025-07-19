@@ -5,4 +5,4 @@ export { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCap
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs'
 export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from './tooltip'
 export { Popover, PopoverTrigger, PopoverContent } from './popover'
-export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './select'
+export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../atoms/select'

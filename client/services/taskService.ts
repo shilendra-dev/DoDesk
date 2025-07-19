@@ -16,7 +16,11 @@ export const taskService = {
 
   // Update a task
   updateTask: async (taskId: string, taskData: UpdateTaskData): Promise<Task> => {
-    const response = await api.put(`/api/task/${taskId}`, taskData)
+    // Filter out null/undefined values to prevent database constraint errors
+    const filteredData = Object.fromEntries(
+      Object.entries(taskData).filter(([, value]) => value != null && value !== '')
+    )
+    const response = await api.put(`/api/task/${taskId}`, filteredData)
     return response.data.task
   },
 
@@ -50,8 +54,15 @@ export const taskService = {
     const response = await api.get(`/api/workspace/${workspaceId}/members`)
     const allMembers = response.data.members || []
     
+    // Transform to use user_id (what backend expects) instead of membership id
+    const members = allMembers.map((member: { user_id: string; name: string; email: string }) => ({
+      id: member.user_id,  // Backend expects the actual user_id, not membership id
+      name: member.name,
+      email: member.email
+    }))
+    
     // Filter out already assigned members
     const assignedIds = currentAssignees.map(a => a.id)
-    return allMembers.filter((member: Assignee) => !assignedIds.includes(member.id))
+    return members.filter((member: Assignee) => !assignedIds.includes(member.id))
   }
 }

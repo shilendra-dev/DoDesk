@@ -3,6 +3,7 @@
 import React, { useState, useMemo } from 'react'
 import { Task } from '@/types/task'
 import { TaskTable } from '@/components/features/tasks/TaskTable'
+import { TaskTableSkeleton } from '@/components/features/tasks/TaskTableSkeleton'
 import { TaskFilterBar } from '@/components/features/tasks/TaskFilterBar'
 import { Pagination } from '@/components/features/tasks/Pagination'
 import { useTaskFiltering } from '@/hooks/useTaskFiltering'
@@ -10,9 +11,10 @@ import { usePagination } from '@/hooks/usePagination'
 
 interface TaskListViewProps {
   tasks: Task[]
+  isLoading?: boolean
 }
 
-export function TaskListView({ tasks }: TaskListViewProps) {
+export function TaskListView({ tasks, isLoading = false }: TaskListViewProps) {
   const [currentPage, setCurrentPage] = useState(1)
   const tasksPerPage = 15
 
@@ -39,13 +41,28 @@ export function TaskListView({ tasks }: TaskListViewProps) {
     currentPage
   )
 
-  // Filter options for the filter bar
+  // Memoize assignee options separately to avoid recreating entire config
+  const assigneeOptions = useMemo(() => {
+    const uniqueAssignees = tasks
+      .flatMap(task => task.assignees || [])
+      .filter((assignee) => assignee?.name)
+      .filter((assignee, index, self) => 
+        index === self.findIndex(a => a.name === assignee.name)
+      )
+    
+    return [
+      { value: "All", label: "All" },
+      ...uniqueAssignees.map(assignee => ({ value: assignee.name, label: assignee.name }))
+    ]
+  }, [tasks])
+
+  // Filter options for the filter bar - only recreate when values change
   const filterConfigs = useMemo(() => [
     {
       label: "Status",
       id: "statusFilter",
       value: statusFilter,
-      onChange: (value: string) => setStatusFilter(value),
+      onChange: setStatusFilter,
       options: [
         { value: "All", label: "All" },
         { value: "pending", label: "Pending" },
@@ -57,7 +74,7 @@ export function TaskListView({ tasks }: TaskListViewProps) {
       label: "Priority",
       id: "priorityFilter",
       value: priorityFilter,
-      onChange: (value: string) => setPriorityFilter(value),
+      onChange: setPriorityFilter,
       options: [
         { value: "All", label: "All" },
         { value: "high", label: "High" },
@@ -69,18 +86,10 @@ export function TaskListView({ tasks }: TaskListViewProps) {
       label: "Assignee",
       id: "assigneeFilter",
       value: assigneeFilter,
-      onChange: (value: string) => setAssigneeFilter(value),
-      options: [
-        { value: "All", label: "All" },
-        ...tasks
-          .flatMap(task => task.assignees)
-          .filter((assignee, index, self) => 
-            index === self.findIndex(a => a.name === assignee.name)
-          )
-          .map(assignee => ({ value: assignee.name, label: assignee.name }))
-      ]
+      onChange: setAssigneeFilter,
+      options: assigneeOptions
     }
-  ], [statusFilter, priorityFilter, assigneeFilter, tasks, setStatusFilter, setPriorityFilter, setAssigneeFilter])
+  ], [statusFilter, priorityFilter, assigneeFilter, assigneeOptions])
 
   const sortOptions = [
     { value: "None", label: "None" },
@@ -109,7 +118,11 @@ export function TaskListView({ tasks }: TaskListViewProps) {
 
       {/* Task Table */}
       <div className="flex-1 overflow-auto">
-        <TaskTable tasks={currentTasks} />
+        {isLoading ? (
+          <TaskTableSkeleton />
+        ) : (
+          <TaskTable tasks={currentTasks} />
+        )}
       </div>
 
       {/* Pagination */}

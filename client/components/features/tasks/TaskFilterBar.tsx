@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { X, Save } from 'lucide-react'
 import { Button } from '@/components/ui/atoms/button'
 import { Badge } from '@/components/ui/atoms/badge'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/molecules/select'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from  '@/components/ui/atoms/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/organisms/dialog'
 import { Input } from '@/components/ui/atoms/input'
 import { Label } from '@/components/ui/atoms/label'
@@ -103,7 +103,7 @@ export function TaskFilterBar({
                 <SelectTrigger className="w-32">
                   <SelectValue placeholder={config.label} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent sideOffset={10}>
                   {config.options.map((option) => (
                     <SelectItem key={option.value} value={option.value}>
                       {option.label}

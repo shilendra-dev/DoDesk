@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/atoms/avatar'
 import { Calendar, User } from 'lucide-react'
 import { useTaskStore } from '@/stores/taskStore'
 import { cn } from '@/lib/utils'
+import { ClientDate } from '@/components/ui/atoms/client-date'
 
 interface TaskCardProps {
   task: Task
@@ -17,16 +18,11 @@ export function TaskCard({ task }: TaskCardProps) {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-      case 'mid': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-      case 'low': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+      case 'high': return 'bg-destructive/10 text-destructive border-destructive/20'
+      case 'mid': return 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20'
+      case 'low': return 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20'
+      default: return 'bg-muted text-muted-foreground border-border'
     }
-  }
-
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return null
-    return new Date(dateString).toLocaleDateString()
   }
 
   const handleClick = () => {
@@ -61,17 +57,17 @@ export function TaskCard({ task }: TaskCardProps) {
       {task.due_date && (
         <div className="flex items-center gap-1 mb-3 text-xs text-muted-foreground">
           <Calendar size={12} />
-          {formatDate(task.due_date)}
+          <ClientDate dateString={task.due_date} />
         </div>
       )}
 
       {/* Assignees */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
-          {task.assignees.length > 0 ? (
+          {(task.assignees || []).length > 0 ? (
             <>
               <div className="flex -space-x-1">
-                {task.assignees.slice(0, 2).map((assignee) => (
+                {(task.assignees || []).slice(0, 2).map((assignee) => (
                   <Avatar key={assignee.id} className="w-5 h-5 border border-background">
                     <AvatarFallback className="text-xs">
                       {assignee.name.charAt(0).toUpperCase()}
@@ -79,9 +75,9 @@ export function TaskCard({ task }: TaskCardProps) {
                   </Avatar>
                 ))}
               </div>
-              {task.assignees.length > 2 && (
+              {(task.assignees || []).length > 2 && (
                 <span className="text-xs text-muted-foreground">
-                  +{task.assignees.length - 2}
+                  +{(task.assignees || []).length - 2}
                 </span>
               )}
             </>

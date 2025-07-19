@@ -13,7 +13,7 @@ import { LoadingSpinner } from '@/components/ui/atoms/loading-spinner'
 
 export default function MyIssuesPage() {
   const { currentWorkspace, isLoading: workspaceLoading } = useWorkspace()
-  const { tasks, loading: tasksLoading, selectedTask, fetchTasks, setSelectedTask } = useTaskStore()
+  const { tasks, loadingStates, selectedTaskId, fetchTasks, setSelectedTask } = useTaskStore()
   const { view, showCreateTask, setShowCreateTask } = useTaskUIStore()
 
   // Fetch tasks when workspace changes
@@ -23,7 +23,7 @@ export default function MyIssuesPage() {
     }
   }, [currentWorkspace?.id, fetchTasks])
 
-  if (workspaceLoading || tasksLoading) {
+  if (workspaceLoading || loadingStates.fetchTasks) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <LoadingSpinner size="lg" />
@@ -53,25 +53,24 @@ export default function MyIssuesPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 overflow-hidden">
+      
+        <div className="flex-1">
           {view === 'list' ? (
-            <TaskListView tasks={tasks} />
+            <TaskListView tasks={Object.values(tasks)} isLoading={loadingStates.fetchTasks} />
           ) : (
-            <TaskBoardView tasks={tasks} />
+            <TaskBoardView tasks={Object.values(tasks)} />
           )}
         </div>
 
         {/* Task Details Sidebar */}
-        {selectedTask && (
-          <div className="w-[400px] border-l border-border">
+        {selectedTaskId && (
             <TaskDetails 
-              task={selectedTask} 
+              key={`task-details-${selectedTaskId}`}
+              taskId={selectedTaskId} 
               onClose={() => setSelectedTask(null)} 
             />
-          </div>
         )}
-      </div>
+      
     </div>
   )
 }

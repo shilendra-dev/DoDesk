@@ -38,11 +38,14 @@ export function useTaskEditor(initialTask: Task) {
   }, [dropdownType])
 
   // Reset state when task changes
-  useEffect(() => {
-    setEditedTask(initialTask)
-    setNotes(initialTask?.notes || '')
-    setNewlyAddedAssigneeIds([])
-  }, [initialTask])
+    const initialTaskRef = useRef(initialTask)
+    initialTaskRef.current = initialTask // Always has latest task
+    
+    useEffect(() => {
+        setEditedTask(initialTaskRef.current) // Uses current task
+        setNotes(initialTaskRef.current?.notes || '')
+        setNewlyAddedAssigneeIds([])
+    }, [initialTask.id]) 
 
   // Auto-save field changes
   const handleAutoSaveChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -70,7 +73,7 @@ export function useTaskEditor(initialTask: Task) {
   const handleAssign = async (taskId: string, assigneeIds: string[]) => {
     // The 'assignees' property is not valid for UpdateTaskData, so we should use 'assignee_ids' instead.
     try {
-      await updateTask(taskId, { assignee_ids: assigneeIds })
+      await taskService.assignTask(taskId, assigneeIds)
       setNewlyAddedAssigneeIds(assigneeIds)
       setShowAssigneeDropdown(false)
     } catch (error) {
@@ -84,7 +87,7 @@ export function useTaskEditor(initialTask: Task) {
       const updatedAssignees = editedTask.assignees.filter(a => a.id !== userId)
       const updated = { ...editedTask, assignees: updatedAssignees }
       setEditedTask(updated)
-      await updateTask(editedTask.id, { assignees: updatedAssignees })
+      await taskService.removeAssignee(editedTask.id, userId)
     } catch (error) {
       console.error('Error removing assignee:', error)
     }
