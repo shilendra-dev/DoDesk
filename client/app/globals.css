@@ -56,28 +56,30 @@
 }
 
 @layer base {
-  /* Apply smooth transitions to all elements */
+  /* Remove global transitions completely */
   * {
     @apply border-border;
-    transition: var(--transition-theme);
   }
   
   body {
     @apply bg-background text-foreground;
-    transition: var(--transition-theme);
   }
   
-  /* Smooth transitions for common elements */
-  button, 
+  /* Apply transitions only to specific safe elements */
+  button:not([data-radix-select-trigger]):not([data-radix-dropdown-menu-trigger]), 
   input, 
-  textarea, 
-  select {
-    transition: var(--transition-theme);
-  }
-  
-  /* Card transitions */
+  textarea,
+  .card,
   [data-card] {
     transition: var(--transition-theme);
+  }
+  
+  /* Ensure no transitions on Radix elements */
+  [data-radix-select-content],
+  [data-radix-select-viewport],
+  [data-radix-popper-content-wrapper],
+  [data-radix-portal] * {
+    transition: none !important;
   }
 }
 

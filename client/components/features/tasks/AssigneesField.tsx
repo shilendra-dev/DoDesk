@@ -1,13 +1,13 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Plus, X } from 'lucide-react'
 import { Avatar, AvatarFallback } from '@/components/ui/atoms/avatar'
 import { Button } from '@/components/ui/atoms/button'
 import { Badge } from '@/components/ui/atoms/badge'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/molecules/select'
-import { useTaskEditor } from '@/hooks/useTaskEditor'
-import { Task } from '@/types/task'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/atoms/select'
+import { taskService } from '@/services/taskService'
+import { useTaskStore } from '@/stores/taskStore'
 
 interface AssigneesFieldProps {
   taskId: string
@@ -16,23 +16,58 @@ interface AssigneesFieldProps {
 }
 
 export function AssigneesField({ taskId, assignees, workspaceId }: AssigneesFieldProps) {
-  const {
-    showAssigneeDropdown,
-    dropdownMembers,
-    // newlyAddedAssigneeIds,
-    handleAssigneeDropdownToggle,
-    handleAssign,
-    handleRemoveAssignee
-  } = useTaskEditor({ id: taskId, assignees, workspace_id: workspaceId } as Task)
+  const [dropdownMembers, setDropdownMembers] = useState<Array<{ id: string; name: string; email?: string }>>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const { fetchTasks } = useTaskStore()
+
+  // Load available members when component mounts
+  useEffect(() => {
+    const loadMembers = async () => {
+      try {
+        setIsLoading(true)
+        const availableMembers = await taskService.getAvailableMembers(workspaceId, assignees || [])
+        setDropdownMembers(availableMembers)
+      } catch (error) {
+        console.error('Error fetching members:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+    loadMembers()
+  }, [workspaceId, assignees])
 
   const handleAssignMember = async (assigneeId: string) => {
-    const currentAssigneeIds = (assignees || []).map(a => a.id)
-    const newAssigneeIds = [...currentAssigneeIds, assigneeId]
-    await handleAssign(taskId, newAssigneeIds)
+    if (assigneeId === 'no-members') return
+    
+    try {
+      // Use service function to assign member
+      await taskService.assignTask(taskId, [assigneeId])
+      
+      // Refresh tasks to get updated assignee data
+      await fetchTasks(workspaceId)
+      
+      // Refresh available members list
+      const updatedMembers = await taskService.getAvailableMembers(workspaceId, [...(assignees || []), { id: assigneeId, name: 'Loading...' }])
+      setDropdownMembers(updatedMembers)
+    } catch (error) {
+      console.error('Error assigning member:', error)
+    }
   }
 
   const handleRemoveMember = async (userId: string) => {
-    await handleRemoveAssignee(userId)
+    try {
+      // Use service function to remove assignee
+      await taskService.removeAssignee(taskId, userId)
+      
+      // Refresh tasks to get updated assignee data
+      await fetchTasks(workspaceId)
+      
+      // Refresh available members list
+      const updatedMembers = await taskService.getAvailableMembers(workspaceId, (assignees || []).filter(a => a.id !== userId))
+      setDropdownMembers(updatedMembers)
+    } catch (error) {
+      console.error('Error removing assignee:', error)
+    }
   }
 
   return (
@@ -66,40 +101,33 @@ export function AssigneesField({ taskId, assignees, workspaceId }: AssigneesFiel
         )}
       </div>
 
-      <div className="relative">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleAssigneeDropdownToggle}
-          className="flex items-center gap-2"
-        >
-          <Plus size={14} />
-          Add Assignee
-        </Button>
-
-        {showAssigneeDropdown && (
-          <div className="absolute top-full left-0 mt-1 w-48 bg-background border border-border rounded-md shadow-lg z-50">
-            <Select onValueChange={handleAssignMember}>
-              <SelectTrigger className="border-0">
-                <SelectValue placeholder="Select assignee" />
-              </SelectTrigger>
-              <SelectContent>
-                {(dropdownMembers || []).map((member) => (
-                  <SelectItem key={member.id} value={member.id}>
-                    <div className="flex items-center gap-2">
-                      <Avatar className="w-4 h-4">
-                        <AvatarFallback className="text-xs">
-                          {member.name?.charAt(0).toUpperCase() || '?'}
-                        </AvatarFallback>
-                      </Avatar>
-                      {member.name || 'Unknown'}
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+      <div className="w-48">
+        <Select onValueChange={handleAssignMember} disabled={isLoading}>
+          <SelectTrigger className="flex items-center gap-2">
+            <Plus size={14} />
+            <SelectValue placeholder={isLoading ? "Loading..." : "Add Assignee"} />
+          </SelectTrigger>
+          <SelectContent>
+            {(dropdownMembers || []).length > 0 ? (
+              (dropdownMembers || []).map((member) => (
+                <SelectItem key={member.id} value={member.id}>
+                  <div className="flex items-center gap-2">
+                    <Avatar className="w-4 h-4">
+                      <AvatarFallback className="text-xs">
+                        {member.name?.charAt(0).toUpperCase() || '?'}
+                      </AvatarFallback>
+                    </Avatar>
+                    {member.name || 'Unknown'}
+                  </div>
+                </SelectItem>
+              ))
+            ) : (
+              <SelectItem value="no-members" disabled>
+                No available members
+              </SelectItem>
+            )}
+          </SelectContent>
+        </Select>
       </div>
     </div>
   )

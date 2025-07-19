@@ -53,8 +53,8 @@ export default function MyIssuesPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-1 overflow-hidden">
-        <div className="flex-1 overflow-hidden">
+      <div className="flex flex-1">
+        <div className="flex-1">
           {view === 'list' ? (
             <TaskListView tasks={tasks} isLoading={tasksLoading} />
           ) : (
