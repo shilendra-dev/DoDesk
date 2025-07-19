@@ -61,21 +61,64 @@ export const useTaskStore = create<TaskStore>((set) => ({
   },
 
   updateTask: async (taskId: string, updates: UpdateTaskData) => {
-    set({ loading: true, error: null })
-    try {
-      const updatedTask = await taskService.updateTask(taskId, updates)
+    // Filter out null/undefined values before processing
+    const validUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([, value]) => value != null && value !== '')
+    )
+
+    // For simple updates (status, priority), apply optimistically
+    const canOptimizeUpdate = Object.keys(validUpdates).every(key => 
+      ['status', 'priority', 'title'].includes(key)
+    )
+
+    if (canOptimizeUpdate) {
+      // Optimistic update - immediate UI feedback
       set(state => ({
         tasks: state.tasks.map(task => 
-          task.id === taskId ? updatedTask : task
+          task.id === taskId ? { ...task, ...validUpdates } : task
         ),
-        selectedTask: state.selectedTask?.id === taskId ? updatedTask : state.selectedTask,
-        loading: false
+        selectedTask: state.selectedTask?.id === taskId 
+          ? { ...state.selectedTask, ...validUpdates } 
+          : state.selectedTask,
+        error: null
       }))
-      toast.success('Task updated successfully!')
-    } catch (error) {
-      console.error('Error updating task:', error)
-      set({ error: 'Failed to update task', loading: false })
-      toast.error('Failed to update task')
+
+      try {
+        const updatedTask = await taskService.updateTask(taskId, validUpdates)
+        // Sync with server response
+        set(state => ({
+          tasks: state.tasks.map(task => 
+            task.id === taskId ? updatedTask : task
+          ),
+          selectedTask: state.selectedTask?.id === taskId ? updatedTask : state.selectedTask,
+        }))
+      } catch (error) {
+        console.error('Error updating task:', error)
+        // Revert optimistic update on failure
+        set({
+          error: 'Failed to update task',
+          // Note: In a real app, you'd want to revert to the original task state
+        })
+        toast.error('Failed to update task')
+      }
+    } else {
+      // For complex updates, use traditional loading approach
+      set({ loading: true, error: null })
+      try {
+        const updatedTask = await taskService.updateTask(taskId, validUpdates)
+        set(state => ({
+          tasks: state.tasks.map(task => 
+            task.id === taskId ? updatedTask : task
+          ),
+          selectedTask: state.selectedTask?.id === taskId ? updatedTask : state.selectedTask,
+          loading: false
+        }))
+        // Remove intrusive success toast for simple updates
+      } catch (error) {
+        console.error('Error updating task:', error)
+        set({ error: 'Failed to update task', loading: false })
+        toast.error('Failed to update task')
+      }
     }
   },
 

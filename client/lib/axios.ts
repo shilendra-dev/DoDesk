@@ -5,7 +5,7 @@ import { getSession } from 'next-auth/react'
 
 // Create axios instance
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5033/api',
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5033',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',

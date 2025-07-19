@@ -135,27 +135,46 @@ createApi().get("/workspace/:workspace_id/tasks").authSecure(getTasksByWorkspace
 //edit task or UPDATE
 const updateTask = async (req, res) => {
   if (!req.params || !req.body) {
-    return res.status(400).json({ message: "Task ID and update data required" });
+    return {
+      status: 400,
+      message: "Task ID and update data required"
+    };
   }
+  
   const { taskId } = req.params;
-  const { title, description, status, priority, due_date } = req.body;
+  const updateData = req.body;
+
+  // Only include fields that are actually provided
+  const allowedFields = ['title', 'description', 'status', 'priority', 'due_date'];
+  const fieldsToUpdate = Object.keys(updateData).filter(key => 
+    allowedFields.includes(key) && updateData[key] !== undefined
+  );
+  
+  if (fieldsToUpdate.length === 0) {
+    return {
+      status: 400,
+      message: "No valid fields to update"
+    };
+  }
+
+  // Build dynamic SQL
+  const setClause = fieldsToUpdate.map((field, index) => `${field} = $${index + 1}`).join(', ');
+  const values = fieldsToUpdate.map(field => updateData[field]);
+  values.push(taskId); // Add taskId as the last parameter
 
   try {
     const result = await pool.query(
-      `UPDATE tasks
-            SET title = $1, description = $2, status = $3, priority = $4, due_date = $5
-            WHERE id = $6 
-            RETURNING *`,
-      [title, description, status, priority, due_date, taskId]
+      `UPDATE tasks SET ${setClause}, updated_at = NOW() WHERE id = $${values.length} RETURNING *`,
+      values
     );
+    
     if (result.rows.length === 0) {
-      //return res.status(404).json({ message: "Task not found" });
       return {
         status: 404,
         message: "Task not found",
       };
     }
-    //res.status(200).json(result.rows[0]);
+    
     return {
       status: 200,
       message: "Task updated successfully",
@@ -165,7 +184,7 @@ const updateTask = async (req, res) => {
     console.error("Error updating task: ", error);
     return {
       status: 500,
-      message: "Failed to update tasks",
+      message: "Failed to update task",
       error: error.message
     };
   }
@@ -210,7 +229,10 @@ const assignTask = async (req, res) => {
   const { assignees } = req.body;
 
   if (!Array.isArray(assignees) || assignees.length === 0) {
-    return res.status(400).json({ error: "Assignees list required" });
+    return {
+      status: 400,
+      message: "Assignees list required"
+    };
   }
 
   try {
@@ -220,15 +242,21 @@ const assignTask = async (req, res) => {
       [taskId]
     );
     if (taskResult.rows.length === 0) {
-      return res.status(404).json({ message: "Task not found" });
+      return {
+        status: 404,
+        message: "Task not found"
+      };
     }
 
     const workspace_id = taskResult.rows[0].workspace_id;
 
-    // Validate if assignees exist in the users table
+    // Validate if assignees exist and are members of the workspace
     const validAssigneesResult = await pool.query(
-      `SELECT id FROM users WHERE id = ANY($1::uuid[])`,
-      [assignees]
+      `SELECT u.id 
+       FROM users u
+       JOIN workspace_members wm ON u.id = wm.user_id
+       WHERE u.id = ANY($1::uuid[]) AND wm.workspace_id = $2`,
+      [assignees, workspace_id]
     );
 
     const validAssignees = validAssigneesResult.rows.map((row) => row.id);
@@ -237,12 +265,9 @@ const assignTask = async (req, res) => {
     );
 
     if (invalidAssignees.length > 0) {
-      // return res.status(400).json({
-      //   error: `Invalid assignees: ${invalidAssignees.join(", ")}`,
-      // });
       return {
         status: 400,
-        message: `Invalid assignees: ${invalidAssignees.join(", ")}`,
+        message: `Invalid assignees (not workspace members): ${invalidAssignees.join(", ")}`,
       };
     }
 

@@ -43,23 +43,7 @@ export function TaskDetails({ task, onClose }: TaskDetailsProps) {
     await updateNotes(task.id, notes)
   }
 
-//   const getPriorityColor = (priority: string) => {
-//     switch (priority) {
-//       case 'high': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-//       case 'mid': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-//       case 'low': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-//       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-//     }
-//   }
 
-//   const getStatusColor = (status: string) => {
-//     switch (status) {
-//       case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-//       case 'in-progress': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-//       case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-//       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
-//     }
-//   }
 
   return (
     <div className={cn(
@@ -100,7 +84,7 @@ export function TaskDetails({ task, onClose }: TaskDetailsProps) {
               Status
             </Label>
             <select
-              value={task.status}
+              value={task.status || ''}
               onChange={(e) => handleFieldUpdate('status', e.target.value)}
               className="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground"
             >

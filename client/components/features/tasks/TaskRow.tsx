@@ -35,19 +35,19 @@ export const TaskRow = React.memo(({ task, isSelected, onTaskSelect, onTaskCheck
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-      case 'mid': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-      case 'low': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+      case 'high': return 'bg-destructive/10 text-destructive border-destructive/20'
+      case 'mid': return 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20'
+      case 'low': return 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20'
+      default: return 'bg-muted text-muted-foreground border-border'
     }
   }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-      case 'in-progress': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-      case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+      case 'pending': return 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20'
+      case 'in-progress': return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20'
+      case 'completed': return 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20'
+      default: return 'bg-muted text-muted-foreground border-border'
     }
   }
 
@@ -77,7 +77,7 @@ export const TaskRow = React.memo(({ task, isSelected, onTaskSelect, onTaskCheck
       
       <td className="p-3">
         <Badge className={cn("text-xs", getStatusColor(task.status))}>
-          {task.status.replace('-', ' ')}
+          {task.status?.replace('-', ' ') || 'No Status'}
         </Badge>
       </td>
       

@@ -123,9 +123,10 @@ export function TaskBoardView({ tasks }: TaskBoardViewProps) {
       options: [
         { value: "All", label: "All" },
         ...tasks
-          .flatMap(task => task.assignees)
+          .flatMap(task => task.assignees || [])
+          .filter(assignee => assignee?.name)
           .filter((assignee, index, self) => 
-            index === self.findIndex(a => a.name === assignee.name)
+            index === self.findIndex(a => a?.name === assignee.name)
           )
           .map(assignee => ({ value: assignee.name, label: assignee.name }))
       ]

@@ -26,7 +26,7 @@ export function AssigneesField({ taskId, assignees, workspaceId }: AssigneesFiel
   } = useTaskEditor({ id: taskId, assignees, workspace_id: workspaceId } as Task)
 
   const handleAssignMember = async (assigneeId: string) => {
-    const currentAssigneeIds = assignees.map(a => a.id)
+    const currentAssigneeIds = (assignees || []).map(a => a.id)
     const newAssigneeIds = [...currentAssigneeIds, assigneeId]
     await handleAssign(taskId, newAssigneeIds)
   }

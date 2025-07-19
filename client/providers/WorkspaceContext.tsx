@@ -41,6 +41,7 @@ export const WorkspaceProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [workspaces, setWorkspaces] = useState<Workspace[]>([])
   const [defaultWorkspaceId, setDefaultWorkspaceId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true) // Start with loading true
+  const [hasInitialized, setHasInitialized] = useState(false) // Track if we've fetched once
   
   const workspaceSlug = params.workspaceSlug as string
   const isAuthenticated = status === 'authenticated'
@@ -68,18 +69,20 @@ export const WorkspaceProvider: React.FC<{ children: ReactNode }> = ({ children 
     }
   }
 
-  // Initial fetch and loading state management
+  // Initial fetch and loading state management - only fetch once per session
   useEffect(() => {
     if (status === 'loading') {
       // Session is still loading, keep loading state
       setIsLoading(true)
-    } else if (isAuthenticated) {
+    } else if (isAuthenticated && !hasInitialized) {
       fetchWorkspaces()
+      setHasInitialized(true)
     } else if (status === 'unauthenticated') {
-      // Not authenticated, stop loading
+      // Not authenticated, stop loading and reset
       setIsLoading(false)
+      setHasInitialized(false)
     }
-  }, [isAuthenticated, status])
+  }, [isAuthenticated, status, hasInitialized])
 
   // Helper functions using workspace-helpers
   const getDefaultWorkspace = (): Workspace | null => {

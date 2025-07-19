@@ -19,10 +19,10 @@ interface TaskColumnProps {
 export function TaskColumn({ column, tasks }: TaskColumnProps) {
   const getColumnColor = (color: string) => {
     switch (color) {
-      case 'yellow': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
-      case 'blue': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-      case 'green': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
+      case 'yellow': return 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20'
+      case 'blue': return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20'
+      case 'green': return 'bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20'
+      default: return 'bg-muted text-muted-foreground border-border'
     }
   }
 

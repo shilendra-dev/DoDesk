@@ -56,7 +56,7 @@ export default function MyIssuesPage() {
       <div className="flex flex-1 overflow-hidden">
         <div className="flex-1 overflow-hidden">
           {view === 'list' ? (
-            <TaskListView tasks={tasks} />
+            <TaskListView tasks={tasks} isLoading={tasksLoading} />
           ) : (
             <TaskBoardView tasks={tasks} />
           )}
