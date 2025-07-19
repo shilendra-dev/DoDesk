@@ -1,9 +1,8 @@
-// client/components/features/onboarding/OnboardingContent.tsx
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Session } from 'next-auth';
-import { useWorkspace } from '@/providers/WorkspaceContext'; // Add this import
+import { useWorkspace } from '@/providers/WorkspaceContext';
 import { useRouter } from 'next/navigation';
 import OnboardingCarousel from './OnboardingCarousel';
 import WelcomeScreen from './screens/WelcomeScreen';
@@ -26,18 +25,25 @@ export default function OnboardingContent({ session }: OnboardingContentProps) {
   const { currentStep, nextStep, prevStep, userData, updateUserData } = useOnboarding();
   const { addWorkspace, hasWorkspaces, getDefaultWorkspace, isLoading } = useWorkspace();
   const router = useRouter();
+  const [isOnboardingInProgress, setIsOnboardingInProgress] = useState(true);
 
-  // Redirect users who already have workspaces
+  // Only redirect if user already has workspaces AND is not in onboarding
   useEffect(() => {
-    if (!isLoading && hasWorkspaces) {
+    if (!isLoading && hasWorkspaces && !isOnboardingInProgress) {
+      // Only redirect if not in onboarding mode
       const defaultWorkspace = getDefaultWorkspace();
       if (defaultWorkspace) {
         router.replace(`/${defaultWorkspace.slug}/myissues`);
       }
     }
-  }, [isLoading, hasWorkspaces, getDefaultWorkspace, router]);
-
-  // 🆕 Handle workspace creation with context update
+  }, [isLoading, hasWorkspaces, getDefaultWorkspace, router, isOnboardingInProgress]);
+  
+  // Set onboarding mode when component mounts
+  useEffect(() => {
+    setIsOnboardingInProgress(true);
+  }, []);
+  
+  // Handle workspace creation with context update
   const handleWorkspaceCreate = (workspaceData: unknown) => {
     const workspace = workspaceData as WorkspaceData;
     console.log('🎯 Workspace created:', workspaceData);
@@ -45,7 +51,7 @@ export default function OnboardingContent({ session }: OnboardingContentProps) {
     // Update onboarding context
     updateUserData({ workspace: workspace });
     
-    // 🆕 Update workspace context immediately
+    // Update workspace context immediately but don't trigger redirect
     addWorkspace({
       id: workspace.id,
       name: workspace.name,
@@ -54,6 +60,15 @@ export default function OnboardingContent({ session }: OnboardingContentProps) {
     
     console.log('✅ Workspace context updated');
     nextStep();
+  };
+
+  // Handle onboarding completion
+  const handleOnboardingComplete = () => {
+    setIsOnboardingInProgress(false);
+    const workspace = userData.workspace as WorkspaceData;
+    if (workspace) {
+      router.replace(`/${workspace.slug}/myissues`);
+    }
   };
 
   const steps = [
@@ -69,7 +84,7 @@ export default function OnboardingContent({ session }: OnboardingContentProps) {
       id: 'create-workspace',
       component: (
         <CreateWorkspaceScreen 
-          onWorkspaceCreate={handleWorkspaceCreate} // Use updated handler
+          onWorkspaceCreate={handleWorkspaceCreate}
           onPrev={prevStep}
         />
       )
@@ -87,7 +102,13 @@ export default function OnboardingContent({ session }: OnboardingContentProps) {
     },
     {
       id: 'complete',
-      component: <CompleteScreen name={session.user?.name || 'there'} workspace={userData.workspace as WorkspaceData} />
+      component: (
+        <CompleteScreen 
+          name={session.user?.name || 'there'} 
+          workspace={userData.workspace as WorkspaceData}
+          onComplete={handleOnboardingComplete}
+        />
+      )
     }
   ];
 

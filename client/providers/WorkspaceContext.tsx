@@ -18,6 +18,8 @@ interface WorkspaceContextType {
   defaultWorkspaceId: string | null
   isLoading: boolean
   hasWorkspaces: boolean
+  isOnboardingMode: boolean
+  setOnboardingMode: (mode: boolean) => void
   
   // Actions
   switchWorkspace: (workspaceSlug: string) => void
@@ -42,7 +44,9 @@ export const WorkspaceProvider: React.FC<{ children: ReactNode }> = ({ children 
   const [defaultWorkspaceId, setDefaultWorkspaceId] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true) // Start with loading true
   const [hasInitialized, setHasInitialized] = useState(false) // Track if we've fetched once
-  
+  const [isOnboardingMode, setIsOnboardingMode] = useState(false);
+
+    
   const workspaceSlug = params.workspaceSlug as string
   const isAuthenticated = status === 'authenticated'
 
@@ -148,7 +152,9 @@ export const WorkspaceProvider: React.FC<{ children: ReactNode }> = ({ children 
     updateDefaultWorkspace,
     refreshWorkspaces: fetchWorkspaces,
     getDefaultWorkspace,
-    getWorkspaceBySlug: getWorkspaceBySlugHelper
+    getWorkspaceBySlug: getWorkspaceBySlugHelper,
+    isOnboardingMode,
+    setOnboardingMode: setIsOnboardingMode,
   }
 
   return (

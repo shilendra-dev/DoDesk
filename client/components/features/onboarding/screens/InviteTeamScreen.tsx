@@ -42,7 +42,7 @@ const InviteTeamScreen: React.FC<InviteTeamScreenProps> = ({
       const workspaceData = workspace as { id: string };
       
       const response = await api.post(
-        `/workspace/${workspaceData.id}/invite`,
+        `/api/workspace/${workspaceData.id}/invite`,
         { email: email.trim() }
       );
       
