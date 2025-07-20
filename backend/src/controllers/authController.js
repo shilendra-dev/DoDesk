@@ -1,9 +1,8 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const pool = require("../config/db");
+const prisma = require("../lib/prisma");
 require("dotenv").config();
-const axios = require("axios");
 const { createApi } = require("../utils/router");
 
 const loginUser = async (req, res) => {
@@ -24,21 +23,20 @@ const loginUser = async (req, res) => {
 
   try {
     // query to check if user exists
-    const userResult = await pool.query(
-      `SELECT * FROM users WHERE email = $1`,
-      [email]
-    );
+    const user = await prisma.user.findUnique({
+      where: {
+        email: email.toLowerCase()
+      }
+    });
     // if user does not exist, return error
-    if (userResult.rows.length === 0) {
+    if (!user) {
       return {
         status: 401,
         message: "Invalid credentials"
       };
     }
 
-    // if user exists, check password
-    const user = userResult.rows[0];
-    const validPassword = await bcrypt.compare(password, user.password);
+    const validPassword = await bcrypt.compare(password, user.password); //compare password with hashed password
 
     // if password is invalid, return error
     if (!validPassword) {
@@ -48,27 +46,30 @@ const loginUser = async (req, res) => {
       };
     }
 
-    const workspacesResult = await pool.query(
-      `SELECT w.id, w.name, w.slug 
-      FROM workspaces w
-      JOIN workspace_members wm ON w.id = wm.workspace_id
-      WHERE wm.user_id = $1
-      ORDER BY wm.joined_at DESC`,
-      [user.id]
-    );
-
-    const workspaces = workspacesResult.rows;
+    const workspaces = await prisma.workspace.findMany({
+      where: {
+        creatorId: user.id
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true
+      },
+      orderBy: {
+        createdAt: "desc"
+      }
+    });
 
     // if password is valid, generate JWT token
     console.log("User logged in:", user.email);
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
+      expiresIn: "30d",
     });
 
     console.log("Login successful");
 
-    if (!user.default_workspace_id) {
-      console.log("No default workspace found for user");
+    if (!user.lastActiveWorkspaceId) {
+      console.log("No last active workspace found for user");
     }
 
     return {
@@ -79,7 +80,7 @@ const loginUser = async (req, res) => {
         id: user.id,
         email: user.email,
         name: user.name,
-        default_workspace_id: user.default_workspace_id,
+        lastActiveWorkspaceId: user.lastActiveWorkspaceId,
       },
       workspaces: workspaces  
     };
