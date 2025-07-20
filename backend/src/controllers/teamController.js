@@ -185,20 +185,18 @@ const getUserTeams = async (req, res) => {
                         joinedAt: true
                     }
                 }
-            },
-            orderBy: {
-                members: {
-                    joinedAt: 'desc'
-                }
             }
         });
 
-         // Transform to match expected format
-         const transformedTeams = teams.map(team => ({
+        // Transform to match expected format
+        const transformedTeams = teams.map(team => ({
             ...team,
             role: team.members[0]?.role,
             joined_at: team.members[0]?.joinedAt
-        }));
+        })).sort((a, b) => {
+            // Sort by joined_at descending
+            return new Date(b.joined_at) - new Date(a.joined_at);
+        });
 
         return {
             status: 200,
