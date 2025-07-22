@@ -44,6 +44,7 @@ export interface Issue {
     notes?: string
     teamId: string
     assigneeId?: string
+    workspaceId: string
   }
   
   // For updating an issue

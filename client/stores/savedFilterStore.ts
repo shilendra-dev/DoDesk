@@ -37,7 +37,6 @@ export const useSavedFilterStore = create<SavedFilterStore>((set) => ({
         savedFilterService.getSavedFilters(workspaceId),
         savedFilterService.getDefaultFilter(workspaceId)
       ])
-      
       set({ 
         savedFilters: filters,
         defaultFilter,

@@ -3,11 +3,14 @@
 import React from 'react'
 import { List, Kanban } from 'lucide-react'
 import { Button } from '@/components/ui/atoms/button'
-import { useTaskUIStore } from '@/stores/taskUIStore'
 import { cn } from '@/lib/utils'
 
-export function ViewToggle() {
-  const { view, setView } = useTaskUIStore()
+interface ViewToggleProps {
+  view: 'list' | 'board'
+  setView: (view: 'list' | 'board') => void
+}
+
+export function ViewToggle({ view, setView }: ViewToggleProps) {
 
   return (
     <div className="flex items-center border border-border rounded-md p-1">

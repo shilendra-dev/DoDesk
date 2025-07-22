@@ -1,6 +1,6 @@
 import { Skeleton } from "@/components/ui/atoms/skeleton"
 
-export function TaskTableSkeleton() {
+export function IssuesTableSkeleton() {
   return (
     <div className="w-full">
       <table className="w-full">
@@ -10,11 +10,11 @@ export function TaskTableSkeleton() {
               <Skeleton className="h-4 w-4" />
             </th>
             <th className="p-3 text-left text-sm font-medium text-muted-foreground">Title</th>
-            <th className="p-3 text-left text-sm font-medium text-muted-foreground">Status</th>
+            <th className="p-3 text-left text-sm font-medium text-muted-foreground">State</th>
             <th className="p-3 text-left text-sm font-medium text-muted-foreground">Priority</th>
-            <th className="p-3 text-left text-sm font-medium text-muted-foreground">Due Date</th>
-            <th className="p-3 text-left text-sm font-medium text-muted-foreground">Assignees</th>
             <th className="p-3 text-left text-sm font-medium text-muted-foreground">Created</th>
+            <th className="p-3 text-left text-sm font-medium text-muted-foreground">Assignee</th>
+            <th className="p-3 text-left text-sm font-medium text-muted-foreground">Due Date</th>
             <th className="p-3 text-left"></th>
           </tr>
         </thead>

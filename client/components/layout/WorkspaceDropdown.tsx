@@ -1,12 +1,12 @@
 'use client'
 
 import React from 'react'
-import { useWorkspace } from '@/providers/WorkspaceContext'
+import { useWorkspaceStore } from '@/stores/workspaceStore'
 import { ChevronDown } from 'lucide-react'
 import { Button } from '@/components/ui/atoms/button'
 
 export function WorkspaceDropdown() {
-  const { currentWorkspace} = useWorkspace()
+  const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace)
 
   if (!currentWorkspace) {
     return (

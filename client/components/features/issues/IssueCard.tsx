@@ -1,20 +1,20 @@
 'use client'
 
 import React from 'react'
-import { Task } from '@/types/task'
+import { Issue } from '@/types/issue'
 import { Badge } from '@/components/ui/atoms/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/atoms/avatar'
-import { Calendar, User } from 'lucide-react'
-import { useTaskStore } from '@/stores/taskStore'
+import { Calendar } from 'lucide-react'
+import { useIssueStore } from '@/stores/issueStore'
 import { cn } from '@/lib/utils'
 import { ClientDate } from '@/components/ui/atoms/client-date'
 
-interface TaskCardProps {
-  task: Task
+interface IssueCardProps {
+  issue: Issue
 }
 
-export function TaskCard({ task }: TaskCardProps) {
-  const { setSelectedTask } = useTaskStore()
+export function IssueCard({ issue }: IssueCardProps) {
+  const { setSelectedIssue } = useIssueStore()
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -26,7 +26,7 @@ export function TaskCard({ task }: TaskCardProps) {
   }
 
   const handleClick = () => {
-    setSelectedTask(task)
+    setSelectedIssue(issue.id)
   }
 
   return (
@@ -36,55 +36,41 @@ export function TaskCard({ task }: TaskCardProps) {
     >
       {/* Title */}
       <h3 className="font-medium text-foreground mb-2 line-clamp-2">
-        {task.title}
+        {issue.title}
       </h3>
 
       {/* Description */}
-      {task.description && (
+      {issue.description && (
         <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-          {task.description}
+          {issue.description}
         </p>
       )}
 
       {/* Priority Badge */}
       <div className="flex items-center justify-between mb-3">
-        <Badge className={cn("text-xs", getPriorityColor(task.priority))}>
-          {task.priority}
+        <Badge className={cn("text-xs", getPriorityColor(issue.priority.toString()))}>
+          {issue.priority}
         </Badge>
       </div>
 
       {/* Due Date */}
-      {task.due_date && (
+        {issue.dueDate && (
         <div className="flex items-center gap-1 mb-3 text-xs text-muted-foreground">
           <Calendar size={12} />
-          <ClientDate dateString={task.due_date} />
+          <ClientDate dateString={issue.dueDate} />
         </div>
       )}
 
       {/* Assignees */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1">
-          {(task.assignees || []).length > 0 ? (
-            <>
-              <div className="flex -space-x-1">
-                {(task.assignees || []).slice(0, 2).map((assignee) => (
-                  <Avatar key={assignee.id} className="w-5 h-5 border border-background">
-                    <AvatarFallback className="text-xs">
-                      {assignee.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                ))}
-              </div>
-              {(task.assignees || []).length > 2 && (
-                <span className="text-xs text-muted-foreground">
-                  +{(task.assignees || []).length - 2}
-                </span>
-              )}
-            </>
-          ) : (
-            <div className="flex items-center gap-1 text-muted-foreground">
-              <User size={12} />
-              <span className="text-xs">Unassigned</span>
+          {issue.assignee && (
+            <div className="flex -space-x-1">
+              <Avatar className="w-5 h-5 border border-background">
+                <AvatarFallback className="text-xs">
+                  {issue.assignee.name?.charAt(0).toUpperCase() ?? "?"}
+                </AvatarFallback>
+              </Avatar>
             </div>
           )}
         </div>

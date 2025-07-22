@@ -128,11 +128,18 @@ const getUserWorkspaces = async (req, res) => {
           { teams: { some: { members: { some: { userId: userId } } } } }
         ]
       },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        createdAt: true
+      include: {
+        teams: {
+          include: {
+            members: {
+              include: {
+                user: {
+                  select: { id: true, name: true, email: true }
+                }
+              }
+            }
+          }
+        }
       },
       orderBy: {
         createdAt: 'desc'
@@ -146,7 +153,7 @@ const getUserWorkspaces = async (req, res) => {
         workspaces: []
       }
     }
-    
+    console.log(workspaces);
     return { 
       status: 200, 
       message: "Workspaces fetched successfully", 

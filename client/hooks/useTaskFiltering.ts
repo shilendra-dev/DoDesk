@@ -20,7 +20,7 @@ export function useTaskFiltering() {
     if (defaultFilter) {
       const config = defaultFilter.filter_config
       if (config) {
-        setStatusFilter(config.statusFilter || 'All')
+        setStatusFilter(config.stateFilter || 'All')
         setPriorityFilter(config.priorityFilter || 'All')
         setSortOption(config.sortOption || 'None')
         setAssigneeFilter(config.assigneeFilter || 'All')
@@ -149,7 +149,7 @@ export function useTaskFiltering() {
     const config = selectedFilter.filter_config
     if (!config) return
     
-    setStatusFilter(config.statusFilter || 'All')
+    setStatusFilter(config.stateFilter || 'All')
     setPriorityFilter(config.priorityFilter || 'All')
     setSortOption(config.sortOption || 'None')
     setAssigneeFilter(config.assigneeFilter || 'All')

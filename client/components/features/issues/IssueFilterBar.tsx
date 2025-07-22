@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { X, Save } from 'lucide-react'
 import { Button } from '@/components/ui/atoms/button'
 import { Badge } from '@/components/ui/atoms/badge'
@@ -9,19 +9,20 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from '@/components/ui/atoms/input'
 import { Label } from '@/components/ui/atoms/label'
 import { useSavedFilterStore } from '@/stores/savedFilterStore'
-import { useWorkspace } from '@/providers/WorkspaceContext'
-// import { cn } from '@/lib/utils'
+import { useWorkspaceStore } from '@/stores/workspaceStore'
+import { Issue } from '@/types/issue'
 
-interface FilterConfig {
-  label: string
-  id: string
-  value: string
-  onChange: (value: string) => void
-  options: { value: string; label: string }[]
-}
-
-interface TaskFilterBarProps {
-  filterConfigs: FilterConfig[]
+interface IssueFilterBarProps {
+  issues: Issue[]
+  teams: { id: string; name: string }[]
+  stateFilter: string
+  setStateFilter: (value: string) => void
+  priorityFilter: string
+  setPriorityFilter: (value: string) => void
+  assigneeFilter: string
+  setAssigneeFilter: (value: string) => void
+  teamFilter: string
+  setTeamFilter: (value: string) => void
   sortOption: string
   setSortOption: (option: string) => void
   sortOptions: { value: string; label: string }[]
@@ -30,27 +31,75 @@ interface TaskFilterBarProps {
   onClearAll: () => void
 }
 
-export function TaskFilterBar({
-  filterConfigs,
+export function IssueFilterBar({
+  issues,
+  teams,
+  stateFilter,
+  setStateFilter,
+  priorityFilter,
+  setPriorityFilter,
+  assigneeFilter,
+  setAssigneeFilter,
+  teamFilter,
+  setTeamFilter,
   sortOption,
   setSortOption,
   sortOptions,
   hasActiveFilters,
   filterSummary,
   onClearAll
-}: TaskFilterBarProps) {
-  const { currentWorkspace } = useWorkspace()
+}: IssueFilterBarProps) {
+  const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace)
   const { savedFilters, selectedViewId, createFilter, deleteFilter, setSelectedViewId } = useSavedFilterStore()
   const [showSaveDialog, setShowSaveDialog] = useState(false)
   const [filterName, setFilterName] = useState('')
+
+  // Assignee options (single assignee per issue)
+  const assigneeOptions = useMemo(() => [
+    { value: "All", label: "All" },
+    ...issues
+      .map(issue => issue.assignee)
+      .filter(assignee => assignee?.name)
+      .filter((assignee, idx, self) =>
+        idx === self.findIndex(a => a?.name === assignee?.name)
+      )
+      .map(assignee => ({ value: assignee!.name!, label: assignee!.name! }))
+  ], [issues])
+
+  // Team options
+  const teamOptions = [
+    { value: "All", label: "All" },
+    ...teams.map(team => ({ value: team.id, label: team.name }))
+  ]
+
+  // Priority options (integer-based)
+  const priorityOptions = [
+    { value: "All", label: "All" },
+    { value: "1", label: "Urgent" },
+    { value: "2", label: "High" },
+    { value: "3", label: "Medium" },
+    { value: "4", label: "Low" },
+    { value: "0", label: "None" }
+  ]
+
+  // State options (schema-based)
+  const stateOptions = [
+    { value: "All", label: "All" },
+    { value: "backlog", label: "Backlog" },
+    { value: "todo", label: "To Do" },
+    { value: "in_progress", label: "In Progress" },
+    { value: "done", label: "Done" },
+    { value: "canceled", label: "Canceled" }
+  ]
 
   const handleSaveFilter = async () => {
     if (!filterName.trim() || !currentWorkspace?.id) return
 
     const filterConfig = {
-      statusFilter: filterConfigs.find(f => f.id === 'statusFilter')?.value || 'All',
-      priorityFilter: filterConfigs.find(f => f.id === 'priorityFilter')?.value || 'All',
-      assigneeFilter: filterConfigs.find(f => f.id === 'assigneeFilter')?.value || 'All',
+      stateFilter,
+      priorityFilter,
+      assigneeFilter,
+      teamFilter,
       sortOption
     }
 
@@ -98,21 +147,54 @@ export function TaskFilterBar({
 
           {/* Filter Controls */}
           <div className="flex items-center gap-2">
-            {filterConfigs.map((config) => (
-              <Select key={config.id} value={config.value} onValueChange={config.onChange}>
-                <SelectTrigger className="w-32">
-                  <SelectValue placeholder={config.label} />
-                </SelectTrigger>
-                <SelectContent sideOffset={10}>
-                  {config.options.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ))}
-
+            <Select value={stateFilter} onValueChange={setStateFilter}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="State" />
+              </SelectTrigger>
+              <SelectContent>
+                {stateOptions.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Priority" />
+              </SelectTrigger>
+              <SelectContent>
+                {priorityOptions.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={assigneeFilter} onValueChange={setAssigneeFilter}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Assignee" />
+              </SelectTrigger>
+              <SelectContent>
+                {assigneeOptions.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={teamFilter} onValueChange={setTeamFilter}>
+              <SelectTrigger className="w-32">
+                <SelectValue placeholder="Team" />
+              </SelectTrigger>
+              <SelectContent>
+                {teamOptions.map(option => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             {/* Sort */}
             <Select value={sortOption} onValueChange={setSortOption}>
               <SelectTrigger className="w-40">

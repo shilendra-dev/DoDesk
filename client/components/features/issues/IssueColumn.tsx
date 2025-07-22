@@ -2,21 +2,21 @@
 
 import React from 'react'
 import { Droppable, Draggable } from '@hello-pangea/dnd'
-import { Task } from '@/types/task'
-import { TaskCard } from '@/components/features/tasks/TaskCard'
+import { Issue } from '@/types/issue'
+import { IssueCard } from '@/components/features/issues/IssueCard'
 import { Badge } from '@/components/ui/atoms/badge'
 import { cn } from '@/lib/utils'
 
-interface TaskColumnProps {
+interface IssueColumnProps {
   column: {
     id: string
     title: string
     color: string
   }
-  tasks: Task[]
+  issues: Issue[]
 }
 
-export function TaskColumn({ column, tasks }: TaskColumnProps) {
+export function IssueColumn({ column, issues }: IssueColumnProps) {
   const getColumnColor = (color: string) => {
     switch (color) {
       case 'yellow': return 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20'
@@ -35,7 +35,7 @@ export function TaskColumn({ column, tasks }: TaskColumnProps) {
             {column.title}
           </Badge>
           <span className="text-sm text-muted-foreground">
-            {tasks.length}
+            {issues.length}
           </span>
         </div>
       </div>
@@ -51,8 +51,8 @@ export function TaskColumn({ column, tasks }: TaskColumnProps) {
               snapshot.isDraggingOver && "bg-muted/30"
             )}
           >
-            {tasks.map((task, index) => (
-              <Draggable key={task.id} draggableId={task.id} index={index}>
+            {issues.map((issue, index) => (
+              <Draggable key={issue.id} draggableId={issue.id} index={index}>
                 {(provided, snapshot) => (
                   <div
                     ref={provided.innerRef}
@@ -63,16 +63,16 @@ export function TaskColumn({ column, tasks }: TaskColumnProps) {
                       snapshot.isDragging && "opacity-50"
                     )}
                   >
-                    <TaskCard task={task} />
+                    <IssueCard issue={issue} />
                   </div>
                 )}
               </Draggable>
             ))}
             {provided.placeholder}
             
-            {tasks.length === 0 && (
+            {issues.length === 0 && (
               <div className="flex items-center justify-center h-32 text-muted-foreground">
-                <p className="text-sm">No tasks</p>
+                <p className="text-sm">No issues</p>
               </div>
             )}
           </div>

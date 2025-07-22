@@ -116,9 +116,12 @@ const getCurrentUser = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    // Get user
+    // Get user and last active workspace
     const user = await prisma.user.findUnique({
       where: { id: userId },
+      include: {
+        lastActiveWorkspace: true, // include the workspace object if you want
+      },
     });
 
     if (!user) {
@@ -135,15 +138,16 @@ const getCurrentUser = async (req, res) => {
         id: user.id,
         email: user.email,
         name: user.name,
-        default_workspace_id: user.default_workspace_id,
+        lastActiveWorkspaceId: user.lastActiveWorkspaceId,
+        lastActiveWorkspace: user.lastActiveWorkspace, 
       },
     };
   } catch (err) {
-      console.error("Error fetching user:", err);
-      return {
-        status: 500,
-        message: "Server error",
-      };
+    console.error("Error fetching user:", err);
+    return {
+      status: 500,
+      message: "Server error",
+    };
   }
 };
 createApi().get("/user").authSecure(getCurrentUser); // for getting the current user

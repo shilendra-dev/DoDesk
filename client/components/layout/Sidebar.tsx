@@ -8,7 +8,7 @@ import {
   Inbox, Target, FolderOpen, Eye, MoreHorizontal, Import, UserPlus,
   Search, Plus, HelpCircle, LogOut
 } from 'lucide-react'
-import { useWorkspace } from '@/providers/WorkspaceContext'
+import { useWorkspaceStore } from '@/stores/workspaceStore'
 import { Avatar, AvatarFallback } from '@/components/ui/atoms/avatar'
 import { Button } from '@/components/ui/atoms/button'
 import { WorkspaceDropdown } from './WorkspaceDropdown'
@@ -20,7 +20,7 @@ import { useTheme } from '@/providers/ThemeContext'
 export function Sidebar() {
   const router = useRouter()
   const pathname = usePathname()
-  const { currentWorkspace } = useWorkspace()
+  const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace)
   const { toggleTheme } = useTheme()
   // State for collapsible sections
   const [expandedSections, setExpandedSections] = useState({

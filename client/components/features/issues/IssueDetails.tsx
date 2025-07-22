@@ -5,33 +5,28 @@ import { X, Calendar, User, CheckSquare, Flag, CalendarIcon } from 'lucide-react
 import { Button } from '@/components/ui/atoms/button'
 import { Input } from '@/components/ui/atoms/input'
 import { Label } from '@/components/ui/atoms/label'
-import { AssigneesField } from '@/components/features/tasks/AssigneesField'
-import { useTaskStore, useTask } from '@/stores/taskStore'
+import { AssigneesField } from '@/components/features/issues/AssigneesField'
+import { useIssueStore } from '@/stores/issueStore'
 import { cn } from '@/lib/utils'
-import dynamic from 'next/dynamic'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/atoms/select'
 import { Calendar as CalendarComponent } from '@/components/ui/atoms/calendar'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/molecules/popover'
 import { format } from 'date-fns'
+import { IssueNotes } from '@/components/features/issues/IssueNotes'
 
-const TaskNotes = dynamic(
-  () => import('@/components/features/tasks/TaskNotes').then(mod => mod.TaskNotes),
-  { ssr: false }
-)
-
-interface TaskDetailsProps {
-  taskId: string
+interface IssueDetailsProps {
+  issueId: string
   onClose: () => void
 }
 
-export function TaskDetails({ taskId, onClose }: TaskDetailsProps) {
-  // Get task directly from store using the custom hook
-  const task = useTask(taskId)
-  const { updateTask, updateNotes, updateTaskDate } = useTaskStore()
+export function IssueDetails({ issueId, onClose }: IssueDetailsProps) {
+  // Get issue directly from store using the getIssueById selector
+  const issue = useIssueStore(state => state.getIssueById(issueId))
+  const { updateIssue, updateNotes, updateIssueDate } = useIssueStore()
   const [isClosing, setIsClosing] = useState(false)
 
   // If task doesn't exist, don't render
-  if (!task) {
+  if (!issue) {
     return null
   }
 
@@ -43,16 +38,16 @@ export function TaskDetails({ taskId, onClose }: TaskDetailsProps) {
     }, 300)
   }
 
-  const handleFieldUpdate = async (field: string, value: string) => {
-    await updateTask(taskId, { [field]: value })
+  const handleFieldUpdate = async (field: string, value: string | number) => {
+    await updateIssue(issueId, { [field]: value })
   }
 
   const handleNotesUpdate = async (notes: string) => {
-    await updateNotes(taskId, notes)
+    await updateNotes(issueId, notes)
   }
 
   const handleDateSelect = async (selectedDate: Date | undefined) => {
-    await updateTaskDate(taskId, selectedDate)
+    await updateIssueDate(issueId, selectedDate)
   }
 
   return (
@@ -80,7 +75,7 @@ export function TaskDetails({ taskId, onClose }: TaskDetailsProps) {
           <Label htmlFor="title">Title</Label>
           <Input
             id="title"
-            value={task.title}
+            value={issue.title}
             onChange={(e) => handleFieldUpdate('title', e.target.value)}
             placeholder="Enter task title"
           />
@@ -94,16 +89,18 @@ export function TaskDetails({ taskId, onClose }: TaskDetailsProps) {
               Status
             </Label>
             <Select
-              value={task.status || ''}
-              onValueChange={(value) => handleFieldUpdate('status', value)}
+              value={issue.state || ''}
+              onValueChange={(value) => handleFieldUpdate('state', value)}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="backlog">Backlog</SelectItem>
+                <SelectItem value="todo">Todo</SelectItem>
                 <SelectItem value="in-progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="done">Done</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -114,16 +111,18 @@ export function TaskDetails({ taskId, onClose }: TaskDetailsProps) {
               Priority
             </Label>
             <Select
-              value={task.priority}
-              onValueChange={(value) => handleFieldUpdate('priority', value)}
+              value={issue.priority?.toString() ?? '0'}
+              onValueChange={(value) => handleFieldUpdate('priority', Number(value))}
             >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Select priority" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="high">High</SelectItem>
-                <SelectItem value="mid">Medium</SelectItem>
-                <SelectItem value="low">Low</SelectItem>
+                <SelectItem value="1">Urgent</SelectItem>
+                <SelectItem value="2">High</SelectItem>
+                <SelectItem value="3">Medium</SelectItem>
+                <SelectItem value="4">Low</SelectItem>
+                <SelectItem value="0">None</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -141,17 +140,17 @@ export function TaskDetails({ taskId, onClose }: TaskDetailsProps) {
                 variant="date"
                 className={cn(
                   "w-full justify-start text-left font-normal",
-                  !task.due_date && "text-muted-foreground"
+                  !issue.dueDate && "text-muted-foreground"
                 )}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {task.due_date ? format(new Date(task.due_date), "PPP") : <span>Pick a date</span>}
+                {issue.dueDate ? format(new Date(issue.dueDate), "PPP") : <span>Pick a date</span>}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
               <CalendarComponent
                 mode="single"
-                selected={task.due_date ? new Date(task.due_date) : undefined}
+                selected={issue.dueDate ? new Date(issue.dueDate) : undefined}
                 onSelect={handleDateSelect}
                 initialFocus
               />
@@ -166,9 +165,9 @@ export function TaskDetails({ taskId, onClose }: TaskDetailsProps) {
             Assignees
           </Label>
           <AssigneesField
-            taskId={task.id}
-            assignees={task.assignees}
-            workspaceId={task.workspace_id}
+            issueId={issueId}
+            assignee={issue.assignee ? { id: issue.assignee.id, name: issue.assignee.name || 'Unknown' } : undefined}
+            workspaceId={issue.workspaceId}
           />
         </div>
 
@@ -176,15 +175,15 @@ export function TaskDetails({ taskId, onClose }: TaskDetailsProps) {
         <div className="space-y-2">
           <Label>Created By</Label>
           <p className="text-sm text-muted-foreground">
-            {task.created_by_name || '—'}
+            {issue.creator?.name || '—'}
           </p>
         </div>
 
         {/* Notes */}
         <div className="space-y-2">
           <Label>Notes</Label>
-          <TaskNotes
-            initialContent={task.notes || ''}
+          <IssueNotes
+            initialContent={issue.notes || ''}
             onUpdate={handleNotesUpdate}
           />
         </div>

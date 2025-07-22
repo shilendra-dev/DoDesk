@@ -8,17 +8,17 @@ import { Button } from '@/components/ui/atoms/button'
 import { Bold, Italic, List, ListOrdered } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-interface TaskNotesProps {
+interface IssueNotesProps {
   initialContent: string
   onUpdate: (content: string) => void
 }
 
-export function TaskNotes({ initialContent, onUpdate }: TaskNotesProps) {
+export function IssueNotes({ initialContent, onUpdate }: IssueNotesProps) {
   const editor = useEditor({
     extensions: [
       StarterKit,
       Placeholder.configure({
-        placeholder: 'Add notes to this task...',
+        placeholder: 'Add notes to this issue...',
       }),
     ],
     content: initialContent,
