@@ -153,7 +153,6 @@ const getUserWorkspaces = async (req, res) => {
         workspaces: []
       }
     }
-    console.log(workspaces);
     return { 
       status: 200, 
       message: "Workspaces fetched successfully", 

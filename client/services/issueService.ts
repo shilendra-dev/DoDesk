@@ -36,7 +36,7 @@ export const issueService = {
   },
 
   // Assign a user to an issue
-  assignIssue: async (issueId: string, assigneeId: string): Promise<Issue> => {
+  assignIssue: async (issueId: string, assigneeId: string | null): Promise<Issue> => {
     // This assumes backend supports updating assigneeId via update endpoint
     const response = await api.put(`/api/issues/${issueId}`, { assigneeId })
     return response.data.issue

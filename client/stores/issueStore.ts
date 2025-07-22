@@ -24,6 +24,7 @@ interface IssueActions {
   updateIssue: (issueId: string, updates: UpdateIssueData) => Promise<void>
   deleteIssue: (issueId: string) => Promise<void>
   assignIssue: (issueId: string, assigneeId: string) => Promise<void>
+
   updateNotes: (issueId: string, notes: string) => Promise<void>
   updateIssueDate: (issueId: string, date: Date | undefined) => Promise<void>
   setSelectedIssue: (issueId: string | null) => void
@@ -206,7 +207,7 @@ export const useIssueStore = create<IssueStore>()(
       },
 
       // Assign issue
-      assignIssue: async (issueId: string, assigneeId: string) => {
+      assignIssue: async (issueId: string, assigneeId: string | null) => {
         try {
           const updatedIssue = await issueService.assignIssue(issueId, assigneeId)
           set(state => ({
@@ -217,6 +218,9 @@ export const useIssueStore = create<IssueStore>()(
           toast.error('Failed to assign issue')
         }
       },
+
+      // Remove assignee
+      
 
       // Update notes
       updateNotes: async (issueId: string, notes: string) => {

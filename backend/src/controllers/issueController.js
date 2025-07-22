@@ -191,6 +191,8 @@ const updateIssue = async (req, res) => {
     if (allowedFields.includes(key) && updateData[key] !== undefined) {
       if (key === 'dueDate' && updateData[key]) {
         dataToUpdate[key] = new Date(updateData[key]);
+      } else if (key === 'assigneeId' && (updateData[key] === '' || updateData[key] === undefined)) {
+        dataToUpdate[key] = null; // treat empty string/undefined as null
       } else {
         dataToUpdate[key] = updateData[key];
       }
