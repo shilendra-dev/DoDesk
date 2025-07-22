@@ -13,3 +13,4 @@ node_modules
 
 #macOS hidden file
 .DS_Store
+/src/generated/prisma

@@ -3,7 +3,7 @@
 
 import React, { useEffect } from 'react';
 import { Session } from 'next-auth';
-import { useWorkspace } from '@/providers/WorkspaceContext'; // Add this import
+import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useRouter } from 'next/navigation';
 import OnboardingCarousel from './OnboardingCarousel';
 import WelcomeScreen from './screens/WelcomeScreen';
@@ -24,7 +24,11 @@ interface WorkspaceData {
 
 export default function OnboardingContent({ session }: OnboardingContentProps) {
   const { currentStep, nextStep, prevStep, userData, updateUserData } = useOnboarding();
-  const { addWorkspace, hasWorkspaces, getDefaultWorkspace, isLoading } = useWorkspace();
+  // Use Zustand store selectors
+  const addWorkspace = useWorkspaceStore((state) => state.addWorkspace);
+  const hasWorkspaces = useWorkspaceStore((state) => state.hasWorkspaces);
+  const getDefaultWorkspace = useWorkspaceStore((state) => state.getDefaultWorkspace);
+  const isLoading = useWorkspaceStore((state) => state.isLoading);
   const router = useRouter();
 
   // Redirect users who already have workspaces
@@ -38,21 +42,22 @@ export default function OnboardingContent({ session }: OnboardingContentProps) {
   }, [isLoading, hasWorkspaces, getDefaultWorkspace, router]);
 
   // 🆕 Handle workspace creation with context update
-  const handleWorkspaceCreate = (workspaceData: unknown) => {
+  const handleWorkspaceCreate = async (workspaceData: unknown) => {
     const workspace = workspaceData as WorkspaceData;
     console.log('🎯 Workspace created:', workspaceData);
     
     // Update onboarding context
     updateUserData({ workspace: workspace });
     
-    // 🆕 Update workspace context immediately
-    addWorkspace({
+    // 🆕 Update workspace context immediately (await async)
+    await addWorkspace({
       id: workspace.id,
       name: workspace.name,
-      slug: workspace.slug
+      slug: workspace.slug,
+      teams: []
     });
     
-    console.log('✅ Workspace context updated');
+    console.log('✅ Workspace store updated');
     nextStep();
   };
 

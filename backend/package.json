@@ -5,14 +5,17 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "NODE_ENV=development nodemon src/index.js",
-    "db:migrate": "env-cmd -f ./.env knex migrate:up",
-    "db:migrate:down": "env-cmd -f ./.env knex migrate:down"
+    "db:migrate": "npx prisma migrate dev",
+    "db:migrate:deploy": "npx prisma migrate deploy",
+    "db:generate": "npx prisma generate",
+    "db:studio": "npx prisma studio"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@prisma/client": "^6.12.0",
     "axios": "^1.8.4",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
@@ -21,7 +24,6 @@
     "express": "^5.1.0",
     "googleapis": "^148.0.0",
     "jsonwebtoken": "^9.0.2",
-    "knex": "^3.1.0",
     "nodemailer": "^6.10.1",
     "open": "^10.1.1",
     "pg": "^8.14.1",
@@ -29,6 +31,7 @@
     "uuid": "^11.1.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.9",
+    "prisma": "^6.12.0"
   }
 }

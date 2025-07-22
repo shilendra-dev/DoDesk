@@ -1,6 +1,5 @@
 const express = require("express");
-const pool = require("../config/db");
-const { v4: uuidv4 } = require("uuid");
+const prisma = require("../lib/prisma");
 const { sendEmail } = require("../utils/sendEmail");
 const isValidEmail = require("../utils/isValidEmail");
 const { createApi } = require("../utils/router");
@@ -47,49 +46,62 @@ const createWorkspace = async (req, res) => {
 
   try {
     // Check if slug is already taken
-    const existingWorkspace = await pool.query(
-      `SELECT id FROM workspaces WHERE slug = $1`,
-      [cleanSlug]
-    );
+    const existingWorkspace = await prisma.workspace.findUnique({
+      where: { slug: cleanSlug }
+    });
 
-    if (existingWorkspace.rows.length > 0) {
+    if (existingWorkspace) {
       return {
         status: 409,
         message: "This workspace URL is already taken. Please choose a different one."
       };
     }
 
-    // Create workspace
-    const id = uuidv4();
-    const newWorkspace = await pool.query(
-      `INSERT INTO workspaces (id, name, slug, created_by) VALUES ($1, $2, $3, $4) RETURNING *`,
-      [id, name, cleanSlug, userId]
-    );
+    // Create workspace with a default team
+    const newWorkspace = await prisma.workspace.create({
+      data: {
+        name,
+        slug: cleanSlug,
+        creatorId: userId,
+        teams: {
+          create: {
+            name: 'General',
+            key: 'GEN',
+            color: '#6B7280',
+            members: {
+              create: {
+                userId: userId,
+                role: 'admin'
+              }
+            }
+          }
+        }
+      },
+      include: {
+        teams: {
+          include: {
+            members: true
+          }
+        }
+      }
+    });
 
-    // Auto adding creator as member in the workspace_member table
-    const memberId = uuidv4();
-    await pool.query(
-      `INSERT INTO workspace_members (id, workspace_id, user_id, role) VALUES ($1, $2, $3, $4)`,
-      [memberId, id, userId, "admin"]
-    );
-
-    //setting default workspace for the user
-    const userCheck = await pool.query(
-      `SELECT default_workspace_id FROM users WHERE id = $1`,
-      [userId]
-    );
+    // Set as last active workspace if user doesn't have one
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
     
-    if (!userCheck.rows[0].default_workspace_id) {
-      await pool.query(
-        `UPDATE users SET default_workspace_id = $1 WHERE id = $2`,
-        [id, userId]
-      );
+    if (!user.lastActiveWorkspaceId) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { lastActiveWorkspaceId: newWorkspace.id }
+      });
     }
 
     return {
       status: 201,
       message: "Workspace Successfully Created",
-      workspace: newWorkspace.rows[0],
+      workspace: newWorkspace,
     };
 
   } catch (err) {
@@ -109,29 +121,46 @@ const getUserWorkspaces = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const workspaceResult = await pool.query(
-      `SELECT w.id, w.name, w.slug, w.created_at 
-            FROM workspaces w
-            JOIN workspace_members wm ON w.id = wm.workspace_id
-            WHERE wm.user_id = $1`,
-      [userId]
-    );
-    if (workspaceResult.rows.length === 0) {
-      // return res
-      //   .status(404)
-      //   .json({ message: "No workspaces found for this user" });
+    const workspaces = await prisma.workspace.findMany({
+      where: {
+        OR: [
+          { creatorId: userId },
+          { teams: { some: { members: { some: { userId: userId } } } } }
+        ]
+      },
+      include: {
+        teams: {
+          include: {
+            members: {
+              include: {
+                user: {
+                  select: { id: true, name: true, email: true }
+                }
+              }
+            }
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+
+    if (workspaces.length === 0) {
       return {
         status: 404,
         message: "No workspaces found for this user",
         workspaces: []
       }
     }
-    // Respond with the workspaces
-    return { status: 200, message: "Workspaces fetched successfully", workspaces: workspaceResult.rows };
+    return { 
+      status: 200, 
+      message: "Workspaces fetched successfully", 
+      workspaces: workspaces 
+    };
 
   } catch (err) {
     console.error("Error fetching workspaces:", err);
-    //res.status(500).json({ message: "Server error" });
     return {
       status: 500,
       message: "Server error",
@@ -148,98 +177,126 @@ const inviteMember = async (req, res) => {
   const userId = req.user.id;
   email = email.trim().toLowerCase();
 
-  //if email is not valid
-
   if (!isValidEmail(email)) {
-    return res.status(400).json({ message: "Invalid email address" });
+    return {
+      status: 400,
+      message: "Invalid email address"
+    };
   }
 
+  // CHECK IF USER EXISTS
   try {
-    const userResult = await pool.query(
-      `SELECT id FROM users WHERE email = $1`,
-      [email]
-    );
+    const existingUser = await prisma.user.findUnique({
+      where: { email }
+    });
 
-    if (userResult.rows.length > 0) {
-      //THE USER ALREADY EXISTS IN users --> DIRECTLY ADD THEM
-      const userId = userResult.rows[0].id;
+    if (existingUser) {
+      //THE USER ALREADY EXISTS --> DIRECTLY ADD THEM
+      const targetUserId = existingUser.id;
 
-      //checking if already a member of workspace
-      const existingMember = await pool.query(
-        `SELECT * FROM workspace_members WHERE workspace_id = $1 AND user_id = $2`,
-        [workspace_id, userId]
-      );
+      //CHECK IF ALREADY A MEMBER OF THE TEAM
+      const existingMember = await prisma.teamMember.findFirst({
+        where: {
+          userId: targetUserId,
+          team: {
+            workspaceId: workspace_id
+          }
+        }
+      });
 
-      if (existingMember.rows.length > 0) {
-        return res.status(400).json({ message: "User is already a member" });
+      if (existingMember) {
+        return {
+          status: 400,
+          message: "User is already a member"
+        };
       }
 
-      const memberId = uuidv4();
-      await pool.query(
-        `INSERT INTO workspace_members (id, workspace_id, user_id, role, joined_at)
-           VALUES ($1, $2, $3, $4, NOW())`,
-        [memberId, workspace_id, userId, "member"]
-      );
+      // GET OR CREATE DEFAULT TEAM
+      let defaultTeam = await prisma.team.findFirst({
+        where: {
+          workspaceId: workspace_id,
+          key: 'GEN'
+        }
+      });
 
-      const workspace_name = await pool.query(
-        `SELECT name FROM workspaces WHERE id = $1`,
-        [workspace_id]
-      );
+      if (!defaultTeam) {
+        defaultTeam = await prisma.team.create({
+          data: {
+            name: 'General',
+            key: 'GEN',
+            workspaceId: workspace_id,
+            color: '#6B7280'
+          }
+        });
+      }
 
-      const user_name = await pool.query(
-        `SELECT name FROM users WHERE id = $1`,
-        [userId]
-      );
+      // ADD USER TO THE TEAM
+      await prisma.teamMember.create({
+        data: {
+          userId: targetUserId,
+          teamId: defaultTeam.id,
+          role: "member"
+        }
+      });
 
+      // GET WORKSPACE DETAILS
+      const workspace = await prisma.workspace.findUnique({
+        where: { id: workspace_id }
+      });
+
+      // GET INVITER DETAILS
+      const inviter = await prisma.user.findUnique({
+        where: { id: userId }
+      });
+
+      // SEND EMAIL
       sendEmail(
         `${email}`,
-        `You have been added to the ${workspace_name}`,
+        `You have been added to ${workspace.name}`,
         "Hey Message from dodesk, you have been added to a new workspace."
       );
 
-      //return res.status(200).json({ message: "User added to workspace" });
       return {
         status: 200,
         message: "User added to workspace",
-        workspace_name: workspace_name.rows[0].name,
-        user_name: user_name.rows[0].name
+        workspace_name: workspace.name,
+        user_name: inviter.name
       }
     } else {
       //USER DOES NOT EXIST ---> SAVE AN INVITATION
-      const invitationID = uuidv4();
-      await pool.query(
-        `INSERT INTO workspace_invitations (id, workspace_id, email) VALUES ($1, $2, $3)`,
-        [invitationID, workspace_id, email]
-      );
+      await prisma.workspaceInvitation.create({
+        data: {
+          email,
+          workspaceId: workspace_id
+        }
+      });
 
       //SENDING EMAIL
-      const workspace_name = await pool.query(
-        `SELECT name FROM workspaces WHERE id = $1`,
-        [workspace_id]
-      );
+      const workspace = await prisma.workspace.findUnique({
+        where: { id: workspace_id }
+      });
 
-      const user_name = await pool.query(
-        `SELECT name FROM users WHERE id = $1`,
-        [userId]
-      );
+      // GET INVITER DETAILS
+      const inviter = await prisma.user.findUnique({
+        where: { id: userId }
+      });
 
+      // SEND EMAIL
       sendEmail(
         `${email}`,
         `You have been invited to a workspace`,
-        `Hey Message from dodesk, you have been invited to a new workspace ${workspace_name}, please signup to join http://localhost:5173/`
+        `Hey Message from dodesk, you have been invited to a new workspace ${workspace.name}, please signup to join http://localhost:5173/`
       );
 
-      //return res.status(200).json({ message: "Invitation Successfully Sent" });
       return {
         status: 200,
         message: "Invitation Successfully Sent",
-        workspace_name: workspace_name.rows[0].name,
-        user_name: user_name.rows[0].name
+        workspace_name: workspace.name,
+        user_name: inviter.name
       }
     }
   } catch (error) {
     console.error("Error inviting member:", error);
-    //res.status(500).json({ message: "Server error" });
     return{
       status: 500,
       message: "Server error",
@@ -252,20 +309,38 @@ createApi().post("/workspace/:workspace_id/invite").authSecure(inviteMember); //
 const getWorkspaceMembers = async (req, res) => {
   const { workspace_id } = req.params;
   try {
-    const result = await pool.query(
-      ` SELECT wm.id, wm.user_id, u.name, u.email
-      FROM workspace_members wm
-      JOIN users u ON wm.user_id = u.id
-      WHERE wm.workspace_id = $1`, [workspace_id]
-    );
+    const members = await prisma.teamMember.findMany({
+      where: {
+        team: {
+          workspaceId: workspace_id
+        }
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
+    });
+
+    // TRANSFORM TO MATCH EXPECTED FORMAT
+    const transformedMembers = members.map(member => ({
+      id: member.id,
+      user_id: member.user.id,
+      name: member.user.name,
+      email: member.user.email
+    }));
+
     return {
       status: 200,
       message: "Workspace members fetched successfully",
-      members: result.rows
+      members: transformedMembers
     }
   } catch (error) {
     console.error("Error fetching workspace members:", error);
-    //res.status(500).json({ error: "Failed to fetch workspace members" });
     return {
       status: 500,
       message: "Failed to fetch workspace members",
@@ -275,39 +350,40 @@ const getWorkspaceMembers = async (req, res) => {
 };
 createApi().get("/workspace/:workspace_id/members").authSecure(getWorkspaceMembers); // get all members of a workspace
 
-// set default workspace
-const setDefaultWorkspace = async (req, res) => {
+// SET LAST ACTIVE WORKSPACE
+const setLastActiveWorkspace = async (req, res) => {
   const userId = req.user.id;
   const { workspace_id } = req.body;
   try {
-    // Check if the workspace exists and the user is a member
-    const workspaceCheck = await pool.query(
-      `SELECT * FROM workspace_members WHERE workspace_id = $1 AND user_id = $2`,
-      [workspace_id, userId]
-    );
+    // CHECK IF THE WORKSPACE EXISTS AND THE USER IS A MEMBER
+    const workspaceCheck = await prisma.teamMember.findFirst({
+      where: {
+        userId: userId,
+        team: {
+          workspaceId: workspace_id
+        }
+      }
+    });
 
-    if (workspaceCheck.rows.length === 0) {
-      // return res.status(404).json({ message: "Workspace not found or you are not a member" });
+    if (!workspaceCheck) {
       return {
         status: 404,
         message: "Workspace not found or you are not a member"
       }
     }
 
-    // Update user's default_workspace_id
-    await pool.query(
-      `UPDATE users SET default_workspace_id = $1 WHERE id = $2`,
-      [workspace_id, userId]
-    );
+    // UPDATE USER'S LAST ACTIVE WORKSPACE ID
+    await prisma.user.update({
+      where: { id: userId },
+      data: { lastActiveWorkspaceId: workspace_id }
+    });
 
-    // return res.status(200).json({ message: "Default workspace set successfully" });
     return {
       status: 200,
-      message: "Default workspace set successfully"
+      message: "Last active workspace set successfully"
     }
   } catch (error) {
-    console.error("Error setting default workspace:", error);
-    // res.status(500).json({ message: "Server error" });
+    console.error("Error setting last active workspace:", error);
     return {
       status: 500,
       message: "Server error",
@@ -315,33 +391,60 @@ const setDefaultWorkspace = async (req, res) => {
     }
   }
 }
-createApi().post("/user/set-default-workspace").authSecure(setDefaultWorkspace); // set default workspace for a user
+createApi().post("/user/set-last-active-workspace").authSecure(setLastActiveWorkspace); // set last active workspace for a user
 
-//get workspace details
+// GET WORKSPACE DETAILS
 const getWorkspaceDetails = async (req, res) => {
   const { workspace_id } = req.params;
   const userId = req.user.id;
 
   try {
-    const workspaceResult = await pool.query(
-      `SELECT w.id, w.name, w.slug, w.created_at, w.created_by, wm.role
-       FROM workspaces w
-       JOIN workspace_members wm ON w.id = wm.workspace_id
-       WHERE w.id = $1 AND wm.user_id = $2`,
-      [workspace_id, userId]
-    );
+    const workspace = await prisma.workspace.findFirst({
+      where: {
+        id: workspace_id,
+        OR: [
+          { creatorId: userId },
+          { teams: { some: { members: { some: { userId: userId } } } } }
+        ]
+      },
+      include: {
+        teams: {
+          include: {
+            members: {
+              where: { userId: userId },
+              select: { role: true }
+            }
+          }
+        }
+      }
+    });
 
-    if (workspaceResult.rows.length === 0) {
+    if (!workspace) {
       return {
         status: 404,
         message: "Workspace not found or you don't have access"
       };
     }
 
+    // GET USER'S ROLE (EITHER AS CREATOR OR TEAM MEMBER)
+    let userRole = 'member';
+    if (workspace.creatorId === userId) {
+      userRole = 'admin';
+    } else if (workspace.teams.length > 0 && workspace.teams[0].members.length > 0) {
+      userRole = workspace.teams[0].members[0].role;
+    }
+
     return {
       status: 200,
       message: "Workspace details fetched successfully",
-      workspace: workspaceResult.rows[0]
+      workspace: {
+        id: workspace.id,
+        name: workspace.name,
+        slug: workspace.slug,
+        createdAt: workspace.createdAt,
+        created_by: workspace.creatorId,
+        role: userRole
+      }
     };
 
   } catch (err) {
@@ -359,7 +462,7 @@ createApi().get("/workspaces/:workspace_id/details").authSecure(getWorkspaceDeta
 const checkSlugAvailability = async (req, res) => {
   const { slug } = req.params;
   
-  // Clean slug same way as createWorkspace
+  // CLEAN SLUG SAME WAY AS CREATE WORKSPACE
   const cleanSlug = slug
     .toLowerCase()
     .trim()
@@ -375,14 +478,13 @@ const checkSlugAvailability = async (req, res) => {
   }
 
   try {
-    const existingWorkspace = await pool.query(
-      `SELECT id FROM workspaces WHERE slug = $1`,
-      [cleanSlug]
-    );
+    const existingWorkspace = await prisma.workspace.findUnique({
+      where: { slug: cleanSlug }
+    });
 
     return {
       status: 200,
-      available: existingWorkspace.rows.length === 0,
+      available: !existingWorkspace,
       slug: cleanSlug
     };
 

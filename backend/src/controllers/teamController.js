@@ -1,6 +1,5 @@
 const express = require("express");
-const pool = require("../config/db");
-const { v4: uuidv4 } = require("uuid");
+const prisma = require("../lib/prisma");
 const { createApi } = require("../utils/router");
 
 //Create a team
@@ -29,12 +28,17 @@ const createTeam = async (req, res) => {
 
     try{
         //Check if user is admin of the workspace
-        const workspaceMember =  await pool.query(
-            `SELECT role FROM workspace_members WHERE workspace_id = $1 AND user_id = $2`,
-            [workspaceId, userId]
-        );
+        const workspaceMember = await prisma.teamMember.findFirst({
+            where: {
+                userId: userId,
+                team: {
+                    workspaceId: workspaceId
+                },
+                role: 'admin'
+            }
+        });
 
-        if(workspaceMember.rows.length === 0 || workspaceMember.rows[0].role !== 'admin'){
+        if(!workspaceMember){
             return {
                 status: 403,
                 message: "Only workspace admins can create teams"
@@ -42,25 +46,30 @@ const createTeam = async (req, res) => {
         }
 
         //Create team
-        const teamId = uuidv4();
-        const team = await pool.query(
-            `INSERT INTO teams (id, workspace_id, name, key, description, color, created_by)
-            VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-            [teamId, workspaceId, name, key.toUpperCase(), description, finalColor, userId]
-        );
-
-        //Add creator/admin to team members
-        const membershipId = uuidv4();
-        await pool.query(
-            `INSERT INTO team_members (id, team_id, user_id, role)
-            VALUES ($1, $2, $3, $4)`,
-            [membershipId, teamId, userId, 'admin']
-        );
+        const team = await prisma.team.create({
+            data: {
+                workspaceId: workspaceId,
+                name: name,
+                key: key.toUpperCase(),
+                description,
+                color: finalColor,
+                creatorId: userId,
+                members: {
+                    create: {
+                        userId: userId,
+                        role: 'admin'
+                    }
+                }
+            },
+            include: {
+                members: true
+            }
+        });
 
         return {
             status: 201,
             message: "Team created successfully",
-            team: team.rows[0]
+            team: team
         };
     }catch(error){
         console.error("Error creating team:", error);
@@ -82,12 +91,16 @@ const getWorkspaceTeams = async (req, res) => {
 
     try{
         //Check if user is member of the workspace
-        const workspaceMember = await pool.query(
-            `SELECT * FROM workspace_members WHERE workspace_id = $1 AND user_id = $2`,
-            [workspaceId, userId]
-        )
+        const workspaceMember = await prisma.teamMember.findFirst({
+            where: {
+                userId: userId,
+                team: {
+                    workspaceId: workspaceId
+                }
+            }
+        });
 
-        if(workspaceMember.rows.length === 0){
+        if(!workspaceMember){
             return {
                 status: 403,
                 message: "You are not authorized to access this workspace"
@@ -95,24 +108,44 @@ const getWorkspaceTeams = async (req, res) => {
         }
 
         //Get teams with member count
-        const teams = await pool.query(
-            `SELECT t.*,
-                COUNT(tm.id) as member_count,
-                CASE WHEN utm.user_id IS NOT NULL THEN true ELSE false END as is_member
-            FROM teams t
-            LEFT JOIN team_members tm ON t.id = tm.team_id
-            LEFT JOIN team_members utm ON t.id = utm.team_id AND utm.user_id = $2
-            WHERE t.workspace_id = $1
-            GROUP BY t.id, utm.user_id
-            ORDER BY t.created_at DESC
-            `,
-            [workspaceId, userId]
-        );
+        const teams = await prisma.team.findMany({
+            where: {
+                workspaceId: workspaceId
+            },
+            include: {
+                members: {
+                    include: {
+                        user: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true
+                            }
+                        }
+                    }
+                },
+                _count: {
+                    select: {
+                        members: true
+                    }
+                }
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
+        // Transform to match expected format
+        const transformedTeams = teams.map(team => ({
+            ...team,
+            member_count: team._count.members,
+            is_member: team.members.some(member => member.userId === userId)
+        }));
         
         return {
             status: 200,
             message: "Teams fetched successfully",
-            teams: teams.rows
+            teams: transformedTeams
         };
     }catch(error){
         console.error("Error fetching teams:", error);
@@ -133,18 +166,42 @@ const getUserTeams = async (req, res) => {
     const { workspace_id: workspaceId } = req.params;
 
     try{
-        const teams = await pool.query(
-            `SELECT t.*, tm.role, tm.joined_at
-             FROM teams t
-             JOIN team_members tm ON t.id = tm.team_id
-             WHERE tm.user_id = $1 AND t.workspace_id = $2
-             ORDER BY tm.joined_at DESC`,
-             [userId, workspaceId]
-        );
+        const teams = await prisma.team.findMany({
+            where: {
+                workspaceId: workspaceId,
+                members: {
+                    some: {
+                        userId: userId
+                    }
+                }
+            },
+            include: {
+                members: {
+                    where: {
+                        userId: userId
+                    },
+                    select: {
+                        role: true,
+                        joinedAt: true
+                    }
+                }
+            }
+        });
+
+        // Transform to match expected format
+        const transformedTeams = teams.map(team => ({
+            ...team,
+            role: team.members[0]?.role,
+            joined_at: team.members[0]?.joinedAt
+        })).sort((a, b) => {
+            // Sort by joined_at descending
+            return new Date(b.joined_at) - new Date(a.joined_at);
+        });
+
         return {
             status: 200,
             message: "User's teams fetched successfully",
-            teams: teams.rows
+            teams: transformedTeams
         };
     }catch(error){
         console.error("Error fetching teams:", error);

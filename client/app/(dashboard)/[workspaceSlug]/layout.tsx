@@ -1,7 +1,7 @@
 "use client"
 
 import { useSession } from "next-auth/react"
-import { useWorkspace } from "@/providers/WorkspaceContext"
+import { useWorkspaceStore } from "@/stores/workspaceStore"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { use } from "react"
@@ -18,7 +18,10 @@ export default function WorkspaceLayout({
   params 
 }: WorkspaceLayoutProps) {
   const { status } = useSession()
-  const { currentWorkspace, isLoading, hasWorkspaces, getDefaultWorkspace } = useWorkspace()
+  const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace)
+  const isLoading = useWorkspaceStore((state) => state.isLoading)
+  const hasWorkspaces = useWorkspaceStore((state) => state.hasWorkspaces)
+  const getDefaultWorkspace = useWorkspaceStore((state) => state.getDefaultWorkspace)
   const router = useRouter()
   const resolvedParams = use(params)
   const workspaceSlug = resolvedParams.workspaceSlug

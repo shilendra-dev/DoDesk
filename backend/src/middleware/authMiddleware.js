@@ -1,28 +1,31 @@
-const express = require('express');
 const jwt = require('jsonwebtoken');
-const pool = require('../config/db');
+const prisma = require('../lib/prisma');
 
 const protect = async (req, res, next) => {
-    const authHeader = req.headers.authorization;
-    
-    if(!authHeader || !authHeader.startsWith('Bearer ')){
-        return res.status(401).json({message: 'not authorized'})
-    }
-    const token = authHeader.split(' ')[1];
+  const authHeader = req.headers.authorization;
 
-    try{
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        //CHECKING IF USER EXIST IN DB
-        const userResult = await pool.query(`SELECT * FROM users WHERE id = $1`, [decoded.id]);
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Not authorized' });
+  }
+  const token = authHeader.split(' ')[1];
 
-        if(userResult.rows.length===0){
-            return res.status(401).json({message: "no user found"});
-        }
-        req.user = userResult.rows[0];
-        next();
-    }catch(err){
-        return res.status(401).json({ message: 'Not authorized, token failed' });
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Check if user exists in DB using Prisma
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.id }
+    });
+
+    if (!user) {
+      return res.status(401).json({ message: 'No user found' });
     }
-}
+
+    req.user = user;
+    next();
+  } catch (err) {
+    return res.status(401).json({ message: 'Not authorized, token failed' });
+  }
+};
 
 module.exports = { protect };

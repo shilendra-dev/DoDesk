@@ -1,120 +1,136 @@
 const bcrypt = require("bcryptjs");
-const pool = require("../config/db");
-const { v4: uuidv4 } = require("uuid");
+const prisma = require("../lib/prisma");
 const isValidEmail = require("../utils/isValidEmail");
 const { createApi } = require("../utils/router");
-const { getUserWorkspaces } = require("./workspaceController");
 
 //Create User API
 const createUser = async (req, res) => {
   const { password, name } = req.body;
-  let {email} = req.body;
+  let { email } = req.body;
   email = email.trim().toLowerCase();
-  
-  
-  if(!isValidEmail(email)){
+
+  if (!isValidEmail(email)) {
     return res.status(400).json({ message: "Invalid email address" });
   }
 
   if (!email) return res.status(400).json({ message: "email is required" });
-  if (!password) return res.status(400).json({ message: "password is required" });
+  if (!password)
+    return res.status(400).json({ message: "password is required" });
   if (!name) return res.status(400).json({ message: "name is required" });
-
 
   try {
     //if user already exist
-    const userCheck = await pool.query("SELECT * FROM users WHERE email = $1", [
-      email,
-    ]);
-    if (userCheck.rows.length > 0)
-      return res.status(401).json({ message: "Account already exists" });
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
+    if (existingUser)
+      return {
+        status: 401,
+        message: "Account already exists",
+      };
 
     //hashPassword
     const hashedPassword = await bcrypt.hash(password, 10);
-    //generating uuid
-    const userId = uuidv4();
 
     //inserting new user in DB
-    const newUser = await pool.query(
-      "INSERT INTO users (id, email, password, name) VALUES ($1, $2, $3, $4) RETURNING *",
-      [userId, email, hashedPassword, name]
-    );
+    const newUser = await prisma.user.create({
+      data: {
+        email,
+        password: hashedPassword,
+        name,
+      },
+    });
 
-    const invitation = await pool.query(
-      `SELECT * FROM workspace_invitations WHERE email = $1 AND status = 'pending'`,
-      [email]
-    );
+    const invitation = await prisma.workspaceInvitation.findFirst({
+      where: {
+        email,
+        status: "pending",
+      },
+    });
 
-    if (invitation.rows.length > 0) {
+    if (invitation) {
       // User is invited, automatically add them to the workspace
-      const { workspace_id } = invitation.rows[0];
+      const { workspace_id } = invitation;
 
-      const memberId = uuidv4();
-      await pool.query(
-        `INSERT INTO workspace_members (id, workspace_id, user_id, role, joined_at)
-         VALUES ($1, $2, $3, $4, NOW())`,
-        [memberId, workspace_id, newUser.rows[0].id, "member"]
-      );
+      let defaultTeam = await prisma.team.create({
+        data: {
+          workspaceId: workspace_id,
+          key: "GEN", //General team
+        },
+      });
 
-      // Update the invitation status to accepted
-      await pool.query(
-        `UPDATE workspace_invitations SET status = 'accepted' WHERE email = $1 AND workspace_id = $2`,
-        [email, workspace_id]
-      );
+      if (!defaultTeam) {
+        defaultTeam = await prisma.team.create({
+          data: {
+            name: "General",
+            key: "GEN", //General team
+            workspaceId: workspace_id,
+            color: "#6B7280",
+          },
+        });
+      }
+      //Add user to the team
+      await prisma.workspaceMember.create({
+        data: {
+          userId: newUser.id,
+          teamId: defaultTeam.id,
+          role: "member",
+        },
+      });
 
-      // return res
-      //   .status(201)
-      //   .json({
-      //     message: "User successfully signed up and added to the workspace",
-      //   });
-      
-        return {
-          status: 201,
-          message: "User successfully signed up and added to the workspace",
-        }
-    }
+      //update user's invitation status
+      await prisma.workspaceInvitation.update({
+        where: {
+          id: invitation.id,
+        },
+        data: {
+          status: "accepted",
+        },
+      });
 
-    const { password: _, ...userWithoutPassoword } = newUser.rows[0];
-    // res
-    //   .status(201)
-    //   .json({
-    //     message: "Account is successfully created!!",
-    //     user: userWithoutPassoword,
-    //   });
       return {
         status: 201,
-        message: "Account is successfully created!!",
-        user: userWithoutPassoword,
-      }
-  } catch (err) {
-    console.error(err.message);
-    return {
-      status: 500,
-      message: "Server error",
+        message: "User successfully signed up and added to the workspace",
+      };
     }
+
+    const { password: _, ...userWithoutPassoword } = newUser;
+
+    return {
+      status: 201,
+      message: "Account is successfully created!!",
+      user: userWithoutPassoword,
+    };
+  } catch (err) {
+      console.error(err.message);
+      return {
+        status: 500,
+        message: "Server error",
+      };
   }
 };
 createApi().post("/users/signup").noAuth(createUser); // for creating a new user
 
-// --- GET CURRENT USER + SET DEFAULT WORKSPACE ---
+// --- GET CURRENT USER ---
 const getCurrentUser = async (req, res) => {
   const userId = req.user.id;
 
   try {
-    // Get user
-    const userResult = await pool.query("SELECT * FROM users WHERE id = $1", [
-      userId,
-    ]);
+    // Get user and last active workspace
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        lastActiveWorkspace: true, // include the workspace object if you want
+      },
+    });
 
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({ error: "User not found" });
+    if (!user) {
+      return {
+        status: 404,
+        message: "User not found",
+      };
     }
 
-    let user = userResult.rows[0];
-
-    // Don't auto-assign default workspace - let user choose or set during onboarding
-
-    //res.json(user);
     return {
       status: 200,
       message: "User fetched successfully",
@@ -122,17 +138,16 @@ const getCurrentUser = async (req, res) => {
         id: user.id,
         email: user.email,
         name: user.name,
-        default_workspace_id: user.default_workspace_id,
+        lastActiveWorkspaceId: user.lastActiveWorkspaceId,
+        lastActiveWorkspace: user.lastActiveWorkspace, 
       },
-    }
+    };
   } catch (err) {
     console.error("Error fetching user:", err);
-    //res.status(500).json({ error: "Server error" });
-    return{
+    return {
       status: 500,
       message: "Server error",
-    }
+    };
   }
 };
 createApi().get("/user").authSecure(getCurrentUser); // for getting the current user
-

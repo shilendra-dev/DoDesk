@@ -7,10 +7,12 @@ import { Button } from '@/components/ui/atoms/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/molecules/card'
 import { ThemeToggle } from '@/components/ui/atoms/theme-toggle'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import { useTheme } from '@/providers/ThemeContext'
 
 export default function LandingPage() {
   const router = useRouter()
-
+  const { theme } = useTheme()
   const features = [
     {
       icon: <Users className="w-5 h-5" />,
@@ -37,11 +39,16 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation */}
-      <nav className="border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-6xl mx-auto px-4 py-4">
+      <nav className="sticky top-0 z-50 bg-background/50 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="max-w-6xl mx-auto py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <span className="text-xl font-bold text-foreground">DoDesk</span>
+                <Image
+                 src={theme === 'dark' ? '/landscape-logo-white.png' : '/landscape-logo-black.png'}
+                 alt="DoDesk"
+                 width={140}
+                 height={140}
+                />
             </div>
             
             <div className="flex items-center space-x-3">

@@ -1,29 +1,32 @@
 'use client'
 
-import React, { useEffect } from 'react'
-import { useWorkspace } from '@/providers/WorkspaceContext'
-import { useTaskStore } from '@/stores/taskStore'
-import { useTaskUIStore } from '@/stores/taskUIStore'
-import { TaskListView } from '@/components/features/tasks/TaskListView'
-import { TaskBoardView } from '@/components/features/tasks/TaskBoardView'
-import { TaskDetails } from '@/components/features/tasks/TaskDetails'
-import { CreateTaskButton } from '@/components/features/tasks/CreateTaskButton'
-import { ViewToggle } from '@/components/features/tasks/ViewToggle'
+import React, { useEffect, useState } from 'react'
+import { useWorkspaceStore } from '@/stores/workspaceStore'
+import { useIssueStore } from '@/stores/issueStore'
+import { IssueListView } from '@/components/features/issues/IssueListView'
+import { IssueBoardView } from '@/components/features/issues/IssueBoardView'
+import { IssueDetails } from '@/components/features/issues/IssueDetails'
+import { CreateIssueButton } from '@/components/features/issues/CreateIssueButton'
+import { ViewToggle } from '@/components/features/issues/ViewToggle'
 import { LoadingSpinner } from '@/components/ui/atoms/loading-spinner'
 
 export default function MyIssuesPage() {
-  const { currentWorkspace, isLoading: workspaceLoading } = useWorkspace()
-  const { tasks, loadingStates, selectedTaskId, fetchTasks, setSelectedTask } = useTaskStore()
-  const { view, showCreateTask, setShowCreateTask } = useTaskUIStore()
+  const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace)
+  const isLoading = useWorkspaceStore((state) => state.isLoading)
+  const { issues, loadingStates, selectedIssueId, fetchIssuesByWorkspace, setSelectedIssue } = useIssueStore()
 
-  // Fetch tasks when workspace changes
+  // Local UI state for view and create modal
+  const [view, setView] = useState<'list' | 'board'>('list')
+  const [showCreateIssue, setShowCreateIssue] = useState(false)
+
+  // Fetch issues when workspace changes
   useEffect(() => {
     if (currentWorkspace?.id) {
-      fetchTasks(currentWorkspace.id)
+      fetchIssuesByWorkspace(currentWorkspace.id)
     }
-  }, [currentWorkspace?.id, fetchTasks])
+  }, [currentWorkspace?.id, fetchIssuesByWorkspace])
 
-  if (workspaceLoading || loadingStates.fetchTasks) {
+  if (isLoading || loadingStates.fetchIssuesByWorkspace) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <LoadingSpinner size="lg" />
@@ -43,34 +46,32 @@ export default function MyIssuesPage() {
         </div>
         
         <div className="flex items-center gap-2">
-          <ViewToggle />
-          <CreateTaskButton 
+          <ViewToggle view={view} setView={setView} />
+          <CreateIssueButton 
             workspaceId={currentWorkspace?.id}
-            showCreateTask={showCreateTask}
-            setShowCreateTask={setShowCreateTask}
+            showCreateIssue={showCreateIssue}
+            setShowCreateIssue={setShowCreateIssue}
           />
         </div>
       </div>
 
       {/* Main Content */}
-      
-        <div className="flex-1">
-          {view === 'list' ? (
-            <TaskListView tasks={Object.values(tasks)} isLoading={loadingStates.fetchTasks} />
-          ) : (
-            <TaskBoardView tasks={Object.values(tasks)} />
-          )}
-        </div>
-
-        {/* Task Details Sidebar */}
-        {selectedTaskId && (
-            <TaskDetails 
-              key={`task-details-${selectedTaskId}`}
-              taskId={selectedTaskId} 
-              onClose={() => setSelectedTask(null)} 
-            />
+      <div className="flex-1">
+        {view === 'list' ? (
+          <IssueListView issues={Object.values(issues)} isLoading={loadingStates.fetchIssuesByWorkspace} />
+        ) : (
+          <IssueBoardView issues={Object.values(issues)} />
         )}
-      
+      </div>
+
+      {/* Issue Details Sidebar */}
+      {selectedIssueId && (
+        <IssueDetails 
+          key={`issue-details-${selectedIssueId}`}
+          issueId={selectedIssueId} 
+          onClose={() => setSelectedIssue(null)} 
+        />
+      )}
     </div>
   )
 }
