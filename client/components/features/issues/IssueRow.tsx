@@ -35,11 +35,11 @@ export const IssueRow = React.memo(({ issue, isSelected, onIssueSelect, onIssueC
 
   const getPriorityLabel = (priority: number) => {
     switch (priority) {
-      case 1: return 'Urgent'
-      case 2: return 'High'
-      case 3: return 'Medium'
-      case 4: return 'Low'
-      default: return 'None'
+      case 1: return 'P1'
+      case 2: return 'P2'
+      case 3: return 'P3'
+      case 4: return 'P4'
+      case 0: return 'P0'
     }
   }
 
