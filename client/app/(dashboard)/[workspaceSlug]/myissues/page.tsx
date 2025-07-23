@@ -37,20 +37,18 @@ export default function MyIssuesPage() {
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border">
+      <div className="flex items-center justify-between pl-4 pr-4 pt-2 pb-2 border-b border-border">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">My Issues</h1>
-          <p className="text-sm text-muted-foreground">
-            {currentWorkspace?.name && `in ${currentWorkspace.name}`}
-          </p>
+          <h1 className="text-lg font-bold text-foreground">My Issues</h1>
         </div>
         
         <div className="flex items-center gap-2">
-          <ViewToggle view={view} setView={setView} />
+          <ViewToggle view={view} setView={setView}/>
           <CreateIssueButton 
             workspaceId={currentWorkspace?.id}
             showCreateIssue={showCreateIssue}
             setShowCreateIssue={setShowCreateIssue}
+            size="xs"
           />
         </div>
       </div>
