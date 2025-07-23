@@ -1,4 +1,4 @@
-// client/components/layout/Sidebar.tsx
+// ... existing code ...
 'use client'
 
 import React, { useState } from 'react'
@@ -16,12 +16,17 @@ import { CollapsibleSection } from './CollapsibleSection'
 import { SidebarItem } from './SidebarItem'
 import { TeamsSection } from './TeamSection'
 import { useTheme } from '@/providers/ThemeContext'
+import { useSession } from "next-auth/react"
+import { useModalStore } from '@/stores/modalStore'
 
 export function Sidebar() {
   const router = useRouter()
   const pathname = usePathname()
   const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace)
+  const teams = useWorkspaceStore((state) => state.teams)
   const { toggleTheme } = useTheme()
+  const { data: session } = useSession()
+  const { openCreateIssue } = useModalStore()
   // State for collapsible sections
   const [expandedSections, setExpandedSections] = useState({
     workspace: true,
@@ -65,9 +70,9 @@ export function Sidebar() {
   const isActive = (path: string) => pathname.includes(path)
 
   return (
-    <aside className="w-[240px] h-screen bg-card border-r border-border flex flex-col overflow-hidden">
+    <aside className="w-[240px] h-screen bg-background flex flex-col overflow-hidden">
       {/* Workspace Section */}
-      <div className="px-3 py-2 border-b border-border">
+      <div className="px-3 py-2">
         <div className="flex items-center gap-2">
           <div className="flex-1">
             <WorkspaceDropdown />
@@ -81,10 +86,10 @@ export function Sidebar() {
             <Search size={16} />
           </Button>
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
             className="p-1.5 h-auto"
-            onClick={() => handleMenuClick('myissues')}
+            onClick={openCreateIssue}
           >
             <Plus size={16} />
           </Button>
@@ -101,7 +106,7 @@ export function Sidebar() {
                 icon={<Inbox size={16} />}
                 label="Inbox"
                 isActive={isActive('/inbox')}
-                onClick={() => handleMenuClick('inbox')}
+                // onClick={() => handleMenuClick('inbox')} // Not clickable yet
               />
               <SidebarItem
                 icon={<Target size={16} />}
@@ -113,7 +118,7 @@ export function Sidebar() {
           </div>
 
           {/* Workspace Section */}
-          <CollapsibleSection
+          {/* <CollapsibleSection
             title="Workspace"
             isExpanded={expandedSections.workspace}
             onToggle={() => toggleSection('workspace')}
@@ -138,7 +143,7 @@ export function Sidebar() {
                 onClick={() => handleMenuClick('more')}
               />
             </nav>
-          </CollapsibleSection>
+          </CollapsibleSection> */}
 
           {/* Teams Section */}
           <CollapsibleSection
@@ -148,11 +153,7 @@ export function Sidebar() {
           >
             <div className="space-y-1">
             <TeamsSection 
-              teams={[{
-                id: '1',
-                name: 'StartingNew',
-                color: '#8b5cf6'
-              }]} 
+              teams={teams} 
               onNavigate={handleMenuClick}
               expandedTeams={expandedTeams}
               onToggleTeam={toggleTeam}
@@ -183,21 +184,27 @@ export function Sidebar() {
       </div>
 
       {/* Bottom Section */}
-      <div className="px-3 py-2 border-t border-border">
+      <div className="px-3 py-2">
         <nav className="space-y-1">
+          {/*
           <SidebarItem
             icon={<HelpCircle size={16} />}
             label="Help"
             onClick={() => console.log('Help clicked')}
           />
+          */}
           
           {/* Profile Section */}
           <div className="flex items-center justify-between px-2 py-1 rounded hover:bg-accent/50 transition-all duration-200 cursor-pointer">
             <div className="flex items-center gap-2">
               <Avatar className="w-[18px] h-[18px]">
-                <AvatarFallback className="text-xs">U</AvatarFallback>
+                <AvatarFallback className="text-xs">
+                  {session?.user?.name?.[0] || "U"}
+                </AvatarFallback>
               </Avatar>
-              <span className="text-sm text-foreground">Profile</span>
+              <span className="text-sm text-foreground">
+                {session?.user?.name || "Profile"}
+              </span>
             </div>
             <Button
               variant="ghost"

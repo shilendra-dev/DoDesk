@@ -3,14 +3,14 @@ export interface Issue {
     title: string
     description?: string
     state: string // "backlog" | "todo" | "in_progress" | "done" | "canceled"
-    priority: number // 0=no priority, 1=urgent, 2=high, 3=medium, 4=low
+    priority: number // p0=no priority, p1=urgent, p2=high, p3=medium, p4=low 
     labels: string[]
     dueDate?: string
     notes?: string
     number: number // Linear-style issue number (unique per team)
     workspaceId: string
     teamId: string
-    assigneeId?: string
+    assigneeId?: string 
     creatorId?: string
     createdAt: string
     updatedAt: string
@@ -43,7 +43,7 @@ export interface Issue {
     dueDate?: string
     notes?: string
     teamId: string
-    assigneeId?: string
+    assigneeId?: string | null
     workspaceId: string
   }
   

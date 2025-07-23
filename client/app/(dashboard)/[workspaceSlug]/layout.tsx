@@ -61,10 +61,19 @@ export default function WorkspaceLayout({ children, params }: WorkspaceLayoutPro
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 py-6">
+  <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="w-full max-w-7xl px-2 py-2">
+      <div
+        className="
+          border border-border/60 rounded-lg shadow-2xs
+          h-[calc(100vh-24px)]
+          overflow-y-auto
+          flex flex-col
+        "
+      >
         {children}
       </div>
     </div>
+  </div>
   )
 }

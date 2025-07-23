@@ -22,7 +22,7 @@ export function SidebarItem({
     <button
       onClick={onClick}
       className={cn(
-        "w-full flex items-center gap-2.5 px-2 py-1 rounded text-sm font-medium transition-all duration-200",
+        "w-full flex text-accent-foreground items-center gap-2.5 px-2 py-1 rounded text-sm font-medium transition-all duration-200",
         isActive
           ? "bg-accent text-accent-foreground font-semibold"
           : "text-foreground/70 hover:text-foreground hover:bg-accent/50",

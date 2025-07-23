@@ -11,33 +11,33 @@ interface ViewToggleProps {
 }
 
 export function ViewToggle({ view, setView }: ViewToggleProps) {
-
   return (
-    <div className="flex items-center border border-border rounded-md p-1">
+    <div className="flex items-center border border-border rounded p-0.5 bg-muted/40">
       <Button
         variant={view === 'list' ? 'default' : 'ghost'}
-        size="sm"
+        size="icon"
         onClick={() => setView('list')}
         className={cn(
-          "h-8 px-3",
-          view === 'list' && "bg-primary text-primary-foreground"
+          "h-7 w-7",
+          view === 'list' && "bg-primary text-primary-foreground hover:bg-primary/90"
         )}
+        aria-label="List view"
+        title="List view"
       >
-        <List size={16} className="mr-2" />
-        List
+        <List size={16} />
       </Button>
-      
       <Button
         variant={view === 'board' ? 'default' : 'ghost'}
-        size="sm"
+        size="icon"
         onClick={() => setView('board')}
         className={cn(
-          "h-8 px-3",
-          view === 'board' && "bg-primary text-primary-foreground"
+          "h-7 w-7",
+          view === 'board' && "bg-primary text-primary-foreground hover:bg-primary/90"
         )}
+        aria-label="Board view"
+        title="Board view"
       >
-        <Kanban size={16} className="mr-2" />
-        Board
+        <Kanban size={16} />
       </Button>
     </div>
   )

@@ -22,14 +22,17 @@ export function CollapsibleSection({
     <div className={className}>
       <button
         onClick={onToggle}
-        className="w-full flex items-center gap-2 px-2 py-1 text-xs font-medium text-foreground/80 uppercase tracking-wider hover:text-foreground hover:bg-accent/50 rounded transition-all duration-200"
+        className="w-full flex items-center gap-2 px-2 py-1 text-xs uppercase font-medium text-muted-foreground/80 tracking-wider hover:text-foreground hover:bg-accent/50 rounded transition-all duration-200"
       >
-        {isExpanded ? (
-          <ChevronDown size={12} />
-        ) : (
-          <ChevronRight size={12} />
-        )}
-        <span className="flex items-center gap-2">{title}</span>
+        <span className="flex items-center gap-2">{title}
+        </span>
+        <span className="flex items-center gap-2">
+          {isExpanded ? (
+            <ChevronDown size={12} />
+          ) : (
+            <ChevronRight size={12} />
+          )}
+        </span>
       </button>
       
       {/* Always render, just control visibility */}
