@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { ThemeProvider } from "@/providers/ThemeContext";
 import SessionProviderWrapper from "@/providers/SessionProviderWrapper";
+import { ClientToaster } from "@/components/ui/organisms/ClientToaster";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -28,6 +29,7 @@ export default async function RootLayout({
       <body className={`${inter.variable} antialiased`}>
         <SessionProviderWrapper session={session}>
           <ThemeProvider>
+            <ClientToaster />
             {children}
           </ThemeProvider>
         </SessionProviderWrapper>

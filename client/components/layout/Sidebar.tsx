@@ -5,8 +5,8 @@ import React, { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 import {
-  Inbox, Target, FolderOpen, Eye, MoreHorizontal, Import, UserPlus,
-  Search, Plus, HelpCircle, LogOut
+  Inbox, Target, UserPlus,
+  Search, Plus, LogOut
 } from 'lucide-react'
 import { useWorkspaceStore } from '@/stores/workspaceStore'
 import { Avatar, AvatarFallback } from '@/components/ui/atoms/avatar'
@@ -18,6 +18,7 @@ import { TeamsSection } from './TeamSection'
 import { useTheme } from '@/providers/ThemeContext'
 import { useSession } from "next-auth/react"
 import { useModalStore } from '@/stores/modalStore'
+import {toast} from 'react-hot-toast'
 
 export function Sidebar() {
   const router = useRouter()
@@ -81,7 +82,10 @@ export function Sidebar() {
             variant="ghost"
             size="sm"
             className="p-1.5 h-auto"
-            onClick={() => console.log('Search clicked')}
+            onClick={() => {
+              console.log('Search clicked')
+              toast.error('This feature is coming soon')
+            }}
           >
             <Search size={16} />
           </Button>
@@ -106,7 +110,10 @@ export function Sidebar() {
                 icon={<Inbox size={16} />}
                 label="Inbox"
                 isActive={isActive('/inbox')}
-                // onClick={() => handleMenuClick('inbox')} // Not clickable yet
+                onClick={() => {
+                  //handleMenuClick('inbox')
+                  toast.error('This feature is coming soon')
+                }}
               />
               <SidebarItem
                 icon={<Target size={16} />}
@@ -169,14 +176,9 @@ export function Sidebar() {
           >
             <nav className="space-y-1">
               <SidebarItem
-                icon={<Import size={16} />}
-                label="Import issues"
-                onClick={() => handleMenuClick('import')}
-              />
-              <SidebarItem
                 icon={<UserPlus size={16} />}
                 label="Invite people"
-                onClick={() => handleMenuClick('invite')}
+                onClick={() => toast.error('This feature is coming soon')}
               />
             </nav>
           </CollapsibleSection>
