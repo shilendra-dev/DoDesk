@@ -70,9 +70,9 @@ export function Sidebar() {
   const isActive = (path: string) => pathname.includes(path)
 
   return (
-    <aside className="w-[240px] h-screen bg-card border-r border-border flex flex-col overflow-hidden">
+    <aside className="w-[240px] h-screen bg-background flex flex-col overflow-hidden">
       {/* Workspace Section */}
-      <div className="px-3 py-2 border-b border-border">
+      <div className="px-3 py-2">
         <div className="flex items-center gap-2">
           <div className="flex-1">
             <WorkspaceDropdown />
@@ -184,7 +184,7 @@ export function Sidebar() {
       </div>
 
       {/* Bottom Section */}
-      <div className="px-3 py-2 border-t border-border">
+      <div className="px-3 py-2">
         <nav className="space-y-1">
           {/*
           <SidebarItem
