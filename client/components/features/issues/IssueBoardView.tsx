@@ -14,23 +14,34 @@ interface IssueBoardViewProps {
   issues: Issue[]
 }
 
-const COLUMNS = {
-  PENDING: {
-    id: 'pending',
-    title: 'Pending',
+// New architecture: use canonical state values from backend/types
+const COLUMNS = [
+  {
+    id: 'backlog',
+    title: 'Backlog',
+    color: 'gray'
+  },
+  {
+    id: 'todo',
+    title: 'To Do',
     color: 'yellow'
   },
-  IN_PROGRESS: {
-    id: 'in-progress',
+  {
+    id: 'in_progress',
     title: 'In Progress',
     color: 'blue'
   },
-  COMPLETED: {
-    id: 'completed',
-    title: 'Completed',
+  {
+    id: 'done',
+    title: 'Done',
     color: 'green'
+  },
+  {
+    id: 'canceled',
+    title: 'Canceled',
+    color: 'red'
   }
-}
+] as const
 
 export function IssueBoardView({ issues }: IssueBoardViewProps) {
   const { updateIssue } = useIssueStore()
@@ -58,10 +69,10 @@ export function IssueBoardView({ issues }: IssueBoardViewProps) {
     filterSummary
   } = useIssueFiltering()
 
-  // Group filtered issues by state
+  // Group filtered issues by state (using canonical state values)
   const groupedIssues = useMemo(() => {
     return filteredIssues.reduce((acc, issue) => {
-      const state = issue.state.toLowerCase()
+      const state = issue.state
       if (!acc[state]) {
         acc[state] = []
       }
@@ -84,12 +95,10 @@ export function IssueBoardView({ issues }: IssueBoardViewProps) {
     ) return
 
     try {
-      // Update issue state
-      const validStatuses = ['pending', 'in-progress', 'completed'] as const
-      type Status = (typeof validStatuses)[number]
-
-      if (validStatuses.includes(destination.droppableId as Status)) {
-        await updateIssue(draggableId, { state: destination.droppableId as Status })
+      // Update issue state (use canonical state values)
+      const validStatuses = COLUMNS.map(col => col.id)
+        if (validStatuses.includes(destination.droppableId as any)) {
+        await updateIssue(draggableId, { state: destination.droppableId })
       }
     } catch (error) {
       console.error('Error updating issue state:', error)
@@ -120,15 +129,16 @@ export function IssueBoardView({ issues }: IssueBoardViewProps) {
       />
 
       {/* Issue Columns */}
-      <div className="flex-1 overflow-auto p-4">
+      <div className="flex-1 overflow-auto p-2">
         <DragDropContext onDragEnd={handleDragEnd}>
-          <div className="flex gap-4 h-full">
-            {Object.values(COLUMNS).map((column) => (
-              <IssueColumn
-                key={column.id}
-                column={column}
-                issues={groupedIssues[column.id] || []}
-              />
+          <div className="flex gap-4 h-full overflow-x-auto flex-nowrap">
+            {COLUMNS.map((column) => (
+              <div key={column.id} className="min-w-[320px] max-w-xs w-full">
+                <IssueColumn
+                  column={column}
+                  issues={groupedIssues[column.id] || []}
+                />
+              </div>
             ))}
           </div>
         </DragDropContext>
