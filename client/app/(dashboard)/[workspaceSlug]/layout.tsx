@@ -8,51 +8,46 @@ import { use } from "react"
 
 interface WorkspaceLayoutProps {
   children: React.ReactNode;
-  params: Promise<{
-    workspaceSlug: string;
-  }>;
+  params: Promise<{ workspaceSlug: string }>;
 }
 
-export default function WorkspaceLayout({ 
-  children, 
-  params 
-}: WorkspaceLayoutProps) {
+export default function WorkspaceLayout({ children, params }: WorkspaceLayoutProps) {
   const { status } = useSession()
-  const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace)
-  const isLoading = useWorkspaceStore((state) => state.isLoading)
-  const hasWorkspaces = useWorkspaceStore((state) => state.hasWorkspaces)
-  const getDefaultWorkspace = useWorkspaceStore((state) => state.getDefaultWorkspace)
+  const { currentWorkspace, isLoading, hasWorkspaces, workspaces, lastActiveWorkspaceId, setCurrentWorkspaceBySlug } = useWorkspaceStore()
   const router = useRouter()
   const resolvedParams = use(params)
   const workspaceSlug = resolvedParams.workspaceSlug
 
+  // 1. Set workspace by slug whenever slug or workspaces change
+  useEffect(() => {
+    if (workspaces.length > 0) {
+      setCurrentWorkspaceBySlug(workspaceSlug)
+    }
+  }, [workspaceSlug, workspaces.length])
+
+  // 2. Redirect if slug is invalid
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/signin')
+      router.replace('/signin')
       return
     }
-
-    if (!isLoading && status === 'authenticated') {
+    if (!isLoading && status === 'authenticated' && workspaces.length > 0) {
       if (!hasWorkspaces) {
-        // User has no workspaces - go to onboarding
-        router.push('/onboarding')
+        router.replace('/onboarding')
         return
       }
-
       if (!currentWorkspace) {
-        // Invalid workspace slug - redirect to default workspace
-        const defaultWorkspace = getDefaultWorkspace()
-        if (defaultWorkspace) {
-          router.push(`/${defaultWorkspace.slug}/myissues`)
+        // Invalid slug, redirect to last active workspace
+        const lastActiveWorkspace = workspaces.find(w => w.id === lastActiveWorkspaceId)
+        if (lastActiveWorkspace) {
+          router.replace(`/${lastActiveWorkspace.slug}/myissues`)
         } else {
-          router.push('/onboarding')
+          router.replace('/onboarding')
         }
-        return
       }
     }
-  }, [status, isLoading, hasWorkspaces, currentWorkspace, router, workspaceSlug, getDefaultWorkspace])
+  }, [status, isLoading, hasWorkspaces, currentWorkspace, workspaces, lastActiveWorkspaceId, router])
 
-  // Show loading while checking authentication and workspace
   if (status === 'loading' || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -61,7 +56,6 @@ export default function WorkspaceLayout({
     )
   }
 
-  // Don't render anything while redirecting
   if (status === 'unauthenticated' || !currentWorkspace) {
     return null
   }
