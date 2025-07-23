@@ -1,8 +1,9 @@
 'use client'
 
 import React from 'react'
-import { ChevronDown, ListTodo, FolderOpen, Eye } from 'lucide-react'
+import { ChevronDown, ListTodo } from 'lucide-react'
 import { SidebarItem } from './SidebarItem'
+import {toast} from 'react-hot-toast'
 
 interface TeamDropdownProps {
     name: string
@@ -16,7 +17,7 @@ export function TeamDropdown({
     name,
     color,
     isExpanded,
-    onNavigate,
+    // onNavigate,
     onToggle
 }: TeamDropdownProps) {
     return (
@@ -45,7 +46,10 @@ export function TeamDropdown({
                 <SidebarItem
                     icon={<ListTodo size={16} />}
                     label="Issues"
-                    onClick={() => onNavigate('team/issues')}
+                    onClick={() => {
+                        //onNavigate('team/issues')
+                        toast.error('This feature is coming soon')
+                    }}
                 />
                 {/* <SidebarItem
                     icon={<FolderOpen size={16} />}
