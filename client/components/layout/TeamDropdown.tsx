@@ -20,10 +20,10 @@ export function TeamDropdown({
     onToggle
 }: TeamDropdownProps) {
     return (
-        <div className="space-y-1">
+        <div className="">
             <button 
                 onClick={onToggle}
-                className="w-full flex items-center gap-2.5 px-2 py-1 rounded text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200"
+                className="w-full flex items-center gap-2.5 px-2 py-1 rounded text-sm font-medium text-accent-foreground hover:text-foreground hover:bg-accent/50 transition-all duration-200"
             >
                 <div 
                     className="w-3 h-3 rounded-full"
