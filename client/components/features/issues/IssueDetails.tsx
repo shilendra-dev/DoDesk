@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { X, Calendar, User, CheckSquare, Flag, CalendarIcon } from 'lucide-react'
+import { X, Calendar, User, CheckSquare, Flag } from 'lucide-react'
 import { Button } from '@/components/ui/atoms/button'
 import { Input } from '@/components/ui/atoms/input'
 import { Label } from '@/components/ui/atoms/label'
@@ -9,10 +9,8 @@ import { AssigneesField } from '@/components/features/issues/AssigneesField'
 import { useIssueStore } from '@/stores/issueStore'
 import { cn } from '@/lib/utils'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/atoms/select'
-import { Calendar as CalendarComponent } from '@/components/ui/atoms/calendar'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/molecules/popover'
-import { format } from 'date-fns'
 import { IssueNotes } from '@/components/features/issues/IssueNotes'
+import { DueDatePicker } from '@/components/ui/molecules/DueDatePicker'
 
 interface IssueDetailsProps {
   issueId: string
@@ -22,7 +20,7 @@ interface IssueDetailsProps {
 export function IssueDetails({ issueId, onClose }: IssueDetailsProps) {
   // Get issue directly from store using the getIssueById selector
   const issue = useIssueStore(state => state.getIssueById(issueId))
-  const { updateIssue, updateNotes, updateIssueDate } = useIssueStore()
+  const { updateIssue, updateNotes } = useIssueStore()
   const [isClosing, setIsClosing] = useState(false)
 
   // If task doesn't exist, don't render
@@ -44,10 +42,6 @@ export function IssueDetails({ issueId, onClose }: IssueDetailsProps) {
 
   const handleNotesUpdate = async (notes: string) => {
     await updateNotes(issueId, notes)
-  }
-
-  const handleDateSelect = async (selectedDate: Date | undefined) => {
-    await updateIssueDate(issueId, selectedDate)
   }
 
   return (
@@ -134,28 +128,10 @@ export function IssueDetails({ issueId, onClose }: IssueDetailsProps) {
             <Calendar size={16} />
             Due Date
           </Label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="date"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !issue.dueDate && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {issue.dueDate ? format(new Date(issue.dueDate), "PPP") : <span>Pick a date</span>}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <CalendarComponent
-                mode="single"
-                selected={issue.dueDate ? new Date(issue.dueDate) : undefined}
-                onSelect={handleDateSelect}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
+          <DueDatePicker
+            value={issue.dueDate}
+            onChange={dueDate => handleFieldUpdate('dueDate', dueDate ?? '')}
+          />
         </div>
 
         {/* Assignees */}

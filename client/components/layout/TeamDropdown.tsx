@@ -47,16 +47,16 @@ export function TeamDropdown({
                     label="Issues"
                     onClick={() => onNavigate('team/issues')}
                 />
-                <SidebarItem
+                {/* <SidebarItem
                     icon={<FolderOpen size={16} />}
                     label="Projects"
                     onClick={() => onNavigate('team/projects')}
-                />
-                <SidebarItem
+                /> */}
+                {/* <SidebarItem
                     icon={<Eye size={16} />}
                     label="Views"
                     onClick={() => onNavigate('team/views')}
-                />
+                /> */}
             </div>
         </div>
     )

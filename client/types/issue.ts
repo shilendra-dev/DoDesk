@@ -10,7 +10,7 @@ export interface Issue {
     number: number // Linear-style issue number (unique per team)
     workspaceId: string
     teamId: string
-    assigneeId?: string
+    assigneeId?: string 
     creatorId?: string
     createdAt: string
     updatedAt: string
@@ -43,7 +43,7 @@ export interface Issue {
     dueDate?: string
     notes?: string
     teamId: string
-    assigneeId?: string
+    assigneeId?: string | null
     workspaceId: string
   }
   

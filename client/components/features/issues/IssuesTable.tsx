@@ -14,6 +14,11 @@ const IssueTableComponent = ({ issues }: IssueTableProps) => {
   const { setSelectedIssue } = useIssueStore()
   const [selectedIssues, setSelectedIssues] = useState<Set<string>>(new Set())
 
+  // Sort issues by createdAt descending (latest first)
+  const sortedIssues = [...issues].sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  )
+
   const handleIssueSelect = (issue: Issue) => {
     setSelectedIssue(issue.id)
   }
@@ -32,7 +37,7 @@ const IssueTableComponent = ({ issues }: IssueTableProps) => {
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedIssues(new Set(issues.map(issue => issue.id)))
+      setSelectedIssues(new Set(sortedIssues.map(issue => issue.id)))
     } else {
       setSelectedIssues(new Set())
     }
@@ -45,7 +50,7 @@ const IssueTableComponent = ({ issues }: IssueTableProps) => {
           <tr>
             <th className="p-3 text-left">
               <Checkbox
-                checked={selectedIssues.size === issues.length && issues.length > 0}
+                checked={selectedIssues.size === sortedIssues.length && sortedIssues.length > 0}
                 onCheckedChange={handleSelectAll}
               />
             </th>
@@ -59,7 +64,7 @@ const IssueTableComponent = ({ issues }: IssueTableProps) => {
           </tr>
         </thead>
         <tbody>
-          {issues.map((issue) => (
+          {sortedIssues.map((issue) => (
             <IssueRow
               key={issue.id}
               issue={issue}
@@ -71,7 +76,7 @@ const IssueTableComponent = ({ issues }: IssueTableProps) => {
         </tbody>
       </table>
       
-      {issues.length === 0 && (
+      {sortedIssues.length === 0 && (
         <div className="flex items-center justify-center py-12 text-muted-foreground">
           <div className="text-center">
             <p className="text-lg font-medium">No issues found</p>
