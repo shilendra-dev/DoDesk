@@ -8,6 +8,7 @@ import { WorkspaceForm } from '@/components/ui/organisms/WorkspaceForm';
 interface CreateWorkspaceScreenProps {
   onWorkspaceCreate: (workspace: unknown) => void;
   onPrev: () => void;
+  loading?: boolean;
 }
 
 const CreateWorkspaceScreen: React.FC<CreateWorkspaceScreenProps> = ({ 
