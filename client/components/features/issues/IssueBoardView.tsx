@@ -97,7 +97,7 @@ export function IssueBoardView({ issues }: IssueBoardViewProps) {
     try {
       // Update issue state (use canonical state values)
       const validStatuses = COLUMNS.map(col => col.id)
-        if (validStatuses.includes(destination.droppableId as any)) {
+        if (validStatuses.includes(destination.droppableId as typeof COLUMNS[number]['id'])) {
         await updateIssue(draggableId, { state: destination.droppableId })
       }
     } catch (error) {

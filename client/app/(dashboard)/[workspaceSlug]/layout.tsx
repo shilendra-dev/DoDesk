@@ -23,7 +23,7 @@ export default function WorkspaceLayout({ children, params }: WorkspaceLayoutPro
     if (workspaces.length > 0) {
       setCurrentWorkspaceBySlug(workspaceSlug)
     }
-  }, [workspaceSlug, workspaces.length])
+  }, [workspaceSlug, workspaces.length, setCurrentWorkspaceBySlug])
 
   // 2. Redirect if slug is invalid
   useEffect(() => {

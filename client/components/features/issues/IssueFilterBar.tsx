@@ -33,26 +33,32 @@ interface IssueFilterBarProps {
 
 export function IssueFilterBar({
   issues,
-  teams,
+  // teams,
   stateFilter,
   setStateFilter,
   priorityFilter,
   setPriorityFilter,
   assigneeFilter,
   setAssigneeFilter,
-  teamFilter,
-  setTeamFilter,
-  sortOption,
-  setSortOption,
-  sortOptions,
+  // teamFilter,
+  // setTeamFilter,
+  // sortOption,
+  // setSortOption,
+  // sortOptions,
   hasActiveFilters,
   filterSummary,
   onClearAll
 }: IssueFilterBarProps) {
-  const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace)
-  const { savedFilters, selectedViewId, createFilter, deleteFilter, setSelectedViewId } = useSavedFilterStore()
-  const [showSaveDialog, setShowSaveDialog] = useState(false)
-  const [filterName, setFilterName] = useState('')
+  const _currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace)
+  const { 
+    savedFilters, 
+    selectedViewId, 
+    // createFilter, 
+    // deleteFilter, 
+    // setSelectedViewId 
+  } = useSavedFilterStore()
+  const [_showSaveDialog, _setShowSaveDialog] = useState(false)
+  const [_filterName, _setFilterName] = useState('')
 
   // Assignee options
   const assigneeOptions = useMemo(() => [
@@ -67,10 +73,10 @@ export function IssueFilterBar({
   ], [issues])
 
   // Filter options
-  const teamOptions = [
-    { value: "All", label: "All Teams" },
-    ...teams.map(team => ({ value: team.id, label: team.name }))
-  ]
+  // const teamOptions = [
+  //   { value: "All", label: "All Teams" },
+  //   ...teams.map(team => ({ value: team.id, label: team.name }))
+  // ]
 
   const priorityOptions = [
     { value: "All", label: "All Priorities" },
@@ -90,38 +96,38 @@ export function IssueFilterBar({
     { value: "canceled", label: "Canceled" }
   ]
 
-  const handleSaveFilter = async () => {
-    if (!filterName.trim() || !currentWorkspace?.id) return
+  // const handleSaveFilter = async () => {
+  //   if (!filterName.trim() || !currentWorkspace?.id) return
 
-    const filterConfig = {
-      stateFilter,
-      priorityFilter,
-      assigneeFilter,
-      teamFilter,
-      sortOption
-    }
+  //   const filterConfig = {
+  //     stateFilter,
+  //     priorityFilter,
+  //     assigneeFilter,
+  //     teamFilter,
+  //     sortOption
+  //   }
 
-    await createFilter(currentWorkspace.id, {
-      name: filterName.trim(),
-      filter_config: filterConfig
-    })
+  //   await createFilter(currentWorkspace.id, {
+  //     name: filterName.trim(),
+  //     filter_config: filterConfig
+  //   })
 
-    setFilterName('')
-    setShowSaveDialog(false)
-  }
+  //   setFilterName('')
+  //   setShowSaveDialog(false)
+  // }
 
-  const handleViewSelect = (viewId: string) => {
-    if (viewId === 'none') {
-      onClearAll()
-      return
-    }
-    setSelectedViewId(viewId)
-  }
+  // const handleViewSelect = (viewId: string) => {
+  //   if (viewId === 'none') {
+  //     onClearAll()
+  //     return
+  //   }
+  //   setSelectedViewId(viewId)
+  // }
 
-  const handleDeleteView = async () => {
-    if (!currentWorkspace?.id || selectedViewId === 'none') return
-    await deleteFilter(currentWorkspace.id, selectedViewId)
-  }
+  // const handleDeleteView = async () => {
+  //   if (!currentWorkspace?.id || selectedViewId === 'none') return
+  //   await deleteFilter(currentWorkspace.id, selectedViewId)
+  // }
 
   return (
     <div className="border-b border-border bg-background/50 backdrop-blur-sm">
@@ -130,7 +136,9 @@ export function IssueFilterBar({
         <div className="flex items-center gap-2">
           <Filter className="w-4 h-4 text-muted-foreground" />
           {/* Saved Views */}
-          <Select value={selectedViewId} onValueChange={handleViewSelect}>
+          <Select value={selectedViewId} 
+          // onValueChange={handleViewSelect}
+          >
             <SelectTrigger className="w-[120px] h-5 text-sm border">
               <SelectValue placeholder="Views" />
             </SelectTrigger>

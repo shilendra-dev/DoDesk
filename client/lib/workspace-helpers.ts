@@ -1,4 +1,4 @@
-import { Workspace } from '@/providers/WorkspaceContext'
+import { Workspace } from "@/types/workspace"
 
 // Updated to work with workspace context data instead of session
 export const getDefaultWorkspaceSlug = (
