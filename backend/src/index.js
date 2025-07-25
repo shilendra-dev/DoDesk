@@ -17,6 +17,15 @@ app.use(express.json());
 
 app.use("/api", routes); // Register all routes from the utils/router.js
 
+//test route for health check
+app.get("/", (req, res) => {
+    res.status(200).send("OK");
+});
+
+// dedicated health check route for ALB
+app.get("/health", (req, res) => {
+    res.status(200).json({ status: "healthy" });
+});
 //test db connection
 app.get("/test-db", async(req, res) => {
     try{
@@ -31,8 +40,7 @@ app.get("/test-db", async(req, res) => {
 });
 
 //Start the port
-const PORT = process.env.PORT || 5033;
 
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`)
+app.listen(process.env.PORT || 5033, '0.0.0.0', () => {
+    console.log(`Server is running on http://0.0.0.0:${process.env.PORT || 5033}`)
 });
