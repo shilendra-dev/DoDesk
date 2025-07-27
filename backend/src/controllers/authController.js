@@ -10,7 +10,7 @@ const loginUser = async (req, res) => {
 
   if (!email) {
     return {
-      status: 400,
+      status: 400, //bad request
       message: "Email is required"
     };
   }
