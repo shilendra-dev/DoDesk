@@ -9,7 +9,12 @@ require("./routes")
 
 //middleware
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://localhost:3000'], 
+    origin: [
+        'http://localhost:5173', 
+        'http://localhost:3000',
+        'http://dodesk-client-alb-1530009405.eu-north-1.elb.amazonaws.com',  // Add your frontend ALB URL
+        process.env.FRONTEND_URL         // Use environment variable for production
+    ], 
     credentials: true // for using cookies or auth headers
   }));
 

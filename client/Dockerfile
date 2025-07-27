@@ -1,57 +1,61 @@
 # === 🏗️ Stage 1: Dependencies ===
 FROM node:22-alpine AS deps
-RUN apk add --no-cache libc6-compat curl
 WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-RUN npm ci
+RUN npm install --only=production && npm cache clean --force
 
 # === 🏗️ Stage 2: Builder ===
 FROM node:22-alpine AS builder
 WORKDIR /app
 
-# Copy package files and install all dependencies (including dev)
+# Pass backend URL at build time so Next.js embeds it in the client bundle
+ARG NEXT_PUBLIC_BACKEND_URL
+ENV NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL
+
+
+# Copy package files and install ALL dependencies (including dev)
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
-# Copy all source files
+# Copy source code and build
 COPY . .
-
-# Build the application
 RUN npm run build
 
-# === 🚀 Stage 3: Production ===
-FROM node:22-alpine AS production
+# === 🚀 Stage 3: Production Runner ===
+FROM node:22-alpine AS runner
 WORKDIR /app
 
 # Install curl for health checks
 RUN apk add --no-cache curl
 
 ENV NODE_ENV=production
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
-# Create non-root user
+# Create non-root user for security
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-# Copy package.json for production dependencies
-COPY package*.json ./
-RUN npm ci --omit=dev && npm cache clean --force
+# Copy production dependencies from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/package*.json ./
 
-# Copy built application
+# Copy built application from builder stage
+COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+# Fix ownership for non-root user
+RUN chown -R nextjs:nodejs /app
 
 USER nextjs
 
 EXPOSE 3000
 
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
+# Health check that works with our setup
+HEALTHCHECK --interval=30s --timeout=15s --start-period=120s --retries=5 \
+  CMD curl -f http://localhost:3000 || (echo "Health check failed at $(date)" && exit 1)
 
-# Simple health check - just check if the app responds
-HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
-  CMD curl -f http://localhost:3000 || exit 1
-
-CMD ["node", "server.js"]
+# Use npm start (which works) instead of standalone server
+CMD ["npm", "start"]
