@@ -13,6 +13,8 @@ app.use(cors({
         'http://localhost:5173', 
         'http://localhost:3000',
         'http://dodesk-client-alb-1530009405.eu-north-1.elb.amazonaws.com',  // Add your frontend ALB URL
+        'https://dodesk.app',  // Your custom domain
+        'http://dodesk.app',   // HTTP fallback
         process.env.FRONTEND_URL         // Use environment variable for production
     ], 
     credentials: true // for using cookies or auth headers
