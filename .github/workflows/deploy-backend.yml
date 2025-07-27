@@ -12,6 +12,7 @@ env:
   ECS_SERVICE: dodesk_backend_task-service
   ECS_CLUSTER: dodesk-main-cluster
   CONTAINER_NAME: backend
+  TASK_DEFINITION: dodesk_backend_task 
 
 jobs:
   deploy:
@@ -46,7 +47,7 @@ jobs:
 
     - name: Download task definition
       run: |
-        aws ecs describe-task-definition --task-definition ${{ env.ECS_SERVICE }} --query taskDefinition > task-definition.json
+        aws ecs describe-task-definition --task-definition ${{ env.TASK_DEFINITION }} --query taskDefinition > task-definition.json
 
     - name: Fill in the new image ID in the Amazon ECS task definition
       id: task-def
