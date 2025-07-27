@@ -19,7 +19,7 @@ app.use(cors({
     ], 
     credentials: true // for using cookies or auth headers
   }));
-
+ 
 app.use(express.json());
 
 app.use("/api", routes); // Register all routes from the utils/router.js
