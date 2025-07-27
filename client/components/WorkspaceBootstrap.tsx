@@ -8,7 +8,7 @@ export default function WorkspaceBootstrap() {
 
   useEffect(() => {
     fetchWorkspaces();
-  }, [fetchWorkspaces]);
+  }, [fetchWorkspaces]); 
 
   return null;
 }
