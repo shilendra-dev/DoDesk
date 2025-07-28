@@ -1,19 +1,23 @@
-const express = require("express");
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const prisma = require("../lib/prisma");
-require("dotenv").config();
-const { createApi } = require("../utils/router");
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+import prisma from '../lib/prisma';
+import { createApi } from '../utils/router';
+import { 
+  LoginRequest, 
+  LoginResponse, 
+} from '../types/controllers/auth.types';
+import { ControllerFunction } from '../types/controllers/base.types';
 
-const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+const loginUser: ControllerFunction<LoginResponse> = async (req) => {
+  const { email, password }: LoginRequest = req.body;
 
   if (!email) {
     return {
-      status: 400,  
+      status: 400,
       message: "Email is required"
     };
   }
+
   if (!password) {
     return {
       status: 400,
@@ -22,13 +26,14 @@ const loginUser = async (req, res) => {
   }
 
   try {
-    // query to check if user exists
+    // Query to check if user exists
     const user = await prisma.user.findUnique({
       where: {
         email: email.toLowerCase()
       }
     });
-    // if user does not exist, return error
+
+    // If user does not exist, return error
     if (!user) {
       return {
         status: 401,
@@ -36,9 +41,9 @@ const loginUser = async (req, res) => {
       };
     }
 
-    const validPassword = await bcrypt.compare(password, user.password); //compare password with hashed password
+    const validPassword = await bcrypt.compare(password, user.password);
 
-    // if password is invalid, return error
+    // If password is invalid, return error
     if (!validPassword) {
       return {
         status: 401,
@@ -60,9 +65,9 @@ const loginUser = async (req, res) => {
       }
     });
 
-    // if password is valid, generate JWT token
+    // If password is valid, generate JWT token
     console.log("User logged in:", user.email);
-    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET!, {
       expiresIn: "30d",
     });
 
@@ -74,7 +79,7 @@ const loginUser = async (req, res) => {
 
     return {
       status: 200,
-      message: "Login successful", 
+      message: "Login successful",
       token,
       user: {
         id: user.id,
@@ -82,16 +87,16 @@ const loginUser = async (req, res) => {
         name: user.name,
         lastActiveWorkspaceId: user.lastActiveWorkspaceId,
       },
-      workspaces: workspaces  
+      workspaces
     };
 
   } catch (err) {
-    console.error("Login error:", err.message);
+    console.error("Login error:", err);
     return {
       status: 500,
       message: "Server error",
-      error: err.message
-    }
+      error: err instanceof Error ? err.message : 'Unknown error'
+    };
   }
 };
 

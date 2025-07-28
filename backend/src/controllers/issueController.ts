@@ -1,8 +1,21 @@
-const prisma = require("../lib/prisma");
-const { createApi } = require("../utils/router");
+import prisma from '../lib/prisma';
+import { createApi } from '../utils/router';
+import {
+  CreateIssueRequest,
+  CreateIssueResponse,
+  GetIssuesQuery,
+  GetIssuesResponse,
+  UpdateIssueRequest,
+  UpdateIssueResponse,
+  DeleteIssueResponse
+} from '../types/controllers/issue.types';
+import {
+  ControllerFunction,
+  AuthenticatedRequest,
+} from '../types/controllers/base.types';
 
-// Create issue
-const createIssue = async (req, res) => {
+// CREATE ISSUE
+const createIssue: ControllerFunction<CreateIssueResponse> = async (req) => {
   const {
     title,
     description,
@@ -12,9 +25,9 @@ const createIssue = async (req, res) => {
     dueDate,
     teamId,
     assigneeId
-  } = req.body;
+  }: CreateIssueRequest = req.body;
 
-  const creatorId = req.user?.id;
+  const creatorId = (req as AuthenticatedRequest).user.id;
 
   try {
     // Get the next issue number for the team
@@ -42,14 +55,14 @@ const createIssue = async (req, res) => {
     const createdIssue = await prisma.issue.create({
       data: {
         title,
-        description,
+        description: description || null,
         state,
         priority,
         labels,
         dueDate: dueDate ? new Date(dueDate) : null,
         workspaceId: team.workspaceId,
         teamId,
-        assigneeId,
+        assigneeId: assigneeId || null,
         creatorId,
         number: nextNumber
       },
@@ -83,25 +96,25 @@ const createIssue = async (req, res) => {
       issue: {
         ...createdIssue,
         issueKey: `${createdIssue.team.key}-${createdIssue.number}` // Linear-style key
-      }
-    }
+      } as any
+    };
   } catch (error) {
     console.error("Error creating issue: ", error);
     return {
       status: 500,
       message: "Failed to create issue",
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     };
   }
 };
 
-// Get issues by team or workspace
-const getIssues = async (req, res) => {
+// GET ISSUES BY TEAM OR WORKSPACE
+const getIssues: ControllerFunction<GetIssuesResponse> = async (req) => {
   const { workspace_id, team_id } = req.params;
-  const { state, assignee, priority, search } = req.query;
+  const { state, assignee, priority, search }: GetIssuesQuery = req.query;
 
   try {
-    const whereClause = {};
+    const whereClause: any = {};
 
     if (team_id) {
       whereClause.teamId = team_id;
@@ -166,35 +179,42 @@ const getIssues = async (req, res) => {
     return {
       status: 200,
       message: "Issues fetched successfully",
-      issues: transformedIssues
-    }
+      issues: transformedIssues as any
+    };
   } catch (error) {
     console.log("Error fetching issues: ", error);
     return {
       status: 500,
       message: "Failed fetching issues",
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     };
   }
 };
 
-// Update issue
-const updateIssue = async (req, res) => {
+// UPDATE ISSUE
+const updateIssue: ControllerFunction<UpdateIssueResponse> = async (req) => {
   const { issueId } = req.params;
-  const updateData = req.body;
+  const updateData: UpdateIssueRequest = req.body;
+
+  if (!issueId) {
+    return {
+      status: 400,
+      message: "Issue ID is required"
+    };
+  }
 
   const allowedFields = ['title', 'description', 'state', 'priority', 'labels', 'dueDate', 'assigneeId', 'notes'];
-  const dataToUpdate = {};
+  const dataToUpdate: any = {};
 
   // Only include allowed fields that are provided
   Object.keys(updateData).forEach(key => {
-    if (allowedFields.includes(key) && updateData[key] !== undefined) {
-      if (key === 'dueDate' && updateData[key]) {
-        dataToUpdate[key] = new Date(updateData[key]);
-      } else if (key === 'assigneeId' && (updateData[key] === '' || updateData[key] === undefined)) {
+    if (allowedFields.includes(key) && updateData[key as keyof UpdateIssueRequest] !== undefined) {
+      if (key === 'dueDate' && updateData[key as keyof UpdateIssueRequest]) {
+        dataToUpdate[key] = new Date(updateData[key as keyof UpdateIssueRequest] as string);
+      } else if (key === 'assigneeId' && (updateData[key as keyof UpdateIssueRequest] === '' || updateData[key as keyof UpdateIssueRequest] === undefined)) {
         dataToUpdate[key] = null; // treat empty string/undefined as null
       } else {
-        dataToUpdate[key] = updateData[key];
+        dataToUpdate[key] = updateData[key as keyof UpdateIssueRequest];
       }
     }
   });
@@ -236,9 +256,9 @@ const updateIssue = async (req, res) => {
       issue: {
         ...updatedIssue,
         issueKey: `${updatedIssue.team.key}-${updatedIssue.number}`
-      }
+      } as any
     };
-  } catch (error) {
+  } catch (error: any) {
     if (error.code === 'P2025') {
       return {
         status: 404,
@@ -249,14 +269,21 @@ const updateIssue = async (req, res) => {
     return {
       status: 500,
       message: "Failed to update issue",
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     };
   }
 };
 
-// Delete issue
-const deleteIssue = async (req, res) => {
+// DELETE ISSUE
+const deleteIssue: ControllerFunction<DeleteIssueResponse> = async (req) => {
   const { issueId } = req.params;
+
+  if (!issueId) {
+    return {
+      status: 400,
+      message: "Issue ID is required"
+    };
+  }
 
   try {
     const deletedIssue = await prisma.issue.delete({
@@ -273,12 +300,14 @@ const deleteIssue = async (req, res) => {
     return {
       status: 200,
       message: "Issue deleted successfully",
-      issue: {
-        ...deletedIssue,
-        issueKey: `${deletedIssue.team.key}-${deletedIssue.number}`
+      data: {
+        issue: {
+          ...deletedIssue,
+          issueKey: `${deletedIssue.team.key}-${deletedIssue.number}`
+        } as any
       }
     };
-  } catch (error) {
+  } catch (error: any) {
     if (error.code === 'P2025') {
       return {
         status: 404,
@@ -289,7 +318,7 @@ const deleteIssue = async (req, res) => {
     return {
       status: 500,
       message: "Failed to delete issue",
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     };
   }
 };
@@ -301,9 +330,10 @@ createApi().get("/team/:team_id/issues").authSecure(getIssues);
 createApi().put("/issues/:issueId").authSecure(updateIssue);
 createApi().delete("/issues/:issueId").authSecure(deleteIssue);
 
-module.exports = {
+// Export for testing
+export {
   createIssue,
   getIssues,
   updateIssue,
   deleteIssue
-};
+}; 

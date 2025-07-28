@@ -1,8 +1,0 @@
-require('./controllers/authController')
-require('./controllers/savedFilterController')
-require('./controllers/userController')
-require('./controllers/commentController')
-require('./controllers/workspaceController')
-require('./routes/me')
-require('./controllers/teamController')
-require('./controllers/issueController')
