@@ -1,10 +1,23 @@
-const prisma = require("../lib/prisma");
-const { createApi } = require("../utils/router");
+import prisma from '../lib/prisma';
+import { createApi } from '../utils/router';
+import {
+  CreateSavedFilterRequest,
+  CreateSavedFilterResponse,
+  GetSavedFiltersResponse,
+  UpdateSavedFilterRequest,
+  UpdateSavedFilterResponse
+} from '../types/controllers/filter.types';
+import {
+  ControllerFunction,
+  AuthenticatedRequest,
+  WorkspaceRequest,
+  FilterRequest
+} from '../types/controllers/base.types';
 
-// Get all saved filters for a user in a workspace
-const getSavedFilters = async (req, res) => {
-  const userId = req.user.id;
-  const { workspace_id } = req.params;
+// GET ALL SAVED FILTERS FOR A USER IN A WORKSPACE
+const getSavedFilters: ControllerFunction<GetSavedFiltersResponse> = async (req) => {
+  const userId = (req as AuthenticatedRequest).user.id;
+  const { workspace_id } = (req as WorkspaceRequest).params;
 
   try {
     const filters = await prisma.savedFilter.findMany({
@@ -14,30 +27,35 @@ const getSavedFilters = async (req, res) => {
       },
       orderBy: { createdAt: "desc" }
     });
+
     return {
       status: 200,
       message: "Saved filters fetched successfully",
-      filters
+      data: { filters }
     };
   } catch (error) {
     console.error("Error fetching saved filters:", error);
     return {
       status: 500,
       message: "Failed to fetch saved filters",
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     };
   }
 };
+
 createApi().get("/workspaces/:workspace_id/filters").authSecure(getSavedFilters);
 
-// Create a new saved filter
-const createSavedFilter = async (req, res) => {
-  const userId = req.user.id;
-  const { workspace_id } = req.params;
-  const { name, filters, isDefault = false } = req.body;
+// CREATE A NEW SAVED FILTER
+const createSavedFilter: ControllerFunction<CreateSavedFilterResponse> = async (req) => {
+  const userId = (req as AuthenticatedRequest).user.id;
+  const { workspace_id } = (req as WorkspaceRequest).params;
+  const { name, filters, isDefault = false }: CreateSavedFilterRequest = req.body;
 
   if (!name || !filters) {
-    return { status: 400, message: "Name and filters are required" };
+    return { 
+      status: 400, 
+      message: "Name and filters are required" 
+    };
   }
 
   try {
@@ -58,37 +76,52 @@ const createSavedFilter = async (req, res) => {
         workspaceId: workspace_id
       }
     });
+
     return {
       status: 201,
       message: "Saved filter created successfully",
-      filter: savedFilter
+      data: { filter: savedFilter }
     };
   } catch (error) {
     console.error("Error creating saved filter:", error);
     return {
       status: 500,
       message: "Failed to create saved filter",
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     };
   }
 };
+
 createApi().post("/workspaces/:workspace_id/filters").authSecure(createSavedFilter);
 
-// Update a saved filter
-const updateSavedFilter = async (req, res) => {
-  const userId = req.user.id;
-  const { filterId } = req.params;
-  const { name, filters, isDefault } = req.body;
+// UPDATE A SAVED FILTER
+const updateSavedFilter: ControllerFunction<UpdateSavedFilterResponse> = async (req) => {
+  const userId = (req as AuthenticatedRequest).user.id;
+  const { filterId } = (req as FilterRequest).params;
+  const { name, filters, isDefault }: UpdateSavedFilterRequest = req.body;
+
+  if (!filterId) {
+    return {
+      status: 400,
+      message: "Filter ID is required"
+    };
+  }
 
   if (!name && !filters && isDefault === undefined) {
-    return { status: 400, message: "Nothing to update" };
+    return { 
+      status: 400, 
+      message: "Nothing to update" 
+    };
   }
 
   try {
     // If isDefault, unset previous default for this user/workspace
     let filter = await prisma.savedFilter.findUnique({ where: { id: filterId } });
     if (!filter || filter.userId !== userId) {
-      return { status: 404, message: "Saved filter not found" };
+      return { 
+        status: 404, 
+        message: "Saved filter not found" 
+      };
     }
 
     if (isDefault) {
@@ -106,33 +139,47 @@ const updateSavedFilter = async (req, res) => {
         ...(isDefault !== undefined && { isDefault })
       }
     });
+
     return {
       status: 200,
       message: "Saved filter updated successfully",
-      filter
+      data: { filter }
     };
   } catch (error) {
     console.error("Error updating saved filter:", error);
     return {
       status: 500,
       message: "Failed to update saved filter",
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     };
   }
 };
+
 createApi().put("/filters/:filterId").authSecure(updateSavedFilter);
 
-// Delete a saved filter
-const deleteSavedFilter = async (req, res) => {
-  const userId = req.user.id;
-  const { filterId } = req.params;
+// DELETE A SAVED FILTER
+const deleteSavedFilter: ControllerFunction<any> = async (req) => {
+  const userId = (req as AuthenticatedRequest).user.id;
+  const { filterId } = (req as FilterRequest).params;
+
+  if (!filterId) {
+    return {
+      status: 400,
+      message: "Filter ID is required"
+    };
+  }
 
   try {
     const filter = await prisma.savedFilter.findUnique({ where: { id: filterId } });
     if (!filter || filter.userId !== userId) {
-      return { status: 404, message: "Saved filter not found" };
+      return { 
+        status: 404, 
+        message: "Saved filter not found" 
+      };
     }
+
     await prisma.savedFilter.delete({ where: { id: filterId } });
+
     return {
       status: 200,
       message: "Saved filter deleted successfully"
@@ -142,15 +189,17 @@ const deleteSavedFilter = async (req, res) => {
     return {
       status: 500,
       message: "Failed to delete saved filter",
-      error: error.message
+      error: error instanceof Error ? error.message : 'Unknown error'
     };
   }
 };
+
 createApi().delete("/filters/:filterId").authSecure(deleteSavedFilter);
 
-module.exports = {
+// Export for testing
+export {
   getSavedFilters,
   createSavedFilter,
   updateSavedFilter,
   deleteSavedFilter
-};
+}; 
