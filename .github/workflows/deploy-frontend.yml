@@ -39,7 +39,7 @@ jobs:
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         IMAGE_TAG: ${{ github.sha }}
-        NEXT_PUBLIC_BACKEND_URL: http://api.dodesk.app
+        NEXT_PUBLIC_BACKEND_URL: https://api.dodesk.app
       run: |
         cd client
         docker buildx build --platform linux/amd64 \
@@ -60,8 +60,9 @@ jobs:
         container-name: ${{ env.CONTAINER_NAME }}
         image: ${{ steps.build-image.outputs.image }}
         environment-variables: |
-          NEXTAUTH_URL=http://dodesk.app
+          NEXTAUTH_URL=https://dodesk.app
           NEXTAUTH_SECRET=${{ secrets.NEXTAUTH_SECRET }}
+          NEXT_PUBLIC_BACKEND_URL=https://api.dodesk.app
 
     - name: Deploy Amazon ECS task definition
       uses: aws-actions/amazon-ecs-deploy-task-definition@v2
