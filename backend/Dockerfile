@@ -11,6 +11,9 @@ RUN npm ci
 COPY . .
 RUN npx prisma generate
 
+# Build TypeScript to JavaScript
+RUN npm run build
+
 # === 🚀 Stage 2: Production =========================
 FROM node:22-alpine AS production
 
@@ -26,10 +29,9 @@ RUN npm ci --omit=dev
 # Copy built files and prisma client from builder stage
 COPY --from=builder /app/node_modules/.prisma /app/node_modules/.prisma
 COPY --from=builder /app/node_modules/@prisma /app/node_modules/@prisma
-COPY --from=builder /app/src /app/src
+COPY --from=builder /app/dist /app/dist
 COPY --from=builder /app/bin /app/bin
 COPY --from=builder /app/prisma /app/prisma
-COPY --from=builder /app/*.js /app/
 
 # Make startup script executable
 RUN chmod +x /app/bin/start.sh

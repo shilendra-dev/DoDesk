@@ -1,4 +1,4 @@
-const { PrismaClient } = require('../generated/prisma');
+import { PrismaClient } from '../generated/prisma';
 
 const prisma = new PrismaClient({
   log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
@@ -14,4 +14,4 @@ process.on('SIGINT', async () => {
   process.exit(0);
 });
 
-module.exports = prisma;
+export default prisma;

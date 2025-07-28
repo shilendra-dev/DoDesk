@@ -1,10 +1,11 @@
-const { createApi } = require("../utils/router");
-const prisma = require("../lib/prisma");
+import { createApi } from '../utils/router';
+import prisma from '../lib/prisma';
+import { ControllerFunction } from '../types/controllers/base.types';
+import { AuthenticatedRequest } from '../types/controllers/base.types';
 
-// GET /auth/me - Get current authenticated user
-const meRoute = async (req, res) => {
+const meRoute: ControllerFunction<any> = async (req) => {
   try {
-    const { id } = req.user;
+    const { id } = (req as AuthenticatedRequest).user;
 
     const user = await prisma.user.findUnique({
       where: { id },
@@ -13,7 +14,6 @@ const meRoute = async (req, res) => {
         email: true,
         name: true,
         lastActiveWorkspaceId: true,
-        // Add more fields if needed
       }
     });
 
@@ -27,16 +27,16 @@ const meRoute = async (req, res) => {
     return {
       status: 200,
       message: "User fetched successfully",
-      user
+      data: { user }
     };
   } catch (err) {
     console.error("Error fetching user:", err);
     return {
       status: 500,
       message: "Failed to fetch user",
-      error: err.message
+      error: err instanceof Error ? err.message : 'Unknown error'
     };
   }
 };
 
-createApi().get('/auth/me').authSecure(meRoute);
+createApi().get('/auth/me').authSecure(meRoute); 
