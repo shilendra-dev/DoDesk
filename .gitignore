@@ -7,4 +7,9 @@
 #node_modules
 node_modules
 
+lucia.md
+
+#cursor context
+.cursor/
 CI_CD_PIPELINE_GUIDE.md
+
