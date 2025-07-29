@@ -73,7 +73,6 @@ export function SignUpForm() {
         email,
         password,
         name: name.trim(),
-        callbackURL: `${window.location.origin}/signin`,
       })
 
       if (result.error) {
