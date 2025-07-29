@@ -33,7 +33,6 @@ model User {
   comments             Comment[]
   teamMemberships      TeamMember[]
   savedFilters         SavedFilter[]
-  
   // Audit
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
