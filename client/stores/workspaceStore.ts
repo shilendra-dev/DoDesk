@@ -2,7 +2,6 @@ import { create } from 'zustand'
 import { Workspace, Team, TeamMember } from '@/types/workspace'
 import api from '@/lib/axios'
 
-// ... existing imports ...
 interface WorkspaceStoreState {
   workspaces: Workspace[]
   currentWorkspace: Workspace | null

@@ -1,38 +1,25 @@
 import axios from 'axios'
-import { getSession } from 'next-auth/react'
+import { signOut } from './auth-client'
 
-
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5033'
 
 // Create axios instance
-const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:5033',
-  timeout: 10000,
+export const api = axios.create({
+  baseURL: API_URL,
+  withCredentials: true,
+
   headers: {
     'Content-Type': 'application/json',
   },
 })
 
-// Request interceptor to add auth token
+// Request interceptor for auto sign out on 401
 api.interceptors.request.use(
-  async (config) => {
-    const session = await getSession()
-    if (session?.accessToken) {
-      config.headers.Authorization = `Bearer ${session.accessToken}`
-    }
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  }
-)
-
-// Response interceptor for error handling
-api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
     if (error.response?.status === 401) {
-      // Handle unauthorized - redirect to login
-      window.location.href = '/login'
+      await signOut()
+      window.location.href = '/signin'
     }
     return Promise.reject(error)
   }

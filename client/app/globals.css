@@ -82,8 +82,8 @@
   [data-radix-portal] * {
     transition: none !important;
   }
-}
 
+}
 /* Reduce motion for users who prefer it */
 @media (prefers-reduced-motion: reduce) {
   * {

@@ -4,6 +4,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/atoms/button';
 import Image from 'next/image';
+import { useTheme } from '@/providers/ThemeContext';
 
 interface IntroScreenProps {
   onNext: () => void;
@@ -11,6 +12,13 @@ interface IntroScreenProps {
 }
 
 const IntroScreen: React.FC<IntroScreenProps> = ({ onNext, onPrev }) => {
+  const { theme } = useTheme();
+
+  // Choose the appropriate image based on theme
+  const dashboardImage = theme === 'dark' 
+    ? '/DashboardScreenshotDark.png' 
+    : '/DashboardScreenshotLight.png';
+
   return (
     <motion.div 
       className="flex items-center justify-center min-h-[80vh] px-6 py-8"
@@ -31,14 +39,14 @@ const IntroScreen: React.FC<IntroScreenProps> = ({ onNext, onPrev }) => {
           <div className="relative mx-auto max-w-4xl">
             <div className="group">
               <Image
-                src="/DashboardScreenshot.png"
+                src={dashboardImage}
                 alt="DoDesk Dashboard Preview"
                 width={1200}
                 height={800}
                 className="rounded-lg shadow-2xl transition-all duration-600 border border-border group-hover:scale-110 group-hover:shadow-3xl"
                 priority
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-lg" />
+
             </div>
           </div>
         </div>

@@ -41,7 +41,7 @@ const loginUser: ControllerFunction<LoginResponse> = async (req) => {
       };
     }
 
-    const validPassword = await bcrypt.compare(password, user.password);
+    const validPassword = await bcrypt.compare(password, user.password || '');
 
     // If password is invalid, return error
     if (!validPassword) {
@@ -100,4 +100,3 @@ const loginUser: ControllerFunction<LoginResponse> = async (req) => {
   }
 };
 
-createApi().post("/login").noAuth(loginUser);

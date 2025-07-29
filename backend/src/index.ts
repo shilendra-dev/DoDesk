@@ -1,43 +1,45 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import dotenv from 'dotenv';
+import { toNodeHandler } from "better-auth/node";
+import { auth } from './lib/auth';
 
 dotenv.config();
 
 const app = express();
 
-import { routes } from './utils/router';
-import './routes';
-
-// Middleware
+// Configure CORS first
 app.use(cors({
   origin: [
     'http://localhost:5173', 
     'http://localhost:3000',
-    'http://dodesk-client-alb-1530009405.eu-north-1.elb.amazonaws.com',  // Add your frontend ALB URL
-    'https://dodesk.app',  // Your custom domain
-    'http://dodesk.app',   // HTTP fallback
-    'https://api.dodesk.app',  // Backend HTTPS
-    ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [])         // Use environment variable for production
-  ], 
-  credentials: true // for using cookies or auth headers
+    'http://dodesk-client-alb-1530009405.eu-north-1.elb.amazonaws.com',
+    'https://dodesk.app',
+    'http://dodesk.app',
+    'https://api.dodesk.app',
+    ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [])
+  ],
+  credentials: true,
 }));
 
+app.all("/api/auth/*splat", toNodeHandler(auth)); // For Express v5
+
+app.use(cookieParser());
 app.use(express.json());
+import { routes } from './utils/router';
+import './routes';
+app.use("/api", routes);
 
-app.use("/api", routes); // Register all routes from the utils/router.js
-
-// Test route for health check
+// Health checks
 app.get("/", (req, res) => {
   res.status(200).send("OK");
 });
 
-// Dedicated health check route for ALB
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "healthy" });
 });
 
-// Test db connection
 app.get("/test-db", async (req, res) => {
   try {
     const prisma = await import('./lib/prisma');
@@ -49,9 +51,8 @@ app.get("/test-db", async (req, res) => {
   }
 });
 
-// Start the port
 const PORT = parseInt(process.env.PORT || '5033', 10);
 
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Server is running on http://0.0.0.0:${PORT}`);
-}); 
+  console.log(`Server running on port ${PORT}`);
+});

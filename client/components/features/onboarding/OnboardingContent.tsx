@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { Session } from 'next-auth';
 import { useWorkspaceStore } from '@/stores/workspaceStore';
 import { useRouter } from 'next/navigation';
 import OnboardingCarousel from './OnboardingCarousel';
@@ -12,17 +11,16 @@ import InviteTeamScreen from './screens/InviteTeamScreen';
 import CompleteScreen from './screens/CompleteScreen';
 import { useOnboarding } from '@/hooks/useOnboarding';
 import { toast } from 'react-hot-toast';
+import { useAuth } from '@/providers/auth-provider';
 
-interface OnboardingContentProps {
-  session: Session;
-}
 interface WorkspaceData {
   id: string
   name: string
   slug: string
 }
 
-export default function OnboardingContent({ session }: OnboardingContentProps) {
+export default function OnboardingContent() {
+  const { user } = useAuth();
   const { currentStep, nextStep, prevStep, userData, updateUserData } = useOnboarding();
   const addWorkspace = useWorkspaceStore((state) => state.addWorkspace);
   const hasWorkspaces = useWorkspaceStore((state) => state.hasWorkspaces);
@@ -113,7 +111,7 @@ export default function OnboardingContent({ session }: OnboardingContentProps) {
   const steps = [
     {
       id: 'welcome',
-      component: <WelcomeScreen userName={session.user?.name || 'there'} onNext={nextStep} />
+      component: <WelcomeScreen userName={user?.name || 'there'} onNext={nextStep} />
     },
     {
       id: 'intro',
@@ -142,7 +140,7 @@ export default function OnboardingContent({ session }: OnboardingContentProps) {
     },
     {
       id: 'complete',
-      component: <CompleteScreen name={session.user?.name || 'there'} workspace={userData.workspace as WorkspaceData} />
+      component: <CompleteScreen name={user?.name || 'there'} workspace={userData.workspace as WorkspaceData} />
     }
   ];
 
