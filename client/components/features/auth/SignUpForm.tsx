@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/atoms/button'
 import { Input } from '@/components/ui/atoms/input'
 import Link from 'next/link'
 import { ResendVerification } from './ResendVerification'
-import { toast } from 'react-hot-toast'
 import { useTheme } from '@/providers/ThemeContext'
 import Image from 'next/image'
 import { GoogleSignInButton } from '@/components/ui/atoms/GoogleSignInButton'
@@ -75,6 +74,7 @@ export function SignUpForm() {
         email,
         password,
         name: name.trim(),
+        callbackURL: `${window.location.origin}/auth/callback`,
       })
 
       if (result.error) {
@@ -83,7 +83,6 @@ export function SignUpForm() {
       }
       
       setNeedVerification(true)
-      toast.success('Account created! Please check your email to verify your account.')
     } catch (err: unknown) {
       console.error('Sign up error:', err)
       setError(getErrorMessage(err instanceof Error ? err.message : 'Registration failed'))
@@ -127,9 +126,9 @@ export function SignUpForm() {
         
         {/* Content */}
         <div className="space-y-3">
-          <h1 className="text-2xl font-semibold tracking-tight">Check your email</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Account Created Successfully!</h1>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            We sent a verification link to complete your registration
+            Your account has been created. Please verify your email to complete the registration and start using DoDesk.
           </p>
         </div>
 
@@ -139,9 +138,25 @@ export function SignUpForm() {
           <p className="font-medium text-sm">{email}</p>
         </div>
         
-        <p className="text-sm text-muted-foreground leading-relaxed">
-          Click the link in your email to verify your account and start using DoDesk.
-        </p>
+        <div className="space-y-3">
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            <strong>Next steps:</strong>
+          </p>
+          <div className="text-left space-y-2 text-sm text-muted-foreground">
+            <div className="flex items-start gap-2">
+              <span className="w-5 h-5 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xs font-medium mt-0.5">1</span>
+              <span>Check your email inbox (and spam folder)</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="w-5 h-5 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xs font-medium mt-0.5">2</span>
+              <span>Click the verification link in the email</span>
+            </div>
+            <div className="flex items-start gap-2">
+              <span className="w-5 h-5 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xs font-medium mt-0.5">3</span>
+              <span>Sign in to your new DoDesk account</span>
+            </div>
+          </div>
+        </div>
         
         {/* Actions */}
         <div className="space-y-4">

@@ -17,7 +17,7 @@ export function ResendVerification({ email }: ResendVerificationProps) {
     try {
       await sendVerificationEmail({ 
         email,
-        callbackURL: `${window.location.origin}/signin`
+        callbackURL: `${window.location.origin}/auth/callback`
       })
       toast.success('Verification email sent!')
     } catch (error: unknown) {
