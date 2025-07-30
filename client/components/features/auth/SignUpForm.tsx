@@ -9,6 +9,7 @@ import { ResendVerification } from './ResendVerification'
 import { toast } from 'react-hot-toast'
 import { useTheme } from '@/providers/ThemeContext'
 import Image from 'next/image'
+import { GoogleSignInButton } from '@/components/ui/atoms/GoogleSignInButton'
 
 // Email validation regex
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -18,6 +19,7 @@ export function SignUpForm() {
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
   const [needVerification, setNeedVerification] = useState(false)
   const [error, setError] = useState('')
   const [_touched, setTouched] = useState({ name: false, email: false, password: false })
@@ -91,6 +93,9 @@ export function SignUpForm() {
   }
 
   const handleGoogleSignUp = async () => {
+    setIsGoogleLoading(true)
+    setError('')
+    
     try {
       const result = await signIn.social({
         provider: "google",
@@ -100,8 +105,12 @@ export function SignUpForm() {
       if (result.error) {
         setError(getErrorMessage(result.error.message || result.error.toString()))
       }
+      // Note: If successful, the user will be redirected to Google OAuth
+      // and then to the callback page, so we don't need to reset loading here
     } catch (err: unknown) {
       setError(getErrorMessage(err instanceof Error ? err.message : 'Unknown error'));
+    } finally {
+      setIsGoogleLoading(false)
     }
   };
 
@@ -255,15 +264,11 @@ export function SignUpForm() {
           </div>
         </div>
 
-        <Button 
-          type="button"
-          variant="outline"
+        <GoogleSignInButton 
           onClick={handleGoogleSignUp}
-          className="w-full h-12 font-medium"
-          size="lg"
-        >
-          Sign up with Google
-        </Button>
+          isLoading={isGoogleLoading}
+          variant="signup"
+        />
       </form>
 
       {/* Footer */}

@@ -10,6 +10,7 @@ import { useWorkspaceStore } from '@/stores/workspaceStore'
 import { toast } from 'react-hot-toast'
 import { useTheme } from '@/providers/ThemeContext'
 import Image from 'next/image'
+import { GoogleSignInButton } from '@/components/ui/atoms/GoogleSignInButton'
 
 export function SignInForm() {
   const [email, setEmail] = useState('')
@@ -21,6 +22,7 @@ export function SignInForm() {
   const router = useRouter()
   const fetchWorkspaces = useWorkspaceStore((state) => state.fetchWorkspaces)
   const { theme } = useTheme()
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -88,6 +90,9 @@ export function SignInForm() {
   }
 
   const handleGoogleSignIn = async () => {
+    setIsGoogleLoading(true)
+    setError('')
+    
     try {
       const result = await signIn.social({
         provider: "google",
@@ -100,6 +105,8 @@ export function SignInForm() {
     } catch (err: unknown) {
       console.error('Google sign in error:', err)
       setError(getErrorMessage(err instanceof Error ? err.message : 'Unknown error'));
+    } finally {
+      setIsGoogleLoading(false)
     }
   };
 
@@ -260,15 +267,11 @@ export function SignInForm() {
           </div>
         </div>
 
-        <Button 
-          type="button"
-          variant="outline"
-          onClick={handleGoogleSignIn}
-          className="w-full h-12 font-medium"
-          size="lg"
-        >
-          Sign in with Google
-        </Button>
+        <GoogleSignInButton 
+        onClick={handleGoogleSignIn}
+        isLoading={isGoogleLoading}
+        variant="signin"
+      />
       </form>
 
       {/* Footer */}

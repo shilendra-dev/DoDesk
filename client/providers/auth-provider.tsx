@@ -21,6 +21,7 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 const publicPaths = ["/signin", "/signup", "/", "/forgot-password", "/reset-password"];
+const noGlobalLoadingPaths = [...publicPaths, "/auth/callback", "/onboarding"];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { data: session, isPending } = useSession();
@@ -38,10 +39,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [session, isPending, pathname, router]);
 
-  if (isPending) {
+  // Don't show global loading screen for certain paths that handle their own loading
+  const shouldShowGlobalLoading = isPending && !noGlobalLoadingPaths.includes(pathname);
+  
+  if (shouldShowGlobalLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
-        <div>Loading...</div>
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
       </div>
     );
   }
