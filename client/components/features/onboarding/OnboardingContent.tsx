@@ -87,7 +87,7 @@ export default function OnboardingContent() {
     } catch (err) {
       setError('Failed to create workspace. Please try again.');
       toast.error('Failed to create workspace. Please try again.');
-      console.error('❌ Failed to create workspace:', err);
+      console.error('Failed to create workspace:', err);
     } finally {
       setCreating(false);
     }
@@ -133,7 +133,6 @@ export default function OnboardingContent() {
         <InviteTeamScreen 
           workspace={userData.workspace}
           onNext={nextStep}
-          onPrev={prevStep}
           onSkip={nextStep}
         />
       )
