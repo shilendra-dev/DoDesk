@@ -7,6 +7,17 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      redirectURI: `${process.env.BACKEND_URL || 'http://localhost:5033'}/api/auth/callback/google`,
+      // Always ask to select an account for better UX
+      prompt: "select_account",
+      // Get refresh token for better token management
+      accessType: "offline",
+    },
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
@@ -20,20 +31,20 @@ export const auth = betterAuth({
         
         const subject = "Verify your DoDesk account";
         const text = `
-Hi ${user.name || 'there'},
+          Hi ${user.name || 'there'},
 
-Welcome to DoDesk! Please verify your email address by clicking the link below:
+          Welcome to DoDesk! Please verify your email address by clicking the link below:
 
-${url}
+          ${url}
 
-Or use this verification token: ${token}
+          Or use this verification token: ${token}
 
-This link will expire in 24 hours.
+          This link will expire in 24 hours.
 
-If you didn't create a DoDesk account, you can safely ignore this email.
+          If you didn't create a DoDesk account, you can safely ignore this email.
 
-Best regards,
-The DoDesk Team
+          Best regards,
+          The DoDesk Team
         `;
 
         await sendEmail(user.email, subject, text);
@@ -51,16 +62,7 @@ The DoDesk Team
     updateAge: 60 * 60 * 24, // 1 day
     cookieName: "better-auth.session",
   },
-  // Only include socialProviders if environment variables are set
-  ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET && {
-    socialProviders: {
-      google: {
-        clientId: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        redirectURI: `${process.env.BACKEND_URL || 'http://localhost:5033'}/api/auth/callback/google`,
-      },
-    },
-  }),
+
   trustedOrigins: [process.env.FRONTEND_URL || "http://localhost:3000"],
 });
 

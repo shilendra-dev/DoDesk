@@ -91,13 +91,14 @@ export function SignInForm() {
     try {
       const result = await signIn.social({
         provider: "google",
-        callbackURL: "/dashboard",
+        callbackURL: `${window.location.origin}/auth/callback`,
       });
       
       if (result.error) {
         setError(getErrorMessage(result.error.message || result.error.toString()))
       }
     } catch (err: unknown) {
+      console.error('Google sign in error:', err)
       setError(getErrorMessage(err instanceof Error ? err.message : 'Unknown error'));
     }
   };

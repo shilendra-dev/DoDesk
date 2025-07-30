@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { signUp } from '@/lib/auth-client'
+import { signUp, signIn } from '@/lib/auth-client'
 import { Button } from '@/components/ui/atoms/button'
 import { Input } from '@/components/ui/atoms/input'
 import Link from 'next/link'
@@ -89,6 +89,21 @@ export function SignUpForm() {
       setIsLoading(false)
     }
   }
+
+  const handleGoogleSignUp = async () => {
+    try {
+      const result = await signIn.social({
+        provider: "google",
+        callbackURL: `${window.location.origin}/auth/callback`,
+      });
+      
+      if (result.error) {
+        setError(getErrorMessage(result.error.message || result.error.toString()))
+      }
+    } catch (err: unknown) {
+      setError(getErrorMessage(err instanceof Error ? err.message : 'Unknown error'));
+    }
+  };
 
   // Verification success view
   if (needVerification) {
@@ -227,6 +242,27 @@ export function SignUpForm() {
           ) : (
             'Create account'
           )}
+        </Button>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              Or continue with
+            </span>
+          </div>
+        </div>
+
+        <Button 
+          type="button"
+          variant="outline"
+          onClick={handleGoogleSignUp}
+          className="w-full h-12 font-medium"
+          size="lg"
+        >
+          Sign up with Google
         </Button>
       </form>
 
