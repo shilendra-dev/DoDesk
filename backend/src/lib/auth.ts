@@ -21,13 +21,48 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
+    sendResetPassword: async ({ user, url, token }) => {
+      try {
+        console.log('Sending password reset email to:', user.email);
+        console.log('Reset URL:', url);
+        
+        const subject = "Reset your DoDesk password";
+        const text = `
+          Hi ${user.name || 'there'},
+
+          You requested to reset your DoDesk password. Click the link below to set a new password:
+
+          ${url}
+
+          Or use this reset token: ${token}
+
+          This link will expire in 1 hour.
+
+          If you didn't request a password reset, you can safely ignore this email.
+
+          Best regards,
+          The DoDesk Team
+        `;
+
+        await sendEmail(user.email, subject, text);
+        console.log('Password reset email sent successfully to:', user.email);
+      } catch (error) {
+        console.error('Failed to send password reset email:', error);
+        throw new Error('Failed to send password reset email');
+      }
+    },
+    onPasswordReset: async ({ user }) => {
+      console.log(`Password reset successfully for user: ${user.email}`);
+    },
+    resetPasswordTokenExpiresIn: 60 * 60, // 1 hour in seconds
+
   },
 
   emailVerification: {
     sendVerificationEmail: async ({ user, url, token }) => {
       try {
-        console.log('📧 Sending verification email to:', user.email);
-        console.log('🔗 Verification URL:', url);
+        console.log('Sending verification email to:', user.email);
+        console.log('Verification URL:', url);
         
         const subject = "Verify your DoDesk account";
         const text = `
@@ -48,13 +83,14 @@ export const auth = betterAuth({
         `;
 
         await sendEmail(user.email, subject, text);
-        console.log('✅ Verification email sent successfully to:', user.email);
+        console.log('Verification email sent successfully to:', user.email);
       } catch (error) {
-        console.error('❌ Failed to send verification email:', error);
+        console.error('Failed to send verification email:', error);
         throw new Error('Failed to send verification email');
       }
     },
-    tokenExpiresIn: 60 * 60 * 24, // 24 hours in seconds
+    tokenExpiresIn: 60 * 60, // 1 hours in seconds
+    
   },
 
   session: {

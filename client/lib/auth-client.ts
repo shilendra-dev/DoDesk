@@ -10,5 +10,7 @@ export const {
   signOut, 
   useSession, 
   sendVerificationEmail,
-  linkSocial 
+  linkSocial,
+  requestPasswordReset,
+  resetPassword,
 } = authClient

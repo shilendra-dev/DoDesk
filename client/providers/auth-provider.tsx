@@ -20,7 +20,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
 });
 
-const publicPaths = ["/signin", "/signup", "/", "/forgot-password", "/reset-password"];
+const publicPaths = ["/signin", "/signup", "/", "/auth/forgotPassword", "/auth/resetPassword"];
 const noGlobalLoadingPaths = [...publicPaths, "/auth/callback", "/onboarding"];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {

@@ -177,7 +177,7 @@ export function SignInForm() {
           <p className="text-sm text-muted-foreground">
             Forgot your password?{' '}
             <Link 
-              href="/forgot-password" 
+              href="/auth/forgotPassword" 
               className="text-primary hover:underline font-medium transition-colors"
             >
               Reset it
@@ -287,7 +287,7 @@ export function SignInForm() {
         </div>
         <div>
           <Link 
-            href="/forgot-password" 
+            href="/auth/forgotPassword" 
             className="text-primary hover:underline font-medium transition-colors"
           >
             Forgot your password?
