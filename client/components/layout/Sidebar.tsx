@@ -3,7 +3,7 @@
 
 import React, { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
-import { signOut } from 'next-auth/react'
+import { signOut } from '@/lib/auth-client'
 import {
   Inbox, Target, UserPlus,
   Search, Plus, LogOut
@@ -16,7 +16,7 @@ import { CollapsibleSection } from './CollapsibleSection'
 import { SidebarItem } from './SidebarItem'
 import { TeamsSection } from './TeamSection'
 import { useTheme } from '@/providers/ThemeContext'
-import { useSession } from "next-auth/react"
+import { useSession } from "@/lib/auth-client"
 import { useModalStore } from '@/stores/modalStore'
 import {toast} from 'react-hot-toast'
 
@@ -64,7 +64,7 @@ export function Sidebar() {
 
   // Handle logout
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/signin' })
+    await signOut()
   }
 
   // Check if current path is active

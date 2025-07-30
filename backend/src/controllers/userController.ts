@@ -134,7 +134,6 @@ const createUser: ControllerFunction<CreateUserResponse> = async (req) => {
   }
 };
 
-createApi().post("/users/signup").noAuth(createUser);
 
 // Get Current User
 const getCurrentUser: ControllerFunction<GetCurrentUserResponse> = async (req) => {

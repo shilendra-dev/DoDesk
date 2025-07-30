@@ -1,6 +1,7 @@
 import express, { Router, Request, Response } from 'express';
-import { protect } from '../middleware/authMiddleware';
+import { auth } from '../lib/auth';
 import { ControllerFunction, AuthenticatedRequest } from '../types/controllers/base.types';
+import { protect } from '../middleware/authMiddleware';
 
 class ApiRouter {
   private router: Router;

@@ -12,14 +12,12 @@ import api from '@/lib/axios';
 interface InviteTeamScreenProps {
   workspace: unknown;
   onNext: () => void;
-  onPrev: () => void;
   onSkip: () => void;
 }
 
 const InviteTeamScreen: React.FC<InviteTeamScreenProps> = ({ 
   workspace, 
   onNext, 
-  onPrev, 
   onSkip 
 }) => {
   const [email, setEmail] = useState('');
@@ -130,16 +128,7 @@ const InviteTeamScreen: React.FC<InviteTeamScreenProps> = ({
                 </Card>
               )}
 
-              <div className="flex justify-between gap-4 pt-4">
-                <Button
-                  onClick={onPrev}
-                  disabled={loading}
-                  variant="outline"
-                  size="lg"
-                >
-                  Back
-                </Button>
-                
+              <div className="flex justify-end gap-4 pt-4">             
                 <Button
                   onClick={onSkip}
                   disabled={loading}

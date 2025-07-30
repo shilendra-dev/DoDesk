@@ -5,8 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
+  provider      = "prisma-client-js"
+  output        = "../src/generated/prisma"
   binaryTargets = ["native", "linux-arm64-openssl-3.0.x"]
 }
 
@@ -15,71 +15,70 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  password  String
-  avatar    String?
+  id                    String        @id @default(cuid())
+  email                 String        @unique
+  name                  String?
+  password              String?
+  avatar                String?
   lastActiveWorkspaceId String?
-  
   // Relations
-  createdWorkspaces    Workspace[] @relation("WorkspaceCreator")
-  lastActiveWorkspace  Workspace?  @relation("LastActiveWorkspace", fields: [lastActiveWorkspaceId], references: [id], onDelete: SetNull)
-  createdTeams         Team[]      @relation("TeamCreator")
-  createdIssues        Issue[]     @relation("IssueCreator")
-  assignedIssues       Issue[]     @relation("IssueAssignee")
-  comments             Comment[]
-  teamMemberships      TeamMember[]
-  savedFilters         SavedFilter[]
+  createdWorkspaces     Workspace[]   @relation("WorkspaceCreator")
+  lastActiveWorkspace   Workspace?    @relation("LastActiveWorkspace", fields: [lastActiveWorkspaceId], references: [id], onDelete: SetNull)
+  createdTeams          Team[]        @relation("TeamCreator")
+  createdIssues         Issue[]       @relation("IssueCreator")
+  assignedIssues        Issue[]       @relation("IssueAssignee")
+  comments              Comment[]
+  teamMemberships       TeamMember[]
+  savedFilters          SavedFilter[]
   // Audit
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+
+  emailVerified Boolean @default(false)
+  image         String?
+  sessions      Session[]
+  accounts      Account[]
 
   @@map("users")
 }
 
 model Workspace {
-  id          String   @id @default(cuid())
-  name        String
-  slug        String   @unique
-  description String?
-  
+  id              String                @id @default(cuid())
+  name            String
+  slug            String                @unique
+  description     String?
   // Relations
-  creator     User     @relation("WorkspaceCreator", fields: [creatorId], references: [id], onDelete: Cascade)
-  creatorId   String
-  lastActiveUsers User[] @relation("LastActiveWorkspace")
-  teams       Team[]
-  issues      Issue[]
-  invitations WorkspaceInvitation[]
-  savedFilters SavedFilter[]
-  
+  creator         User                  @relation("WorkspaceCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+  creatorId       String
+  lastActiveUsers User[]                @relation("LastActiveWorkspace")
+  teams           Team[]
+  issues          Issue[]
+  invitations     WorkspaceInvitation[]
+  savedFilters    SavedFilter[]
   // Audit
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
 
   @@map("workspaces")
 }
 
 model Team {
-  id          String   @id @default(cuid())
+  id          String       @id @default(cuid())
   name        String
-  key         String   // Like "ENG", "DES", "MKT"
+  key         String // Like "ENG", "DES", "MKT"
   description String?
-  color       String   @default("#6B7280")
-  
+  color       String       @default("#6B7280")
   // Relations
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace   Workspace    @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId String
-  creator     User?     @relation("TeamCreator", fields: [creatorId], references: [id], onDelete: SetNull)
+  creator     User?        @relation("TeamCreator", fields: [creatorId], references: [id], onDelete: SetNull)
   creatorId   String?
   members     TeamMember[]
   issues      Issue[]
-  
   // Audit
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@unique([workspaceId, key])
   @@unique([workspaceId, name])
@@ -87,17 +86,15 @@ model Team {
 }
 
 model TeamMember {
-  id     String @id @default(cuid())
-  role   String @default("member") // "admin", "member", "viewer"
-  
+  id        String   @id @default(cuid())
+  role      String   @default("member") // "admin", "member", "viewer"
   // Relations
-  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  teamId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
-  
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
   // Audit
-  joinedAt DateTime @default(now())
+  joinedAt  DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@unique([teamId, userId])
@@ -105,16 +102,15 @@ model TeamMember {
 }
 
 model Issue {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   title       String
   description String?
-  state       String   @default("backlog") // "backlog", "todo", "in_progress", "done", "canceled"
-  priority    Int      @default(0) // 0=no priority, 1=urgent, 2=high, 3=medium, 4=low
-  labels      String[] @default([])
+  state       String    @default("backlog") // "backlog", "todo", "in_progress", "done", "canceled"
+  priority    Int       @default(0) // 0=no priority, 1=urgent, 2=high, 3=medium, 4=low
+  labels      String[]  @default([])
   dueDate     DateTime?
   notes       String?
-  number      Int      // Linear-style issue number
-  
+  number      Int // Linear-style issue number
   // Relations
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId String
@@ -125,67 +121,105 @@ model Issue {
   creator     User?     @relation("IssueCreator", fields: [creatorId], references: [id], onDelete: SetNull)
   creatorId   String?
   comments    Comment[]
-  
   // Audit
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@unique([teamId, number])
   @@map("issues")
 }
 
 model Comment {
-  id      String @id @default(cuid())
-  content String
-  
+  id              String    @id @default(cuid())
+  content         String
   // Relations
-  issue   Issue  @relation(fields: [issueId], references: [id], onDelete: Cascade)
-  issueId String
-  user    User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
-  userId  String?
-  parentComment Comment? @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: SetNull)
+  issue           Issue     @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  issueId         String
+  user            User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId          String?
+  parentComment   Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: SetNull)
   parentCommentId String?
-  replies Comment[] @relation("CommentReplies")
-  
+  replies         Comment[] @relation("CommentReplies")
   // Audit
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   @@map("comments")
 }
 
 model SavedFilter {
-  id     String @id @default(cuid())
-  name   String
-  filters Json
-  isDefault Boolean @default(false)
-  
+  id          String    @id @default(cuid())
+  name        String
+  filters     Json
+  isDefault   Boolean   @default(false)
   // Relations
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId String
-  
   // Audit
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@map("saved_filters")
 }
 
 model WorkspaceInvitation {
-  id     String @id @default(cuid())
-  email  String
-  role   String @default("member")
-  status String @default("pending") // "pending", "accepted", "expired"
-  
+  id          String    @id @default(cuid())
+  email       String
+  role        String    @default("member")
+  status      String    @default("pending") // "pending", "accepted", "expired"
   // Relations
-  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId String
-  
   // Audit
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@map("workspace_invitations")
+}
+
+model Session {
+  id        String   @id
+  expiresAt DateTime
+  token     String
+  createdAt DateTime
+  updatedAt DateTime
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([token])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime
+  updatedAt             DateTime
+
+  @@map("account")
+}
+
+model Verification {
+  id         String    @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime?
+  updatedAt  DateTime?
+
+  @@map("verification")
 }
