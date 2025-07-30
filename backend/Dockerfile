@@ -32,6 +32,8 @@ COPY --from=builder /app/node_modules/@prisma /app/node_modules/@prisma
 COPY --from=builder /app/dist /app/dist
 COPY --from=builder /app/bin /app/bin
 COPY --from=builder /app/prisma /app/prisma
+COPY --from=builder /app/src/generated /app/dist/generated
+
 
 # Make startup script executable
 RUN chmod +x /app/bin/start.sh
