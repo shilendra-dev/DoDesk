@@ -74,7 +74,7 @@ export const useWorkspaceStore = create<WorkspaceStoreState>((set, get) => ({
     const currentWorkspace = get().currentWorkspace
     if (!currentWorkspace) return
     try {
-      const res = await api.get(`/api/workspaces/${currentWorkspace.id}/teams?include=members`)
+      const res = await api.get(`/api/workspace/${currentWorkspace.id}/teams?include=members`)
       set({
         teams: res.data.teams || [],
         members: res.data.teams?.flatMap((t: Team) => t.members) || []
