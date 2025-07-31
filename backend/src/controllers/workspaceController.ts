@@ -65,7 +65,21 @@ const createWorkspace: ControllerFunction<CreateWorkspaceResponse> = async (req)
         }
       },
       include: {
-        teams: { include: { members: true } }
+        teams: { 
+          include: { 
+            members: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true
+                  }
+                }
+              }
+            } 
+          } 
+        }
       }
     });
 

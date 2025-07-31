@@ -6,9 +6,10 @@ import { Input } from '@/components/ui/atoms/input';
 import { Label } from '@/components/ui/atoms/label';
 import { SlugInput } from '@/components/ui/molecules/SlugInput';
 import { useWorkspaceOperations } from '@/hooks/useWorkspaceOperations';
+import { Workspace } from '@/types/workspace';
 
 interface WorkspaceFormProps {
-  onSuccess: (workspace: unknown) => void;
+  onSuccess: (workspace: Workspace) => void;
   onCancel?: () => void;
   submitText?: string;
   cancelText?: string;
