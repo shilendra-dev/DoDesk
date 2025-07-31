@@ -11,13 +11,11 @@ interface CreateWorkspaceModalProps {
 }
 
 export const CreateWorkspaceModal = ({ isOpen, onClose }: CreateWorkspaceModalProps) => {
-  const {addWorkspace, setCurrentWorkspaceBySlug, fetchTeams} = useWorkspaceStore();
+  const {addWorkspace} = useWorkspaceStore();
   const router = useRouter()
 
     const handleWorkspaceCreate = async (workspace: Workspace) => {
         await addWorkspace(workspace)
-        await setCurrentWorkspaceBySlug(workspace.slug)
-        fetchTeams();
         router.push(`/${workspace.slug}/myissues`)
         onClose()
   }

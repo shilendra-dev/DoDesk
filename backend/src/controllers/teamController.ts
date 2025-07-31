@@ -144,17 +144,35 @@ const getWorkspaceTeams: ControllerFunction<GetWorkspaceTeamsResponse> = async (
       }
     });
 
-    // Transform to match expected format
-    const transformedTeams = teams.map(team => ({
-      ...team,
-      member_count: team._count.members,
-      is_member: team.members.some(member => member.userId === userId)
-    }));
+    const transformedTeams = teams.map(team => {
+      const transformedMembers = team.members.map(member => {
+        return {
+          id: member.id,
+          userId: member.userId,
+          teamId: member.teamId,
+          role: member.role,
+          joinedAt: member.joinedAt,
+          updatedAt: member.updatedAt,
+          user: {
+            id: member.user.id,
+            name: member.user?.name,
+            email: member.user?.email
+          }
+        };
+      });
+    
+      return {
+        ...team,
+        members: transformedMembers,
+        member_count: team._count.members,
+        is_member: team.members.some(member => member.userId === userId)
+      };
+    });
 
     return {
       status: 200,
       message: "Teams fetched successfully",
-      data: { teams: transformedTeams }
+      teams: transformedTeams 
     };
   } catch (error) {
     console.error("Error fetching teams:", error);
@@ -212,7 +230,7 @@ const getUserTeams: ControllerFunction<GetUserTeamsResponse> = async (req) => {
     return {
       status: 200,
       message: "User's teams fetched successfully",
-      data: { teams: transformedTeams }
+      teams: transformedTeams
     };
   } catch (error) {
     console.error("Error fetching teams:", error);

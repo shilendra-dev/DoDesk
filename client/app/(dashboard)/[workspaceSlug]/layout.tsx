@@ -27,21 +27,21 @@ export default function WorkspaceLayout({ children, params }: WorkspaceLayoutPro
   const workspaceSlug = resolvedParams.workspaceSlug
   const [isRedirecting, setIsRedirecting] = useState(false)
 
-  // ✅ 1. Fetch workspaces when user is authenticated and workspaces not loaded
+  // Fetch workspaces when user is authenticated and workspaces not loaded
   useEffect(() => {
     if (session && !isLoading && workspaces.length === 0) {
       fetchWorkspaces()
     }
   }, [session, isLoading, workspaces.length, fetchWorkspaces])
 
-  // ✅ 2. Set current workspace by slug when workspaces are loaded
+  // Set current workspace by slug when workspaces are loaded
   useEffect(() => {
     if (workspaces.length > 0) {
       setCurrentWorkspaceBySlug(workspaceSlug)
     }
   }, [workspaceSlug, workspaces.length, setCurrentWorkspaceBySlug])
 
-  // ✅ 3. Handle routing based on your flow
+  // Handle routing based on your flow
   useEffect(() => {
     if (isPending || isRedirecting) return // Prevent multiple redirects
 
@@ -78,7 +78,7 @@ export default function WorkspaceLayout({ children, params }: WorkspaceLayoutPro
         return
       }
 
-      // ✅ Valid workspace - render the layout
+      // Valid workspace - render the layout
       // No redirect needed, current workspace is valid
     }
   }, [
@@ -93,7 +93,7 @@ export default function WorkspaceLayout({ children, params }: WorkspaceLayoutPro
     isRedirecting
   ])
 
-  // ✅ Loading state
+  // Loading state
   if (isPending || isLoading || isRedirecting) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -107,12 +107,12 @@ export default function WorkspaceLayout({ children, params }: WorkspaceLayoutPro
     )
   }
 
-  // ✅ Don't render if no session
+  // Don't render if no session
   if (!session) {
     return null
   }
 
-  // ✅ Don't render if no valid workspace (should redirect above, but safety check)
+  // Don't render if no valid workspace (should redirect above, but safety check)
   if (!currentWorkspace) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -124,7 +124,7 @@ export default function WorkspaceLayout({ children, params }: WorkspaceLayoutPro
     )
   }
 
-  // ✅ Render workspace layout
+  // Render workspace layout
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="w-full max-w-7xl px-2 py-2">
