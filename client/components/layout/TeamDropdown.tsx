@@ -3,7 +3,6 @@
 import React from 'react'
 import { ChevronDown, ListTodo } from 'lucide-react'
 import { SidebarItem } from './SidebarItem'
-import {toast} from 'react-hot-toast'
 
 interface TeamDropdownProps {
     name: string
@@ -11,14 +10,16 @@ interface TeamDropdownProps {
     isExpanded: boolean
     onNavigate: (path: string) => void
     onToggle: () => void
+    isActive?: boolean
 }
 
 export function TeamDropdown({
     name,
     color,
     isExpanded,
-    // onNavigate,
-    onToggle
+    onNavigate,
+    onToggle,
+    isActive = false
 }: TeamDropdownProps) {
     return (
         <div className="">
@@ -46,20 +47,20 @@ export function TeamDropdown({
                 <SidebarItem
                     icon={<ListTodo size={16} />}
                     label="Issues"
+                    isActive={isActive}
                     onClick={() => {
-                        //onNavigate('team/issues')
-                        toast.error('This feature is coming soon')
+                        onNavigate('issues')
                     }}
                 />
                 {/* <SidebarItem
                     icon={<FolderOpen size={16} />}
                     label="Projects"
-                    onClick={() => onNavigate('team/projects')}
+                    onClick={() => onNavigate('projects')}
                 /> */}
                 {/* <SidebarItem
                     icon={<Eye size={16} />}
                     label="Views"
-                    onClick={() => onNavigate('team/views')}
+                    onClick={() => onNavigate('views')}
                 /> */}
             </div>
         </div>
