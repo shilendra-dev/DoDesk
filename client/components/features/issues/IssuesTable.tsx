@@ -23,7 +23,6 @@ const IssueTableComponent = ({ issues }: IssueTableProps) => {
       data={issues}
       showSearch={true}
       showPagination={true}
-      showRowSelection={true}
       emptyMessage="No issues found. Create a new issue."
       className="w-full"
     />

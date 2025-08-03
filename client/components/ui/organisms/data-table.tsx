@@ -3,7 +3,6 @@
 import * as React from "react"
 import {
   ColumnDef,
-  flexRender,
   getCoreRowModel,
   useReactTable,
   getSortedRowModel,
@@ -11,22 +10,18 @@ import {
   getFilteredRowModel,
   ColumnFiltersState,
   getPaginationRowModel,
-  RowSelectionState,
 } from "@tanstack/react-table"
 
 import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/molecules/table"
 import { Button } from "@/components/ui/atoms/button"
 import { Input } from "@/components/ui/atoms/input"
-import { Checkbox } from "@/components/ui/atoms/checkbox"
-import { ArrowUpDown, ChevronDown, ChevronUp } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { IssueRow } from "@/components/features/issues/table/IssueRow"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -35,11 +30,20 @@ interface DataTableProps<TData, TValue> {
   searchPlaceholder?: string
   showSearch?: boolean
   showPagination?: boolean
-  showRowSelection?: boolean
-  onRowSelectionChange?: (selection: RowSelectionState) => void
-  selectedRows?: RowSelectionState
   className?: string
   emptyMessage?: string
+  showRowSelection?: boolean
+  groupBy?: string
+}
+
+// State order for grouping
+const stateOrder = ['todo', 'in_progress', 'backlog', 'done', 'canceled']
+const stateLabels = {
+  todo: 'To Do',
+  in_progress: 'In Progress', 
+  backlog: 'Backlog',
+  done: 'Done',
+  canceled: 'Canceled'
 }
 
 export function DataTable<TData, TValue>({
@@ -49,15 +53,12 @@ export function DataTable<TData, TValue>({
   searchPlaceholder = "Search...",
   showSearch = true,
   showPagination = true,
-  showRowSelection = false,
-  onRowSelectionChange,
-  selectedRows,
   className,
-  emptyMessage = "No data found"
+  emptyMessage = "No data found",
+  groupBy = "state"
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
-  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>(selectedRows || {})
 
   const table = useReactTable({
     data,
@@ -68,23 +69,26 @@ export function DataTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
-    onRowSelectionChange: (updater) => {
-      const newSelection = typeof updater === 'function' ? updater(rowSelection) : updater
-      setRowSelection(newSelection)
-      onRowSelectionChange?.(newSelection)
-    },
     state: {
       sorting,
       columnFilters,
-      rowSelection,
     },
   })
 
-  React.useEffect(() => {
-    if (selectedRows) {
-      setRowSelection(selectedRows)
-    }
-  }, [selectedRows])
+  // Group data by state
+  const groupedData = React.useMemo(() => {
+    const groups: Record<string, TData[]> = {}
+    
+    table.getFilteredRowModel().rows.forEach((row) => {
+      const state = (row.original as Record<string, unknown>)[groupBy] as string || 'unknown'
+      if (!groups[state]) {
+        groups[state] = []
+      }
+      groups[state].push(row.original)
+    })
+    
+    return groups
+  }, [table.getFilteredRowModel().rows, groupBy])
 
   return (
     <div className={cn("space-y-4", className)}>
@@ -104,78 +108,43 @@ export function DataTable<TData, TValue>({
       {/* Table */}
       <div className="rounded-md">
         <Table>
-          <TableHeader className="bg-muted/40">
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id} className="hover:bg-transparent ">
-                {showRowSelection && (
-                  <TableHead className="w-12 ml-16">
-                    <Checkbox
-                      checked={
-                        table.getIsAllPageRowsSelected() ||
-                        (table.getIsSomePageRowsSelected() && "indeterminate")
-                      }
-                      onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-                      aria-label="Select all"
-                    />
-                  </TableHead>
-                )}
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder ? null : (
-                        <div
-                          className={cn(
-                            "flex items-center gap-2",
-                            header.column.getCanSort() && "cursor-pointer select-none"
-                          )}
-                          onClick={header.column.getToggleSortingHandler()}
-                        >
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                          {{
-                            asc: <ChevronUp className="h-4 w-4" />,
-                            desc: <ChevronDown className="h-4 w-4" />,
-                          }[header.column.getIsSorted() as string] ?? (
-                            header.column.getCanSort() ? (
-                              <ArrowUpDown className="h-4 w-4" />
-                            ) : null
-                          )}
+          <TableBody className="[&_tr]:border-0">
+            {Object.keys(groupedData).length > 0 ? (
+              stateOrder.map((state) => {
+                const groupIssues = groupedData[state]
+                if (!groupIssues || groupIssues.length === 0) return null
+                
+                return (
+                  <React.Fragment key={state}>
+                    {/* Group Header */}
+                    <TableRow className="border-0 bg-muted/40 dark:bg-muted/20">
+                      <TableCell colSpan={8} className="px-4 py-2">
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-sm">
+                            {stateLabels[state as keyof typeof stateLabels]}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {groupIssues.length} issue{groupIssues.length !== 1 ? 's' : ''}
+                          </span>
                         </div>
-                      )}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {showRowSelection && (
-                    <TableCell className="w-12">
-                      <Checkbox
-                        checked={row.getIsSelected()}
-                        onCheckedChange={(value) => row.toggleSelected(!!value)}
-                        aria-label="Select row"
-                      />
-                    </TableCell>
-                  )}
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+                      </TableCell>
+                    </TableRow>
+                    
+                    {/* Group Issues */}
+                    {groupIssues.map((issue) => {
+                      const row = table.getRowModel().rows.find(r => r.original === issue)
+                      if (!row) return null
+                      
+                      return (
+                        <IssueRow<TData> key={row.id} row={row} />
+                      )
+                    })}
+                  </React.Fragment>
+                )
+              })
             ) : (
-              <TableRow>
-                <TableCell colSpan={columns.length + (showRowSelection ? 1 : 0)} className="h-24 text-center">
+              <TableRow className="border-0">
+                <TableCell colSpan={8} className="h-24 text-center">
                   {emptyMessage}
                 </TableCell>
               </TableRow>
@@ -187,8 +156,7 @@ export function DataTable<TData, TValue>({
       {showPagination && (
         <div className="flex items-center justify-end space-x-2 py-4">
           <div className="flex-1 text-sm text-muted-foreground">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
+            {table.getFilteredRowModel().rows.length} row(s) total.
           </div>
           <div className="space-x-2">
             <Button
