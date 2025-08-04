@@ -36,9 +36,7 @@ export function IssueRow<TData>({ row }: IssueRowProps<TData>) {
       </TableCell>
       
       {/* Labels */}
-
-      
-    
+        
       
       {/* Assignee */}
       <TableCell className=" py-2  flex-shrink-0">

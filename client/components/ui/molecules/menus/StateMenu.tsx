@@ -1,70 +1,77 @@
 "use client"
 
-import { Badge } from "@/components/ui/atoms/badge"
-import { Circle, Loader2, Check, Archive, X } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { Clock, Check, Archive, X, List } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
+  DropdownMenuGroup,
   DropdownMenuTrigger,
 } from "@/components/ui/atoms/dropdown-menu"
+import { useIssueStore } from "@/stores/issueStore"
 
 interface StateMenuProps {
+  issueId: string
   state: string
-  onStateChange: (state: string) => void
 }
 
 const getStateIcon = (state: string) => {
   switch (state) {
-    case 'todo': return <Circle className="h-3 w-3" />
-    case 'in_progress': return <Loader2 className="h-3 w-3 animate-spin" />
-    case 'done': return <Check className="h-3 w-3" />
-    case 'backlog': return <Archive className="h-3 w-3" />
-    case 'canceled': return <X className="h-3 w-3" />
-    default: return <Circle className="h-3 w-3" />
+    case 'todo': return <List className="h-3 w-3 text-blue-500" />
+    case 'in_progress': return <Clock className="h-3 w-3 text-yellow-500" />
+    case 'done': return <Check className="h-3 w-3 text-green-500" />
+    case 'backlog': return <Archive className="h-3 w-3 text-gray-500" />
+    case 'canceled': return <X className="h-3 w-3 text-red-500" />
+    default: return <List className="h-3 w-3 text-blue-500" />
   }
 }
 
-const getStateColor = (state: string) => {
-  switch (state) {
-    case 'backlog': return 'bg-gray-200 text-gray-700 border-gray-300'
-    case 'todo': return 'bg-blue-100 text-blue-700 border-blue-200'
-    case 'in_progress': return 'bg-yellow-100 text-yellow-700 border-yellow-200'
-    case 'done': return 'bg-green-100 text-green-700 border-green-200'
-    case 'canceled': return 'bg-red-100 text-red-700 border-red-200'
-    default: return 'bg-muted text-muted-foreground border-border'
-  }
-}
+const stateOptions = [
+  { value: 'todo', label: 'Todo', icon: <List className="h-4 w-4 text-blue-500" /> },
+  { value: 'in_progress', label: 'In Progress', icon: <Clock className="h-4 w-4 text-yellow-500" /> },
+  { value: 'done', label: 'Done', icon: <Check className="h-4 w-4 text-green-500" /> },
+  { value: 'backlog', label: 'Backlog', icon: <Archive className="h-4 w-4 text-gray-500" /> },
+  { value: 'canceled', label: 'Canceled', icon: <X className="h-4 w-4 text-red-500" /> },
+]
 
-export function StateMenu({ state, onStateChange }: StateMenuProps) {
+export function StateMenu({ issueId, state }: StateMenuProps) {
+  const { updateIssue, getIssueById } = useIssueStore()
+
+  // Get the current issue to access state
+  const currentIssue = getIssueById(issueId)
+  const currentState = currentIssue?.state ?? state
+
+  const onStateChange = async (newState: string) => {
+    try {
+      await updateIssue(issueId, { state: newState })
+    } catch (error) {
+      console.error('Failed to change state:', error)
+    }
+  }
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Badge 
-          className={cn("text-xs cursor-pointer hover:opacity-80 transition-opacity", getStateColor(state))}
-        >
-          {getStateIcon(state)}
-        </Badge>
+        <div className="cursor-pointer transition-all duration-200 hover:scale-110">
+          {getStateIcon(currentState)}
+        </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Change State</DropdownMenuLabel>
-        <DropdownMenuItem onClick={() => onStateChange('todo')}>
-          Todo
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onStateChange('in_progress')}>
-          In Progress
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onStateChange('done')}>
-          Done
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onStateChange('backlog')}>
-          Backlog
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onStateChange('canceled')}>
-          Canceled
-        </DropdownMenuItem>
+      <DropdownMenuContent className="w-40 bg-card" align="end">
+        <DropdownMenuGroup>
+          {stateOptions.map((option) => (
+            <DropdownMenuItem 
+              key={option.value}
+              onClick={() => onStateChange(option.value)}
+              className="flex items-center gap-2 cursor-pointer"
+            >
+              {option.icon}
+              <span>{option.label}</span>
+              {currentState === option.value && (
+                <Check className="h-4 w-4 text-primary ml-auto" />
+              )}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuGroup>
       </DropdownMenuContent>
     </DropdownMenu>
   )

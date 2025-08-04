@@ -92,8 +92,20 @@ export const useWorkspaceStore = create<WorkspaceStoreState>((set, get) => ({
     const currentWorkspace = get().currentWorkspace
     if (!currentWorkspace) return
     try {
-      const res = await api.get(`/api/workspaces/${currentWorkspace.id}/members`)
-      set({ members: res.data.members || [] })
+      const res = await api.get(`/api/workspace/${currentWorkspace.id}/members`)
+      // Transform the backend response to match the expected TeamMember structure
+      const backendMembers = res.data.data?.members || []
+      const transformedMembers = backendMembers.map((member: { id: string; user_id: string; name?: string; email: string }) => ({
+        id: member.id,
+        userId: member.user_id,
+        role: 'member' as const, // Default role since backend doesn't provide it
+        user: {
+          id: member.user_id,
+          name: member.name,
+          email: member.email
+        }
+      }))
+      set({ members: transformedMembers })
     } catch (error) {
       set({ members: [] })
       console.error('Failed to fetch members:', error)

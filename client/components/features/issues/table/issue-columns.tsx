@@ -37,15 +37,13 @@ export const issueColumns: ColumnDef<Issue>[] = [
     header: "Priority",
     enableSorting: true,
     cell: ({ row }) => {
+      const issue = row.original
       const priority = row.getValue("priority") as number
-      const handlePriorityChange = (newPriority: number) => {
-        console.log('Priority changed to:', newPriority)
-      }
-      
+
       return (
-        <PriorityCell 
-          priority={priority} 
-          onPriorityChange={handlePriorityChange}
+        <PriorityCell
+          issueId={issue.id}
+          priority={priority}
         />
       )
     },
@@ -113,25 +111,12 @@ export const issueColumns: ColumnDef<Issue>[] = [
     header: "Assignee",
     enableSorting: true,
     cell: ({ row }) => {
-      const assignee = row.original.assignee
-      const handleAssigneeChange = (assigneeId: string | null) => {
-        console.log('Assignee changed to:', assigneeId)
-      }
-      
-      const availableAssignees = [
-        { id: '1', name: 'John Doe', email: 'john@example.com' },
-        { id: '2', name: 'Jane Smith', email: 'jane@example.com' },
-      ]
+      const issue = row.original
       
       return (
         <AssigneeCell 
-          assignee={assignee ? {
-            id: assignee.id,
-            name: assignee.name || '',
-            email: assignee.email || assignee.name || ''
-          } : undefined}
-          onAssigneeChange={handleAssigneeChange}
-          availableAssignees={availableAssignees}
+          issueId={issue.id}
+          assignee={issue.assignee}
         />
       )
     },
@@ -141,15 +126,13 @@ export const issueColumns: ColumnDef<Issue>[] = [
     header: "State",
     enableSorting: true,
     cell: ({ row }) => {
+      const issue = row.original
       const state = row.getValue("state") as string
-      const handleStateChange = (newState: string) => {
-        console.log('State changed to:', newState)
-      }
       
       return (
         <StateCell 
-          state={state} 
-          onStateChange={handleStateChange}
+          issueId={issue.id}
+          state={state}
         />
       )
     },
