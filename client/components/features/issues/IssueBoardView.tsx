@@ -1,14 +1,11 @@
 'use client'
 
-import React, { useMemo, useState } from 'react'
+import React, { useMemo } from 'react'
 import { DragDropContext, DropResult } from '@hello-pangea/dnd'
 import { IssueColumn } from '@/components/features/issues/IssueColumn'
-import { IssueFilterBar } from '@/components/features/issues/IssueFilterBar'
 import { useIssueStore } from '@/stores/issueStore'
-import { useIssueFiltering } from '@/hooks/useIssueFiltering'
 import { toast } from 'react-hot-toast'
 import { Issue } from '@/types/issue'
-import { useTeamStore } from '@/stores/teamStore'
 
 interface IssueBoardViewProps {
   issues: Issue[]
@@ -45,33 +42,10 @@ const COLUMNS = [
 
 export function IssueBoardView({ issues }: IssueBoardViewProps) {
   const { updateIssue } = useIssueStore()
-  const { teams: teamList } = useTeamStore()
-  const [teamFilter, setTeamFilter] = useState('All')
-  const [sortOptions] = useState([
-    { label: 'None', value: 'None' },
-    { label: 'Priority', value: 'Priority' },
-    { label: 'Assignee', value: 'Assignee' },
-    { label: 'Created At', value: 'Created At' }
-  ])
-  // Use filtering hook
-  const {
-    stateFilter,
-    setStateFilter,
-    priorityFilter,
-    setPriorityFilter,
-    assigneeFilter,
-    setAssigneeFilter,
-    sortOption,
-    setSortOption,
-    filteredIssues,
-    clearAllFilters,
-    hasActiveFilters,
-    filterSummary
-  } = useIssueFiltering()
 
   // Group filtered issues by state (using canonical state values)
   const groupedIssues = useMemo(() => {
-    return filteredIssues.reduce((acc, issue) => {
+    return issues.reduce((acc, issue) => {
       const state = issue.state
       if (!acc[state]) {
         acc[state] = []
@@ -79,7 +53,7 @@ export function IssueBoardView({ issues }: IssueBoardViewProps) {
       acc[state].push(issue)
       return acc
     }, {} as Record<string, Issue[]>)
-  }, [filteredIssues])
+  }, [issues])
 
   // Handle drag end
   const handleDragEnd = async (result: DropResult) => {
@@ -108,26 +82,6 @@ export function IssueBoardView({ issues }: IssueBoardViewProps) {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Filter Bar */}
-      <IssueFilterBar
-        issues={issues}
-        teams={teamList}
-        stateFilter={stateFilter}
-        setStateFilter={setStateFilter}
-        priorityFilter={priorityFilter}
-        setPriorityFilter={setPriorityFilter}
-        assigneeFilter={assigneeFilter}
-        setAssigneeFilter={setAssigneeFilter}
-        teamFilter={teamFilter}
-        setTeamFilter={setTeamFilter}
-        sortOption={sortOption}
-        setSortOption={setSortOption}
-        sortOptions={sortOptions}
-        hasActiveFilters={hasActiveFilters}
-        filterSummary={filterSummary}
-        onClearAll={clearAllFilters}
-      />
-
       {/* Issue Columns */}
       <div className="flex-1 overflow-auto p-2">
         <DragDropContext onDragEnd={handleDragEnd}>
