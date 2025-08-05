@@ -107,7 +107,7 @@ model Issue {
   description String?
   state       String    @default("backlog") // "backlog", "todo", "in_progress", "done", "canceled"
   priority    Int       @default(0) // 0=no priority, 1=urgent, 2=high, 3=medium, 4=low
-  labels      String[]  @default([])
+  labels      String[]  @default([]) 
   dueDate     DateTime?
   notes       String?
   number      Int // Linear-style issue number

@@ -5,15 +5,17 @@ import { useWorkspaceStore } from '@/stores/workspaceStore'
 import { useIssueStore } from '@/stores/issueStore'
 import { IssueListView } from '@/components/features/issues/IssueListView'
 import { IssueBoardView } from '@/components/features/issues/IssueBoardView'
-import { IssueDetails } from '@/components/features/issues/IssueDetails'
-import { CreateIssueButton } from '@/components/features/issues/CreateIssueButton'
-import { ViewToggle } from '@/components/features/issues/ViewToggle'
+// import { IssueDetails } from '@/components/features/issues/IssueDetails'
+// import { CreateIssueButton } from '@/components/features/issues/CreateIssueButton'
+// import { ViewToggle } from '@/components/features/issues/ViewToggle'
 import { LoadingSpinner } from '@/components/ui/atoms/loading-spinner'
+import { ViewHeader } from '@/components/ui/organisms/ViewHeader'
+import { User } from 'lucide-react'
 
 export default function MyIssuesPage() {
   const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace)
   const isLoading = useWorkspaceStore((state) => state.isLoading)
-  const { issues, loadingStates, selectedIssueId, fetchIssuesByWorkspace, setSelectedIssue } = useIssueStore()
+  const { issues, loadingStates, fetchIssuesByWorkspace } = useIssueStore()
 
   // Local UI state for view and create modal
   const [view, setView] = useState<'list' | 'board'>('list')
@@ -37,7 +39,17 @@ export default function MyIssuesPage() {
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <div className="flex items-center justify-between pl-4 pr-4 pt-2 pb-2 border-b border-border">
+      <ViewHeader
+        title="My Issues"
+        icon={<User size={20} className="text-muted-foreground" />}
+        showViewToggle={true}
+        view={view}
+        setView={setView}
+        showCreateIssue={showCreateIssue}
+        setShowCreateIssue={setShowCreateIssue}
+        workspaceId={currentWorkspace?.id}
+      />
+      {/* <div className="flex items-center justify-between pl-4 pr-4 pt-2 pb-2 border-b border-border">
         <div>
           <h1 className="text-lg font-bold text-foreground">My Issues</h1>
         </div>
@@ -51,7 +63,7 @@ export default function MyIssuesPage() {
             size="xs"
           />
         </div>
-      </div>
+      </div> */}
 
       {/* Main Content */}
       <div className="flex-1">
@@ -63,13 +75,13 @@ export default function MyIssuesPage() {
       </div>
 
       {/* Issue Details Sidebar */}
-      {selectedIssueId && (
+      {/* {selectedIssueId && (
         <IssueDetails 
           key={`issue-details-${selectedIssueId}`}
           issueId={selectedIssueId} 
           onClose={() => setSelectedIssue(null)} 
         />
-      )}
+      )} */}
     </div>
   )
 }
