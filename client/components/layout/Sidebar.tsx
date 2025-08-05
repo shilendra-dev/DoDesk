@@ -1,4 +1,3 @@
-// ... existing code ...
 'use client'
 
 import React, { useState } from 'react'
@@ -6,7 +5,8 @@ import { useRouter, usePathname } from 'next/navigation'
 import { signOut } from '@/lib/auth-client'
 import {
   Inbox, Target, UserPlus,
-  Search, Plus, LogOut
+  Search, Plus, LogOut,
+  Users
 } from 'lucide-react'
 import { useWorkspaceStore } from '@/stores/workspaceStore'
 import { Avatar, AvatarFallback } from '@/components/ui/atoms/avatar'
@@ -120,6 +120,12 @@ export function Sidebar() {
                 label="My issues"
                 isActive={isActive('/myissues')}
                 onClick={() => handleMenuClick('myissues')}
+              />
+              <SidebarItem
+                icon={<Users size={16} />}
+                label="Teams"
+                isActive={isActive('/teams')}
+                onClick={() => handleMenuClick('teams')}
               />
             </nav>
           </div>
