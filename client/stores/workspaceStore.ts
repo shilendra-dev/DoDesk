@@ -10,6 +10,7 @@ interface WorkspaceStoreState {
   hasWorkspaces: boolean
   teams: Team[]
   members: TeamMember[]
+  currentUser: { id: string; email: string; name?: string } | null
   // Actions
   fetchWorkspaces: () => Promise<void>
   fetchTeams: () => Promise<void>
@@ -28,6 +29,7 @@ export const useWorkspaceStore = create<WorkspaceStoreState>((set, get) => ({
   hasWorkspaces: false,
   teams: [],
   members: [],
+  currentUser: null,
 
   fetchWorkspaces: async () => {
     set({ isLoading: true })
@@ -38,6 +40,7 @@ export const useWorkspaceStore = create<WorkspaceStoreState>((set, get) => ({
       ])
       const workspaces: Workspace[] = workspacesResponse.data.workspaces || []
       const lastActiveWorkspaceId = userResponse.data.user.lastActiveWorkspaceId || null
+      const currentUser = userResponse.data.user
 
       // Set current workspace based on last active, or fallback to first
       let current: Workspace | null = null
@@ -54,6 +57,7 @@ export const useWorkspaceStore = create<WorkspaceStoreState>((set, get) => ({
         hasWorkspaces: workspaces.length > 0,
         teams: current?.teams || [],
         members: current?.teams?.flatMap(t => t.members) || [],
+        currentUser,
         isLoading: false
       })
     } catch (error) {
@@ -64,6 +68,7 @@ export const useWorkspaceStore = create<WorkspaceStoreState>((set, get) => ({
         hasWorkspaces: false,
         teams: [],
         members: [],
+        currentUser: null,
         isLoading: false
       })
       console.error('Failed to fetch workspaces:', error)

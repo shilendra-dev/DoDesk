@@ -14,12 +14,14 @@ export function GlobalModals() {
   return (
     <>
     <CreateIssueModal
+      key="create-issue-modal"
       workspaceId={currentWorkspace?.id}
       isOpen={createIssueOpen}
       onClose={closeCreateIssue}
     />
 
     <CreateWorkspaceModal
+      key="create-workspace-modal"
       isOpen={createWorkspaceOpen}
       onClose={closeCreateWorkspace}
     />

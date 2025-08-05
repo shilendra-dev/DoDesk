@@ -16,7 +16,7 @@ export default async function DashboardLayout({
       <main className="flex-1 overflow-y-auto overflow-x-visible">
         {children}
       </main>
-      <GlobalModals />
+      <GlobalModals key="global-modals" />
     </div>
   );
 }
