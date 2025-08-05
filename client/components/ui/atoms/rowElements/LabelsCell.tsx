@@ -32,7 +32,7 @@ const getLabelIcon = (labelType: string) => {
   }
 }
 
-export function LabelsCell({ labels, onLabelsChange }: LabelsCellProps) {
+export function LabelsCell({ labels }: LabelsCellProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
