@@ -76,10 +76,11 @@ export function DataTable<TData, TValue>({
   })
 
   // Group data by state
+  const filteredRows = table.getFilteredRowModel().rows
   const groupedData = React.useMemo(() => {
     const groups: Record<string, TData[]> = {}
     
-    table.getFilteredRowModel().rows.forEach((row) => {
+    filteredRows.forEach((row) => {
       const state = (row.original as Record<string, unknown>)[groupBy] as string || 'unknown'
       if (!groups[state]) {
         groups[state] = []
@@ -88,7 +89,7 @@ export function DataTable<TData, TValue>({
     })
     
     return groups
-  }, [table.getFilteredRowModel().rows, groupBy])
+  }, [filteredRows, groupBy])
 
   return (
     <div className={cn("space-y-4", className)}>

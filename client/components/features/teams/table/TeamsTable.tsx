@@ -8,17 +8,17 @@ import { TeamsColumns } from './TeamsColumn'
 interface TeamsTableProps {
   teams: Team[]
   isLoading?: boolean
-  onEditTeam?: (team: Team) => void
-  onDeleteTeam?: (team: Team) => void
-  onManageMembers?: (team: Team) => void
+  _onEditTeam?: (team: Team) => void
+  _onDeleteTeam?: (team: Team) => void
+  _onManageMembers?: (team: Team) => void
 }
 
 export function TeamsTable({ 
   teams, 
   isLoading = false,
-  onEditTeam,
-  onDeleteTeam,
-  onManageMembers
+  _onEditTeam,
+  _onDeleteTeam,
+  _onManageMembers
 }: TeamsTableProps) {
   if (isLoading) {
     return (
