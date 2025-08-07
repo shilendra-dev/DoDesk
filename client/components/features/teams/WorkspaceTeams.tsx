@@ -23,9 +23,9 @@ export function WorkspaceTeams({
     <TeamsTable
       teams={teams}
       isLoading={isLoading}
-      onEditTeam={onEditTeam}
-      onDeleteTeam={onDeleteTeam}
-      onManageMembers={onManageMembers}
+      _onEditTeam={onEditTeam}
+      _onDeleteTeam={onDeleteTeam}
+      _onManageMembers={onManageMembers}
     />
   )
 }
