@@ -97,7 +97,7 @@ export const useWorkspaceStore = create<WorkspaceStoreState>((set, get) => ({
     const currentWorkspace = get().currentWorkspace
     if (!currentWorkspace) return
     try {
-      const res = await api.get(`/api/workspace/${currentWorkspace.id}/members`)
+      const res = await api.get(`/api/workspace/${currentWorkspace.id}/members/unique`)
       // Transform the backend response to match the expected TeamMember structure
       const backendMembers = res.data.data?.members || []
       const transformedMembers = backendMembers.map((member: { id: string; user_id: string; name?: string; email: string }) => ({

@@ -262,6 +262,51 @@ const getWorkspaceMembers: ControllerFunction<GetWorkspaceMembersResponse> = asy
 };
 createApi().get("/workspace/:workspace_id/members").authSecure(getWorkspaceMembers);
 
+// GET UNIQUE WORKSPACE MEMBERS (for assignee selection)
+const getUniqueWorkspaceMembers: ControllerFunction<GetWorkspaceMembersResponse> = async (req) => {
+  const { workspace_id } = (req as WorkspaceRequest).params;
+  try {
+    // Get unique users who are members of any team in this workspace
+    const uniqueUsers = await prisma.user.findMany({
+      where: {
+        teamMemberships: {
+          some: {
+            team: {
+              workspaceId: workspace_id
+            }
+          }
+        }
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true
+      },
+      distinct: ['id']
+    });
+
+    const transformedMembers = uniqueUsers.map(user => ({
+      id: user.id, // Use user.id as the member id for consistency
+      user_id: user.id,
+      name: user.name,
+      email: user.email
+    }));
+
+    return {
+      status: 200,
+      message: "Unique workspace members fetched successfully",
+      data: { members: transformedMembers }
+    };
+  } catch (error) {
+    return {
+      status: 500,
+      message: "Failed to fetch unique workspace members",
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+};
+createApi().get("/workspace/:workspace_id/members/unique").authSecure(getUniqueWorkspaceMembers);
+
 // SET LAST ACTIVE WORKSPACE
 const setLastActiveWorkspace: ControllerFunction<any> = async (req) => {
   const userId = (req as AuthenticatedRequest).user.id;
