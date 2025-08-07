@@ -7,7 +7,6 @@ import * as z from "zod"
 import { Button } from "@/components/ui/atoms/button"
 import { Input } from "@/components/ui/atoms/input"
 import { Textarea } from "@/components/ui/atoms/textarea"
-import { Label } from "@/components/ui/atoms/label"
 import {
   Dialog,
   DialogContent,
@@ -28,12 +27,23 @@ import {
 import { Plus } from "lucide-react"
 import { useWorkspaceStore } from "@/stores/workspaceStore"
 import api from "@/lib/axios"
+import { toast } from "react-hot-toast"
 
-const createTeamSchema = z.object({
+// Type for API error response
+interface ApiError {
+  response?: {
+    data?: {
+      message?: string
+    }
+  }
+  message?: string
+}
+
+export const createTeamSchema = z.object({
   name: z.string().min(1, "Team name is required").max(50, "Team name must be less than 50 characters"),
   key: z.string().min(1, "Team key is required").max(10, "Team key must be less than 10 characters").regex(/^[A-Z0-9]+$/, "Team key must be uppercase letters and numbers only"),
   description: z.string().optional(),
-  color: z.string().default("#3B82F6"),
+  color: z.string().optional(),
 })
 
 type CreateTeamFormData = z.infer<typeof createTeamSchema>
@@ -59,29 +69,45 @@ export function CreateTeamDialog({ onTeamCreated }: CreateTeamDialogProps) {
   })
 
   const onSubmit = async (data: CreateTeamFormData) => {
-    if (!currentWorkspace) return
+    if (!currentWorkspace) {
+      toast.error("No workspace selected")
+      return
+    }
 
     setIsLoading(true)
     try {
-      await api.post(`/api/workspace/${currentWorkspace.id}/teams`, {
+      const response = await api.post(`/api/workspace/${currentWorkspace.id}/teams`, {
         name: data.name,
         key: data.key,
-        description: data.description,
-        color: data.color,
+        description: data.description || "",
+        color: data.color || "#3B82F6",
       })
 
-      // Refresh teams list
-      await fetchTeams()
-      
-      // Close dialog and reset form
-      setOpen(false)
-      form.reset()
-      
-      // Call callback if provided
-      onTeamCreated?.()
-    } catch (error) {
+      if (response.data.team) {
+        // Refresh teams list
+        await fetchTeams()
+        
+        // Close dialog and reset form
+        setOpen(false)
+        form.reset()
+        
+        toast.success("Team created successfully!")
+        
+        // Call callback if provided
+        onTeamCreated?.()
+      } else {
+        throw new Error("No team data received from server")
+      }
+    } catch (error: unknown) {
       console.error("Failed to create team:", error)
-      // You might want to show an error toast here
+      
+      // Show specific error message
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : typeof error === 'object' && error !== null && 'response' in error
+        ? (error as ApiError).response?.data?.message || "Failed to create team"
+        : "Failed to create team"
+      toast.error(errorMessage)
     } finally {
       setIsLoading(false)
     }
@@ -197,4 +223,4 @@ export function CreateTeamDialog({ onTeamCreated }: CreateTeamDialogProps) {
       </DialogContent>
     </Dialog>
   )
-} 
+}
