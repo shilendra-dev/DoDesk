@@ -206,6 +206,7 @@ export function CreateTeamDialog({ onTeamCreated }: CreateTeamDialogProps) {
             />
             
             <DialogFooter>
+            
               <Button 
                 type="button" 
                 variant="outline" 
