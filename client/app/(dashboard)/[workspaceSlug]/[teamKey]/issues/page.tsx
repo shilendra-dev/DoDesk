@@ -23,7 +23,7 @@ interface TeamIssuesPageProps {
 export default function TeamIssuesPage({ params }: TeamIssuesPageProps) {
   const { teamKey } = use(params)
   const { currentWorkspace, isLoading } = useWorkspaceStore()
-  const { issues, loadingStates, selectedIssueId, fetchIssuesByWorkspace, setSelectedIssue } = useIssueStore()
+  const { issues, loadingStates, selectedIssueId, fetchIssuesByTeam, setSelectedIssue } = useIssueStore()
 
   // Local UI state for view and create modal
   const [view, setView] = useState<'list' | 'board'>('list')
@@ -34,10 +34,10 @@ export default function TeamIssuesPage({ params }: TeamIssuesPageProps) {
 
   // Fetch issues when workspace changes
   useEffect(() => {
-    if (currentWorkspace?.id) {
-      fetchIssuesByWorkspace(currentWorkspace.id)
+    if (currentTeam?.id) {
+      fetchIssuesByTeam(currentTeam?.id || '')
     }
-  }, [currentWorkspace?.id, fetchIssuesByWorkspace])
+  }, [currentTeam?.id, fetchIssuesByTeam])
 
   // If team doesn't exist, show error or redirect
   if (!currentTeam) {
@@ -50,7 +50,7 @@ export default function TeamIssuesPage({ params }: TeamIssuesPageProps) {
     )
   }
 
-  if (isLoading || loadingStates.fetchIssuesByWorkspace) {
+  if (isLoading || loadingStates.fetchIssuesByTeam) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <LoadingSpinner size="lg" />
@@ -75,7 +75,7 @@ export default function TeamIssuesPage({ params }: TeamIssuesPageProps) {
       {/* Main Content */}
       <div className="flex-1">
         {view === 'list' ? (
-          <IssueListView issues={Object.values(issues)} isLoading={loadingStates.fetchIssuesByWorkspace} />
+          <IssueListView issues={Object.values(issues)} isLoading={loadingStates.fetchIssuesByTeam} />
         ) : (
           <IssueBoardView issues={Object.values(issues)} />
         )}

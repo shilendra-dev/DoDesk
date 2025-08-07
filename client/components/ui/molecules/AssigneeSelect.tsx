@@ -2,14 +2,10 @@
 
 import React from 'react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/atoms/select'
-
-interface Member {
-  userId: string
-  user: { name?: string; email: string }
-}
+import { TeamMember } from '@/types/workspace'
 
 interface AssigneeSelectProps {
-  members: Member[]
+  members: TeamMember[]
   value: string | null
   onChange: (assigneeId: string | null) => void
 }
