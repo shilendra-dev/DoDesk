@@ -56,7 +56,7 @@ export const useWorkspaceStore = create<WorkspaceStoreState>((set, get) => ({
         currentWorkspace: current,
         hasWorkspaces: workspaces.length > 0,
         teams: current?.teams || [],
-        members: current?.teams?.flatMap(t => t.members) || [],
+        members: [], // Don't set members here - use fetchMembers() instead
         currentUser,
         isLoading: false
       })
@@ -81,14 +81,14 @@ export const useWorkspaceStore = create<WorkspaceStoreState>((set, get) => ({
     try {
       const res = await api.get(`/api/workspace/${currentWorkspace.id}/teams`)
       const teams = res.data.teams || []
-      const members = teams.flatMap((t: Team) => t.members || [])
+      // Don't set members here - use fetchMembers() instead to avoid duplicates
     
       set({
         teams,
-        members,
+        // Don't set members - let fetchMembers() handle it
       })
     } catch (error) {
-      set({ teams: [], members: [] })
+      set({ teams: [] })
       console.error('Failed to fetch teams:', error)
     }
   },
@@ -126,7 +126,7 @@ export const useWorkspaceStore = create<WorkspaceStoreState>((set, get) => ({
           currentWorkspace: workspace,
           lastActiveWorkspaceId: workspace.id,
           teams: workspace.teams || [],
-          members: workspace.teams?.flatMap(t => t.members) || []
+          members: [] // Clear members to avoid duplicates, let components fetch unique members
         })
       } catch (error) {
         console.error('Failed to switch workspace:', error)
@@ -144,13 +144,11 @@ export const useWorkspaceStore = create<WorkspaceStoreState>((set, get) => ({
       })
       
       // 2. Set as current workspace
-      const initialMembers = workspace.teams?.flatMap(t => t.members) || []
-      
       set({
         currentWorkspace: workspace,
         lastActiveWorkspaceId: workspace.id,
         teams: workspace.teams || [],
-        members: initialMembers
+        members: [] // Don't set members here - use fetchMembers() instead
       })
       
       // 3. Update user's last active workspace
@@ -184,7 +182,7 @@ export const useWorkspaceStore = create<WorkspaceStoreState>((set, get) => ({
     set({
       currentWorkspace: workspace || null,
       teams: workspace?.teams || [],
-      members: workspace?.teams?.flatMap(t => t.members) || []
+      members: [] // Clear members to avoid duplicates, let components fetch unique members
     })
   }
 }))
