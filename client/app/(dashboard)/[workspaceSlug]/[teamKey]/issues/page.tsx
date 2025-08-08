@@ -32,14 +32,15 @@ export default function TeamIssuesPage({ params }: TeamIssuesPageProps) {
   // Find the current team from the teams array in the store
   const currentTeam = teams.find(team => team.key === teamKey)
 
-  const { fetchTeams } = useWorkspaceStore()
+  const { fetchTeams, fetchMembers } = useWorkspaceStore()
 
-  // Fetch teams when component mounts to ensure we have latest data
+  // Fetch teams and members when component mounts to ensure we have latest data
   useEffect(() => {
     if (currentWorkspace?.id) {
       fetchTeams()
+      fetchMembers()
     }
-  }, [currentWorkspace?.id, fetchTeams])
+  }, [currentWorkspace?.id, fetchTeams, fetchMembers])
 
   // Fetch issues when workspace changes
   useEffect(() => {

@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import { Button } from "@/components/ui/atoms/button";
 import { Input } from "@/components/ui/atoms/input";
-import { Label } from "@/components/ui/atoms/label";
-import { Textarea } from "@/components/ui/atoms/textarea";
 import {
   Select,
   SelectContent,
@@ -15,9 +14,18 @@ import {
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/organisms/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/molecules/form";
 
 import { CreateIssueData } from "@/types/issue";
 import { useIssueStore } from "@/stores/issueStore";
@@ -31,7 +39,7 @@ import {
   Flag,
   Calendar,
   CheckSquare,
-  FileText,
+  Type,
   UserCheck,
 } from "lucide-react";
 
@@ -49,51 +57,46 @@ export function CreateIssueModal({
   const { createIssue } = useIssueStore();
   const { teams, members } = useWorkspaceStore();
 
-
-
-
-  const [formData, setFormData] = useState<CreateIssueData>({
-    title: "",
-    description: "",
-    state: "backlog",
-    priority: 0,
-    workspaceId: workspaceId ?? "",
-    teamId: teams[0]?.id ?? "",
-    assigneeId: null,
-    dueDate: undefined,
-  });
-
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const form = useForm<CreateIssueData>({
+    defaultValues: {
+      title: "",
+      description: "",
+      state: "backlog",
+      priority: 0,
+      workspaceId: workspaceId ?? "",
+      teamId: teams[0]?.id ?? "",
+      assigneeId: null,
+      dueDate: undefined,
+    },
+  });
+
+  // Watch form values for validation
+  const watchedTitle = useWatch({ control: form.control, name: "title" });
+  const watchedTeamId = useWatch({ control: form.control, name: "teamId" });
+
   // Update default selected team
   useEffect(() => {
-    if (teams.length > 0 && !formData.teamId) {
-      setFormData((prev) => ({ ...prev, teamId: teams[0].id }));
+    if (teams.length > 0 && !form.getValues("teamId")) {
+      form.setValue("teamId", teams[0].id);
     }
-  }, [teams, formData.teamId]);
+  }, [teams, form]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: CreateIssueData) => {
     setError(null);
 
-    if (!workspaceId || !formData.title.trim() || !formData.teamId) {
+    if (!workspaceId || !data.title.trim() || !data.teamId) {
       setError("Title and Team are required.");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await createIssue(formData);
+      await createIssue(data);
       onClose();
-      setFormData({
-        title: "",
-        description: "",
-        state: "backlog",
-        priority: 0,
-        workspaceId: workspaceId ?? "",
-        teamId: teams[0]?.id ?? "",
-      });
+      form.reset();
     } catch (err) {
       setError("Error creating issue.");
       console.error("Error creating issue:", err);
@@ -102,189 +105,196 @@ export function CreateIssueModal({
     }
   };
 
-  const handleInputChange = (
-    field: keyof CreateIssueData,
-    value: string | number
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-2xl p-0 overflow-hidden rounded-lg">
-        {/* Header */}
-        <DialogHeader className="bg-primary/5 px-6 py-4 border-b border-border">
-          <DialogTitle className="flex items-center gap-2 text-2xl font-semibold">
-            <FileText className="w-6 h-6 text-primary" />
-            Create New Issue
-          </DialogTitle>
+      <DialogContent className="sm:max-w-[500px]">
+        <DialogHeader>
+          <DialogTitle>Create New Issue</DialogTitle>
+          <DialogDescription>
+            Create a new issue to track tasks, bugs, or feature requests for your team.
+          </DialogDescription>
         </DialogHeader>
 
-        {/* Form Section */}
-        <form onSubmit={handleSubmit} className="space-y-6 px-6 py-2">
-          {/* Title & Team */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="title" className="flex items-center gap-2 text-sm">
-                <FileText className="w-4 h-4 text-muted-foreground" />
-                Title *
-              </Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => handleInputChange("title", e.target.value)}
-                placeholder="Enter issue title"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="team" className="flex items-center gap-2 text-sm">
-                <Users className="w-4 h-4 text-muted-foreground" />
-                Team *
-              </Label>
-              <Select
-                value={formData.teamId}
-                onValueChange={(value) => handleInputChange("teamId", value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a team" />
-                </SelectTrigger>
-                <SelectContent>
-                  {teams.map((team) => (
-                    <SelectItem key={team.id} value={team.id}>
-                      {team.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Description */}
-          <div className="space-y-2">
-            <Label htmlFor="description" className="flex items-center gap-2 text-sm">
-              <FileText className="w-4 h-4 text-muted-foreground" />
-              Description
-            </Label>
-            <Textarea
-              id="description"
-              rows={4}
-              value={formData.description}
-              onChange={(e) =>
-                handleInputChange("description", e.target.value)
-              }
-              placeholder="Describe the issue in detail"
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+            {/* Title */}
+            <FormField
+              control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2">
+                    <Type className="w-4 h-4 text-muted-foreground" />
+                    Title *
+                  </FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter issue title" {...field} />
+                  </FormControl>
+                </FormItem>
+              )}
             />
-          </div>
 
-          {/* Assignee, Date, Priority */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <Label htmlFor="assignee" className="flex items-center gap-2 text-sm">
-                <UserCheck className="w-4 h-4 text-muted-foreground" />
-                Assignee
-              </Label>
-              <AssigneeSelect
-                members={members}
-                value={formData.assigneeId ?? ""}
-                onChange={(assigneeId) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    assigneeId: assigneeId ?? "",
-                  }))
-                }
+            {/* Team */}
+            <FormField
+              control={form.control}
+              name="teamId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2">
+                    <Users className="w-4 h-4 text-muted-foreground" />
+                    Team *
+                  </FormLabel>
+                  <FormControl>
+                    <Select
+                      value={field.value}
+                      onValueChange={field.onChange}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a team" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {teams.map((team) => (
+                          <SelectItem key={team.id} value={team.id}>
+                            {team.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            {/* Assignee, Priority, State */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="assigneeId"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <UserCheck className="w-4 h-4 text-muted-foreground" />
+                      Assignee
+                    </FormLabel>
+                    <FormControl>
+                      <AssigneeSelect
+                        members={members}
+                        value={field.value ?? ""}
+                        onChange={(assigneeId) => field.onChange(assigneeId)}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Flag className="w-4 h-4 text-muted-foreground" />
+                      Priority
+                    </FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value?.toString() ?? "0"}
+                        onValueChange={(value) => field.onChange(Number(value))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a priority" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">Urgent</SelectItem>
+                          <SelectItem value="2">High</SelectItem>
+                          <SelectItem value="3">Medium</SelectItem>
+                          <SelectItem value="4">Low</SelectItem>
+                          <SelectItem value="0">None</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="state"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <CheckSquare className="w-4 h-4 text-muted-foreground" />
+                      State
+                    </FormLabel>
+                    <FormControl>
+                      <Select
+                        value={field.value}
+                        onValueChange={field.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select state" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="backlog">Backlog</SelectItem>
+                          <SelectItem value="todo">To Do</SelectItem>
+                          <SelectItem value="in_progress">In Progress</SelectItem>
+                          <SelectItem value="done">Done</SelectItem>
+                          <SelectItem value="canceled">Canceled</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FormControl>
+                  </FormItem>
+                )}
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="priority" className="flex items-center gap-2 text-sm">
-                <Flag className="w-4 h-4 text-muted-foreground" />
-                Priority
-              </Label>
-              <Select
-                value={formData.priority?.toString() ?? "0"}
-                onValueChange={(value) =>
-                  handleInputChange("priority", Number(value))
+            {/* Due Date */}
+            <FormField
+              control={form.control}
+              name="dueDate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-muted-foreground" />
+                    Due Date
+                  </FormLabel>
+                  <FormControl>
+                    <DueDatePicker
+                      value={field.value}
+                      onChange={field.onChange}
+                    />
+                  </FormControl>
+                </FormItem>
+              )}
+            />
+
+            {/* Error Message */}
+            {error && (
+              <p className="text-sm text-red-500 font-medium">{error}</p>
+            )}
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={
+                  isSubmitting || 
+                  !watchedTitle?.trim() || 
+                  !watchedTeamId?.trim()
                 }
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a priority" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1">Urgent</SelectItem>
-                  <SelectItem value="2">High</SelectItem>
-                  <SelectItem value="3">Medium</SelectItem>
-                  <SelectItem value="4">Low</SelectItem>
-                  <SelectItem value="0">None</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* State */}
-          <div className="space-y-2 md:max-w-sm">
-            <Label htmlFor="state" className="flex items-center gap-2 text-sm">
-              <CheckSquare className="w-4 h-4 text-muted-foreground" />
-              State
-            </Label>
-            <Select
-              value={formData.state}
-              onValueChange={(value) => handleInputChange("state", value)}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select state" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="backlog">Backlog</SelectItem>
-                <SelectItem value="todo">To Do</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="done">Done</SelectItem>
-                <SelectItem value="canceled">Canceled</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          </div>
-
-          {/* Due Date */}
-          <div className="space-y-2 md:max-w-sm">
-              <Label className="flex items-center gap-2 text-sm">
-                <Calendar className="w-4 h-4 text-muted-foreground" />
-                Due Date
-              </Label>
-              <DueDatePicker
-                value={formData.dueDate}
-                onChange={(dueDate) =>
-                  setFormData((prev) => ({ ...prev, dueDate }))
-                }
-              />
-          </div>
-
-          {/* Error Message */}
-          {error && (
-            <p className="text-sm text-red-500 font-medium">{error}</p>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-3 pt-4 pb-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={
-                isSubmitting || !formData.title.trim() || !formData.teamId
-              }
-            >
-              {isSubmitting ? "Creating..." : "Create Issue"}
-            </Button>
-          </div>
-        </form>
+                {isSubmitting ? "Creating..." : "Create Issue"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
