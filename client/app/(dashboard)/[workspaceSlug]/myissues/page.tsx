@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useWorkspaceStore } from '@/stores/workspaceStore'
 import { useIssueStore } from '@/stores/issueStore'
 import { IssueListView } from '@/components/features/issues/IssueListView'
@@ -12,10 +12,12 @@ import { LoadingSpinner } from '@/components/ui/atoms/loading-spinner'
 import { ViewHeader } from '@/components/ui/organisms/ViewHeader'
 import { User } from 'lucide-react'
 
+
 export default function MyIssuesPage() {
   const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace)
+  const currentUser = useWorkspaceStore((state) => state.currentUser)
   const isLoading = useWorkspaceStore((state) => state.isLoading)
-  const { issues, loadingStates, fetchIssuesByWorkspace } = useIssueStore()
+  const {issues, loadingStates, fetchIssuesByWorkspace } = useIssueStore()
 
   // Local UI state for view and create modal
   const [view, setView] = useState<'list' | 'board'>('list')
@@ -27,6 +29,11 @@ export default function MyIssuesPage() {
       fetchIssuesByWorkspace(currentWorkspace.id)
     }
   }, [currentWorkspace?.id, fetchIssuesByWorkspace])
+
+  const myIssues = useMemo(() => {
+    if (!currentUser?.id) return []
+    return Object.values(issues).filter(issue => issue.assigneeId === currentUser.id)
+  }, [currentUser?.id, issues])
 
   if (isLoading || loadingStates.fetchIssuesByWorkspace) {
     return (
@@ -68,9 +75,9 @@ export default function MyIssuesPage() {
       {/* Main Content */}
       <div className="flex-1">
         {view === 'list' ? (
-          <IssueListView issues={Object.values(issues)} isLoading={loadingStates.fetchIssuesByWorkspace} />
+          <IssueListView issues={myIssues} isLoading={loadingStates.fetchIssuesByWorkspace} />
         ) : (
-          <IssueBoardView issues={Object.values(issues)} />
+          <IssueBoardView issues={myIssues} />
         )}
       </div>
 
