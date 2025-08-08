@@ -27,7 +27,7 @@ export function Sidebar() {
   const teams = useWorkspaceStore((state) => state.teams)
   const { toggleTheme } = useTheme()
   const { data: session } = useSession()
-  const { openCreateIssue } = useModalStore()
+  const { openCreateIssue, openInviteMember } = useModalStore()
   // State for collapsible sections
   const [expandedSections, setExpandedSections] = useState({
     workspace: true,
@@ -184,7 +184,7 @@ export function Sidebar() {
               <SidebarItem
                 icon={<UserPlus size={16} />}
                 label="Invite people"
-                onClick={() => toast.error('This feature is coming soon')}
+                onClick={openInviteMember}
               />
             </nav>
           </CollapsibleSection>

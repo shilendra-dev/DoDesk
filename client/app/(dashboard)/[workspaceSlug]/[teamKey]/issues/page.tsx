@@ -22,15 +22,24 @@ interface TeamIssuesPageProps {
 
 export default function TeamIssuesPage({ params }: TeamIssuesPageProps) {
   const { teamKey } = use(params)
-  const { currentWorkspace, isLoading } = useWorkspaceStore()
+  const { currentWorkspace, teams, isLoading } = useWorkspaceStore()
   const { issues, loadingStates, selectedIssueId, fetchIssuesByTeam, setSelectedIssue } = useIssueStore()
 
   // Local UI state for view and create modal
   const [view, setView] = useState<'list' | 'board'>('list')
   const [showCreateIssue, setShowCreateIssue] = useState(false)
 
-  // Find the current team
-  const currentTeam = currentWorkspace?.teams.find(team => team.key === teamKey)
+  // Find the current team from the teams array in the store
+  const currentTeam = teams.find(team => team.key === teamKey)
+
+  const { fetchTeams } = useWorkspaceStore()
+
+  // Fetch teams when component mounts to ensure we have latest data
+  useEffect(() => {
+    if (currentWorkspace?.id) {
+      fetchTeams()
+    }
+  }, [currentWorkspace?.id, fetchTeams])
 
   // Fetch issues when workspace changes
   useEffect(() => {

@@ -4,8 +4,11 @@ import React from 'react'
 import { WorkspaceTeams } from '@/components/features/teams/WorkspaceTeams'
 import { CreateTeamDialog } from '@/components/features/teams/CreateTeamDialog'
 import { Team } from '@/types/workspace'
+import { useWorkspaceStore } from '@/stores/workspaceStore'
 
 export default function TeamsPage() {
+  const { fetchTeams } = useWorkspaceStore()
+
   const handleEditTeam = (team: Team) => {
     // TODO: Implement edit team functionality
     console.log('Edit team:', team)
@@ -21,13 +24,17 @@ export default function TeamsPage() {
     console.log('Manage members:', team)
   }
 
+  const handleTeamCreated = () => {
+    fetchTeams()
+  }
+
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
       <div className="flex items-center justify-between pl-4 pr-4 pt-2 pb-2 border-b border-border">
         <h1 className="text-lg font-bold text-foreground">Teams</h1>
         
-        <CreateTeamDialog />
+        <CreateTeamDialog onTeamCreated={handleTeamCreated} />
       </div>
       
       {/* Main Content */}
