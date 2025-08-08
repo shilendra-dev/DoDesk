@@ -83,7 +83,7 @@ export function CreateTeamDialog({ onTeamCreated }: CreateTeamDialogProps) {
         color: data.color || "#3B82F6",
       })
 
-      if (response.data.team) {
+      if (response.data.data?.team) {
         // Refresh teams list
         await fetchTeams()
         
