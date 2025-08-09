@@ -7,11 +7,10 @@ interface KeyCellProps {
 }
 
 export function KeyCell({ issue }: KeyCellProps) {
-  const key = `ISS-${issue.id.slice(-2)}`
-  
+  const issueKey = issue.issueKey;
   return (
     <span className="text-[13px] font-mono text-muted-foreground">
-      {key}
+      {issueKey}
     </span>
   )
 }
