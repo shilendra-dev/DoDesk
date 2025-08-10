@@ -11,9 +11,16 @@ import { IssueBoardView } from '@/components/features/issues/IssueBoardView'
 import { LoadingSpinner } from '@/components/ui/atoms/loading-spinner'
 import { ViewHeader } from '@/components/ui/organisms/ViewHeader'
 import { User } from 'lucide-react'
+import { use } from 'react'
 
+interface MyIssuesPageProps {
+  params: Promise<{
+    workspaceSlug: string
+  }>
+}
 
-export default function MyIssuesPage() {
+export default function MyIssuesPage({ params }: MyIssuesPageProps) {
+  const { workspaceSlug } = use(params)
   const currentWorkspace = useWorkspaceStore((state) => state.currentWorkspace)
   const currentUser = useWorkspaceStore((state) => state.currentUser)
   const isLoading = useWorkspaceStore((state) => state.isLoading)
@@ -75,9 +82,9 @@ export default function MyIssuesPage() {
       {/* Main Content */}
       <div className="flex-1">
         {view === 'list' ? (
-          <IssueListView issues={myIssues} isLoading={loadingStates.fetchIssuesByWorkspace} />
+          <IssueListView issues={myIssues} isLoading={loadingStates.fetchIssuesByWorkspace} workspaceSlug={workspaceSlug} />
         ) : (
-          <IssueBoardView issues={myIssues} />
+          <IssueBoardView issues={myIssues} workspaceSlug={workspaceSlug} />
         )}
       </div>
 

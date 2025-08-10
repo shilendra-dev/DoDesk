@@ -95,3 +95,25 @@ export interface DeleteIssueResponse {
     issueKey: string;
   };
 }
+
+export interface GetIssueByIdResponse {
+    issue: Issue & {
+      creator: {
+        id: string;
+        name: string | null;
+        email: string;
+      };
+      assignee?: {
+        id: string;
+        name: string | null;
+        email: string;
+      };
+      team: {
+        key: string;
+        name: string;
+        color: string;
+      };
+      issueKey: string;
+      commentCount: number;
+    };
+}

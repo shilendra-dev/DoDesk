@@ -5,13 +5,17 @@ import { flexRender, Row } from "@tanstack/react-table"
 
 interface IssueRowProps<TData> {
   row: Row<TData>
+  onRowClick?: (row: TData) => void
 }
 
-export function IssueRow<TData>({ row }: IssueRowProps<TData>) {
+export function IssueRow<TData>({ row, onRowClick }: IssueRowProps<TData>) {
   const cells = row.getVisibleCells()
   
   return (
-    <TableRow className="hover:bg-muted/50 transition-colors border-0 flex items-center">
+    <TableRow 
+      className="hover:bg-muted/50 transition-colors border-0 flex items-center"
+      onClick={() => onRowClick?.(row.original)}
+    >
       {/* Priority */}
       <TableCell className="px-4 py-2 w-12 flex-shrink-0">
         {flexRender(cells[0].column.columnDef.cell, cells[0].getContext())}

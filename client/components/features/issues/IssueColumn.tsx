@@ -14,9 +14,10 @@ interface IssueColumnProps {
     color: string
   }
   issues: Issue[]
+  workspaceSlug: string
 }
 
-export function IssueColumn({ column, issues }: IssueColumnProps) {
+export function IssueColumn({ column, issues, workspaceSlug }: IssueColumnProps) {
   const getColumnColor = (color: string) => {
     switch (color) {
       case 'yellow': return 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border-orange-500/20'
@@ -63,7 +64,7 @@ export function IssueColumn({ column, issues }: IssueColumnProps) {
                       snapshot.isDragging && "opacity-50"
                     )}
                   >
-                    <IssueCard issue={issue} />
+                    <IssueCard issue={issue} workspaceSlug={workspaceSlug} />
                   </div>
                 )}
               </Draggable>
