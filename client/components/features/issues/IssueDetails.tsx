@@ -246,7 +246,7 @@ export function IssueDetails() {
         {/* Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6 relative pr-6">
             {/* Description & Notes */}
             <div className="space-y-3">
               <IssueNotes
@@ -254,6 +254,9 @@ export function IssueDetails() {
                 onUpdate={handleNotesUpdate}
               />
             </div>
+
+            {/* Horizontal Ruler */}
+            <div className="border-t border-border/70 my-6"></div>
 
             {/* Comments Section */}
             <div className="space-y-4">
@@ -285,6 +288,11 @@ export function IssueDetails() {
                   No comments yet. Be the first to comment!
                 </div>
               </div>
+            </div>
+
+            {/* Vertical Ruler - positioned within main content */}
+            <div className="hidden lg:block absolute right-0 top-0 bottom-0">
+              <div className="w-px h-full bg-border/70 -mr-3"></div>
             </div>
           </div>
 
