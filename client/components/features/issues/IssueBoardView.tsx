@@ -9,6 +9,7 @@ import { Issue } from '@/types/issue'
 
 interface IssueBoardViewProps {
   issues: Issue[]
+  workspaceSlug: string
 }
 
 // New architecture: use canonical state values from backend/types
@@ -40,7 +41,7 @@ const COLUMNS = [
   }
 ] as const
 
-export function IssueBoardView({ issues }: IssueBoardViewProps) {
+export function IssueBoardView({ issues, workspaceSlug }: IssueBoardViewProps) {
   const { updateIssue } = useIssueStore()
 
   // Group filtered issues by state (using canonical state values)
@@ -91,6 +92,7 @@ export function IssueBoardView({ issues }: IssueBoardViewProps) {
                 <IssueColumn
                   column={column}
                   issues={groupedIssues[column.id] || []}
+                  workspaceSlug={workspaceSlug}
                 />
               </div>
             ))}

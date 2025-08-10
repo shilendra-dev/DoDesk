@@ -34,6 +34,7 @@ interface DataTableProps<TData, TValue> {
   emptyMessage?: string
   showRowSelection?: boolean
   groupBy?: string
+  onRowClick?: (row: TData) => void
 }
 
 // State order for grouping
@@ -55,7 +56,8 @@ export function DataTable<TData, TValue>({
   showPagination = true,
   className,
   emptyMessage = "No data found",
-  groupBy = "state"
+  groupBy = "state",
+  onRowClick
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -137,7 +139,7 @@ export function DataTable<TData, TValue>({
                       if (!row) return null
                       
                       return (
-                        <IssueRow<TData> key={row.id} row={row} />
+                        <IssueRow<TData> key={row.id} row={row} onRowClick={onRowClick} />
                       )
                     })}
                   </React.Fragment>

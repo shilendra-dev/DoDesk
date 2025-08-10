@@ -1,6 +1,7 @@
 'use client'
 
 import React from 'react'
+import { useRouter } from 'next/navigation'
 import { Issue } from '@/types/issue'
 import { Badge } from '@/components/ui/atoms/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/atoms/avatar'
@@ -11,10 +12,12 @@ import { ClientDate } from '@/components/ui/atoms/client-date'
 
 interface IssueCardProps {
   issue: Issue
+  workspaceSlug: string
 }
 
-export function IssueCard({ issue }: IssueCardProps) {
+export function IssueCard({ issue, workspaceSlug }: IssueCardProps) {
   const { setSelectedIssue } = useIssueStore()
+  const router = useRouter()
 
   // --- Priority Badge Color ---
   const getPriorityColor = (priority: number) => {
@@ -31,6 +34,7 @@ export function IssueCard({ issue }: IssueCardProps) {
   // --- Card Click Handler ---
   const handleClick = () => {
     setSelectedIssue(issue.id)
+    router.push(`/${workspaceSlug}/issue/${issue.issueKey}`)
   }
 
   // --- Render ---

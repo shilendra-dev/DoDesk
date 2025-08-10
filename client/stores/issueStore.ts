@@ -33,6 +33,7 @@ interface IssueActions {
   getIssuesByState: (state: string) => Issue[]
   getIssuesByAssignee: (assigneeId: string) => Issue[]
   getIssuesArray: () => Issue[]
+  fetchIssueById: (issueId: string) => Promise<Issue | null>
 }
 
 type IssueStore = IssueState & IssueActions
@@ -87,6 +88,35 @@ export const useIssueStore = create<IssueStore>()(
           }))
           console.error('Failed to fetch issues:', error)
           toast.error('Failed to fetch issues')
+        }
+      },
+
+      // Fetch issue by id
+      fetchIssueById: async (issueId: string) => {
+        const operationId = 'fetchIssueById'
+        set(state => ({
+          loadingStates: { ...state.loadingStates, [operationId]: true },
+          errors: { ...state.errors, [operationId]: '' }
+        }))
+        try {
+          const issue = await issueService.getIssueById(issueId)
+          if (issue) {
+            set(state => ({
+              issues: { ...state.issues, [issue.id]: issue },
+              issueIds: state.issueIds.includes(issue.id) ? state.issueIds : [...state.issueIds, issue.id],
+              loadingStates: { ...state.loadingStates, [operationId]: false }
+            }))
+            return issue
+          }
+          return null
+        } catch (error) {
+          set(state => ({
+            errors: { ...state.errors, [operationId]: 'Failed to fetch issue' },
+            loadingStates: { ...state.loadingStates, [operationId]: false }
+          }))
+          console.error('Failed to fetch issue:', error)
+          toast.error('Failed to fetch issue')
+          return null
         }
       },
 

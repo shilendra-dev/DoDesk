@@ -8,6 +8,12 @@ export const issueService = {
     return response.data.issues || []
   },
 
+  // Get an issue by id
+  getIssueById: async (issueId: string): Promise<Issue> => {
+    const response = await api.get(`/api/issues/${issueId}`)
+    return response.data.issue
+  },
+
   // Get all issues for a team
   getIssuesByTeam: async (teamId: string): Promise<Issue[]> => {
     const response = await api.get(`/api/team/${teamId}/issues`)

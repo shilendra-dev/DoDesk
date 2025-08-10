@@ -8,9 +8,10 @@ import { IssuesTableSkeleton } from '@/components/features/issues/IssuesTableSke
 interface IssueListViewProps {
   issues: Issue[]
   isLoading?: boolean
+  workspaceSlug: string
 }
 
-export function IssueListView({ issues, isLoading = false }: IssueListViewProps) {
+export function IssueListView({ issues, isLoading = false, workspaceSlug }: IssueListViewProps) {
 
   return (
     <div className="flex flex-col h-full">
@@ -20,7 +21,7 @@ export function IssueListView({ issues, isLoading = false }: IssueListViewProps)
         {isLoading ? (
           <IssuesTableSkeleton />
         ) : (
-          <IssueTable issues={issues} />
+          <IssueTable issues={issues} workspaceSlug={workspaceSlug} />
         )}
       </div>
     

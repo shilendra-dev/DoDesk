@@ -5,7 +5,6 @@ import { useWorkspaceStore } from '@/stores/workspaceStore'
 import { useIssueStore } from '@/stores/issueStore'
 import { IssueListView } from '@/components/features/issues/IssueListView'
 import { IssueBoardView } from '@/components/features/issues/IssueBoardView'
-import { IssueDetails } from '@/components/features/issues/IssueDetails'
 // import { CreateIssueButton } from '@/components/features/issues/CreateIssueButton'
 // import { ViewToggle } from '@/components/features/issues/ViewToggle'
 import { LoadingSpinner } from '@/components/ui/atoms/loading-spinner'
@@ -21,9 +20,9 @@ interface TeamIssuesPageProps {
 }
 
 export default function TeamIssuesPage({ params }: TeamIssuesPageProps) {
-  const { teamKey } = use(params)
+  const { teamKey, workspaceSlug } = use(params)
   const { currentWorkspace, teams, isLoading } = useWorkspaceStore()
-  const { issues, loadingStates, selectedIssueId, fetchIssuesByTeam, setSelectedIssue } = useIssueStore()
+  const { issues, loadingStates, fetchIssuesByTeam } = useIssueStore()
 
   // Local UI state for view and create modal
   const [view, setView] = useState<'list' | 'board'>('list')
@@ -85,20 +84,11 @@ export default function TeamIssuesPage({ params }: TeamIssuesPageProps) {
       {/* Main Content */}
       <div className="flex-1">
         {view === 'list' ? (
-          <IssueListView issues={Object.values(issues)} isLoading={loadingStates.fetchIssuesByTeam} />
+          <IssueListView issues={Object.values(issues)} isLoading={loadingStates.fetchIssuesByTeam} workspaceSlug={workspaceSlug} />
         ) : (
-          <IssueBoardView issues={Object.values(issues)} />
+          <IssueBoardView issues={Object.values(issues)} workspaceSlug={workspaceSlug} />
         )}
       </div>
-
-      {/* Issue Details Sidebar */}
-      {selectedIssueId && (
-        <IssueDetails 
-          key={`issue-details-${selectedIssueId}`}
-          issueId={selectedIssueId} 
-          onClose={() => setSelectedIssue(null)} 
-        />
-      )}
     </div>
   )
 }

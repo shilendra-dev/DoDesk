@@ -7,7 +7,8 @@ import {
   GetIssuesResponse,
   UpdateIssueRequest,
   UpdateIssueResponse,
-  DeleteIssueResponse
+  DeleteIssueResponse,
+  GetIssueByIdResponse
 } from '../types/controllers/issue.types';
 import {
   ControllerFunction,
@@ -103,6 +104,76 @@ const createIssue: ControllerFunction<CreateIssueResponse> = async (req) => {
     return {
       status: 500,
       message: "Failed to create issue",
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
+  }
+};
+
+//GET ISSUE BY ID
+const getIssueById: ControllerFunction<GetIssueByIdResponse> = async (req) => {
+  const { issueId } = req.params;
+
+  if (!issueId) {
+    return {
+      status: 400,
+      message: "Issue ID is required"
+    };
+  }
+
+  try {
+    const issue = await prisma.issue.findUnique({
+      where: { id: issueId },
+      include: {
+        creator: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
+        assignee: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        },
+        team: {
+          select: {
+            key: true,
+            name: true,
+            color: true
+          }
+        },
+        _count: {
+          select: {
+            comments: true
+          }
+        }
+      }
+    });
+
+    if (!issue) {
+      return {
+        status: 404,
+        message: "Issue not found"
+      };
+    }
+
+    return {
+      status: 200,
+      message: "Issue fetched successfully",
+      issue: {
+        ...issue,
+        issueKey: `${issue.team.key}-${issue.number}`,
+        commentCount: issue._count.comments
+      } as any
+    };
+  } catch (error) {
+    console.error("Error fetching issue: ", error);
+    return {
+      status: 500,
+      message: "Failed to fetch issue",
       error: error instanceof Error ? error.message : 'Unknown error'
     };
   }
@@ -329,11 +400,13 @@ createApi().get("/workspace/:workspace_id/issues").authSecure(getIssues);
 createApi().get("/team/:team_id/issues").authSecure(getIssues);
 createApi().put("/issues/:issueId").authSecure(updateIssue);
 createApi().delete("/issues/:issueId").authSecure(deleteIssue);
+createApi().get("/issues/:issueId").authSecure(getIssueById);
 
 // Export for testing
 export {
   createIssue,
   getIssues,
   updateIssue,
-  deleteIssue
+  deleteIssue,
+  getIssueById
 }; 
