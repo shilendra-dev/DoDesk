@@ -13,11 +13,11 @@ export function IssueRow<TData>({ row, onRowClick }: IssueRowProps<TData>) {
   
   return (
     <TableRow 
-      className="hover:bg-muted/50 transition-colors border-0 flex items-center"
+      className="hover:bg-muted/50 hover:scale-101 transition-all duration-300 border-0 cursor-pointer flex items-center"
       onClick={() => onRowClick?.(row.original)}
     >
       {/* Priority */}
-      <TableCell className="px-4 py-2 w-12 flex-shrink-0">
+      <TableCell className="px-4 py-2 w-12 hover:scale-101 transition-all duration-300 flex-shrink-0">
         {flexRender(cells[0].column.columnDef.cell, cells[0].getContext())}
       </TableCell>
       
@@ -43,7 +43,7 @@ export function IssueRow<TData>({ row, onRowClick }: IssueRowProps<TData>) {
         
       
       {/* Assignee */}
-      <TableCell className=" py-2  flex-shrink-0">
+      <TableCell className=" py-2 transition-all duration-300 flex-shrink-0">
         {flexRender(cells[5].column.columnDef.cell, cells[5].getContext())}
       </TableCell>
       
