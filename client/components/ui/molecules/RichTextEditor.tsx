@@ -1,7 +1,7 @@
 'use client'
 
-import React, { useState, useCallback, useRef, useEffect } from 'react'
-import { useEditor, EditorContent } from '@tiptap/react'
+import React, { useState, useCallback, useRef, useEffect, useMemo } from 'react'
+import { useEditor, EditorContent, Editor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Placeholder from '@tiptap/extension-placeholder'
 import Link from '@tiptap/extension-link'
@@ -40,6 +40,7 @@ export function RichTextEditor({
   readOnly = false
 }: RichTextEditorProps) {
   const [showSlashCommands, setShowSlashCommands] = useState(false)
+  const [slashCommandRange, setSlashCommandRange] = useState<{ from: number; to: number } | null>(null)
   const updateTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const lastContentRef = useRef<string>(initialContent)
 
@@ -62,15 +63,14 @@ export function RichTextEditor({
     }, debounceMs)
   }, [onUpdate, debounceMs])
 
-  const handleSlashCommand = useCallback((_query: string, _range: { from: number; to: number }) => {
-    setShowSlashCommands(true)
-  }, [])
+
 
   const handleSlashCommandClose = useCallback(() => {
     setShowSlashCommands(false)
+    setSlashCommandRange(null)
   }, [])
 
-  const editor = useEditor({
+  const editorConfig = useMemo(() => ({
     extensions: [
       StarterKit.configure({
         // Disable some extensions to customize them
@@ -110,12 +110,15 @@ export function RichTextEditor({
       OrderedList,
       Image,
       SlashCommands.configure({
-        onSlash: handleSlashCommand,
+        onSlash: (query: string, range: { from: number; to: number }) => {
+          setSlashCommandRange(range)
+          setShowSlashCommands(true)
+        },
         trigger: '/',
       }),
     ],
     content: initialContent,
-    onUpdate: ({ editor }) => {
+    onUpdate: ({ editor }: { editor: Editor }) => {
       const html = editor.getHTML()
       debouncedUpdate(html)
     },
@@ -126,7 +129,9 @@ export function RichTextEditor({
         class: 'tiptap min-h-[100px] focus:outline-none',
       },
     },
-  })
+  }), [initialContent, debouncedUpdate, readOnly])
+
+  const editor = useEditor(editorConfig)
 
   // Update editor content when initialContent changes (but only if it's different)
   useEffect(() => {
@@ -167,6 +172,7 @@ export function RichTextEditor({
           editor={editor}
           isOpen={showSlashCommands}
           onClose={handleSlashCommandClose}
+          slashRange={slashCommandRange}
         />
       )}
     </div>

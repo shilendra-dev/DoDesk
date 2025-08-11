@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { Editor } from '@tiptap/react'
 import { 
   Heading1,
@@ -29,12 +29,24 @@ interface SlashCommandsProps {
   editor: Editor
   isOpen: boolean
   onClose: () => void
+  slashRange?: { from: number; to: number } | null
 }
 
-export function SlashCommands({ editor, isOpen, onClose }: SlashCommandsProps) {
+export function SlashCommands({ editor, isOpen, onClose, slashRange }: SlashCommandsProps) {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [search, setSearch] = useState('')
   const listRef = useRef<HTMLDivElement>(null)
+
+  const executeCommand = useCallback((command: SlashCommand) => {
+    // Remove the slash character first
+    if (slashRange) {
+      editor.chain().focus().deleteRange(slashRange).run()
+    }
+    // Execute the command
+    command.command(editor)
+    // Close the menu
+    onClose()
+  }, [editor, slashRange, onClose])
 
   const commands: SlashCommand[] = [
     {
@@ -159,8 +171,7 @@ export function SlashCommands({ editor, isOpen, onClose }: SlashCommandsProps) {
         case 'Enter':
           e.preventDefault()
           if (filteredCommands[selectedIndex]) {
-            onClose()
-            filteredCommands[selectedIndex].command(editor)
+            executeCommand(filteredCommands[selectedIndex])
           }
           break
         case 'Escape':
@@ -172,7 +183,7 @@ export function SlashCommands({ editor, isOpen, onClose }: SlashCommandsProps) {
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, selectedIndex, filteredCommands, editor, onClose])
+  }, [isOpen, selectedIndex, filteredCommands, executeCommand])
 
   useEffect(() => {
     if (listRef.current && selectedIndex >= 0) {
@@ -214,10 +225,7 @@ export function SlashCommands({ editor, isOpen, onClose }: SlashCommandsProps) {
             filteredCommands.map((command, index) => (
               <button
                 key={command.title}
-                onClick={() => {
-                  onClose()
-                  command.command(editor)
-                }}
+                onClick={() => executeCommand(command)}
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-accent/50 transition-all duration-150 group",
                   index === selectedIndex && "bg-accent/50 border-l-2 border-l-primary"
