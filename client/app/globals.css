@@ -8,10 +8,11 @@
 .tiptap {
   outline: none;
   min-height: 60px; /* Reduced min-height */
+  color: hsl(var(--foreground));
 }
 
 .tiptap .is-editor-empty:first-child::before {
-  color: #adb5bd;
+  color: hsl(var(--muted-foreground));
   content: attr(data-placeholder);
   float: left;
   height: 0;
@@ -37,15 +38,15 @@
 }
 
 .tiptap blockquote {
-  border-left: 3px solid #e5e7eb;
+  border-left: 3px solid hsl(var(--border));
   margin: 1em 0;
   padding-left: 1em;
   font-style: italic;
-  color: #6b7280;
+  color: hsl(var(--muted-foreground));
 }
 
 .tiptap code {
-  background-color: #f3f4f6;
+  background-color: hsl(var(--muted));
   padding: 0.2em 0.4em;
   border-radius: 0.25em;
   font-family: monospace;
@@ -53,7 +54,7 @@
 }
 
 .tiptap pre {
-  background-color: #f3f4f6;
+  background-color: hsl(var(--muted));
   padding: 1em;
   border-radius: 0.5em;
   overflow-x: auto;
@@ -73,30 +74,88 @@
 }
 
 .tiptap a {
-  color: #3b82f6;
+  color: hsl(var(--primary));
   text-decoration: underline;
 }
 
 .tiptap a:hover {
-  color: #2563eb;
+  color: hsl(var(--primary-foreground));
 }
 
-/* Dark mode styles */
+/* Table styles */
+.tiptap table {
+  border-collapse: collapse;
+  margin: 1em 0;
+  width: 100%;
+}
+
+.tiptap th,
+.tiptap td {
+  border: 1px solid hsl(var(--border));
+  padding: 0.5em;
+  text-align: left;
+}
+
+.tiptap th {
+  background-color: hsl(var(--muted));
+  font-weight: 600;
+}
+
+/* Task list styles */
+.tiptap ul[data-type="taskList"] {
+  list-style: none;
+  padding: 0;
+}
+
+.tiptap ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+}
+
+.tiptap ul[data-type="taskList"] li > label {
+  margin-right: 0.5em;
+  user-select: none;
+}
+
+.tiptap ul[data-type="taskList"] li > label input[type="checkbox"] {
+  margin: 0;
+}
+
+.tiptap ul[data-type="taskList"] li > div {
+  flex: 1;
+}
+
+/* Focus and selection styles */
+.tiptap:focus {
+  outline: none;
+}
+
+.tiptap ::selection {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.tiptap ::-moz-selection {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+/* Dark mode styles - these will automatically use the CSS variables above */
 .dark .tiptap blockquote {
-  border-left-color: #4b5563;
-  color: #9ca3af;
+  border-left-color: hsl(var(--border));
+  color: hsl(var(--muted-foreground));
 }
 
 .dark .tiptap code {
-  background-color: #374151;
+  background-color: hsl(var(--muted));
 }
 
 .dark .tiptap pre {
-  background-color: #374151;
+  background-color: hsl(var(--muted));
 }
 
 .dark .tiptap a {
-  color: #60a5fa;
+  color: hsl(var(--primary));
 }
 
 .dark .tiptap a:hover {
@@ -410,4 +469,116 @@
   background: transparent;
   border-radius: 0px;
   border: 0px;
+}
+
+/* Rich Text Editor Styles */
+.ProseMirror {
+  @apply outline-none;
+}
+
+.ProseMirror p.is-editor-empty:first-child::before {
+  @apply text-muted-foreground;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.ProseMirror h1 {
+  @apply text-2xl font-bold mb-4 mt-6;
+}
+
+.ProseMirror h2 {
+  @apply text-xl font-bold mb-3 mt-5;
+}
+
+.ProseMirror h3 {
+  @apply text-lg font-bold mb-2 mt-4;
+}
+
+.ProseMirror p {
+  @apply mb-3 leading-relaxed;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  @apply mb-3 pl-6;
+}
+
+.ProseMirror li {
+  @apply mb-1;
+}
+
+.ProseMirror blockquote {
+  @apply border-l-4 pl-4 py-2 my-4 italic;
+  border-left-color: hsl(var(--border));
+  color: hsl(var(--muted-foreground));
+}
+
+.ProseMirror code {
+  @apply bg-gray-100 dark:bg-gray-800 px-1 py-0.5 rounded text-sm font-mono;
+}
+
+.ProseMirror pre {
+  @apply bg-gray-100 dark:bg-gray-800 p-4 rounded-lg overflow-x-auto my-4;
+}
+
+.ProseMirror pre code {
+  @apply bg-transparent p-0;
+}
+
+.ProseMirror table {
+  @apply border-collapse border border-gray-300 dark:border-gray-600 my-4 w-full;
+}
+
+.ProseMirror th,
+.ProseMirror td {
+  @apply border border-gray-300 dark:border-gray-600 px-3 py-2 text-left;
+}
+
+.ProseMirror th {
+  @apply bg-gray-50 dark:bg-gray-800 font-semibold;
+}
+
+.ProseMirror a {
+  @apply text-blue-600 dark:text-blue-400 underline hover:text-blue-800 dark:hover:text-blue-300;
+}
+
+.ProseMirror ul[data-type="taskList"] {
+  @apply list-none pl-0;
+}
+
+.ProseMirror ul[data-type="taskList"] li {
+  @apply flex items-start gap-2;
+}
+
+.ProseMirror ul[data-type="taskList"] li > label {
+  @apply flex items-center gap-2 cursor-pointer;
+}
+
+.ProseMirror ul[data-type="taskList"] li > label input[type="checkbox"] {
+  @apply mt-1;
+}
+
+.ProseMirror ul[data-type="taskList"] li > div {
+  @apply flex-1;
+}
+
+/* Focus styles */
+.ProseMirror:focus {
+  @apply outline-none;
+}
+
+/* Selection styles */
+.ProseMirror ::selection {
+  @apply bg-blue-200 dark:bg-blue-800;
+}
+
+/* Placeholder styles */
+.ProseMirror .is-editor-empty:first-child::before {
+  @apply text-muted-foreground;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
 }
