@@ -11,8 +11,7 @@ import {
   Link as LinkIcon,
   List,
   ListOrdered,
-  CheckSquare,
-  Table as TableIcon
+  CheckSquare
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -114,13 +113,7 @@ export function SlashCommands({ editor, isOpen, onClose, slashRange, position }:
       command: (editor) => editor.chain().focus().toggleCodeBlock().run(),
       keywords: ['code', 'block', 'snippet', 'programming']
     },
-    {
-      title: 'Table',
-      description: 'Insert a table',
-      icon: <TableIcon size={16} />,
-      command: (editor) => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run(),
-      keywords: ['table', 'grid', 'data', 'spreadsheet']
-    },
+
     {
       title: 'Link',
       description: 'Add a link',
