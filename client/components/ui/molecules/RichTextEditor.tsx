@@ -149,7 +149,7 @@ export function RichTextEditor({
         class: 'tiptap min-h-[100px] focus:outline-none',
       },
     },
-  }), [initialContent, debouncedUpdate, readOnly])
+  }), [initialContent, debouncedUpdate, readOnly, placeholder])
 
   const editor = useEditor(editorConfig)
   
