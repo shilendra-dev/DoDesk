@@ -9,7 +9,6 @@ import {
   Quote,
   Code,
   Link as LinkIcon,
-  Image,
   List,
   ListOrdered,
   CheckSquare,
@@ -30,12 +29,22 @@ interface SlashCommandsProps {
   isOpen: boolean
   onClose: () => void
   slashRange?: { from: number; to: number } | null
+  position?: { x: number; y: number } | null
 }
 
-export function SlashCommands({ editor, isOpen, onClose, slashRange }: SlashCommandsProps) {
+export function SlashCommands({ editor, isOpen, onClose, slashRange, position }: SlashCommandsProps) {
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [search, setSearch] = useState('')
+  const [isClosing, setIsClosing] = useState(false)
   const listRef = useRef<HTMLDivElement>(null)
+
+  const handleClose = useCallback(() => {
+    setIsClosing(true)
+    setTimeout(() => {
+      onClose()
+      setIsClosing(false)
+    }, 150)
+  }, [onClose])
 
   const executeCommand = useCallback((command: SlashCommand) => {
     // Remove the slash character first
@@ -44,9 +53,9 @@ export function SlashCommands({ editor, isOpen, onClose, slashRange }: SlashComm
     }
     // Execute the command
     command.command(editor)
-    // Close the menu
-    onClose()
-  }, [editor, slashRange, onClose])
+    // Close the menu smoothly
+    handleClose()
+  }, [editor, slashRange, handleClose])
 
   const commands: SlashCommand[] = [
     {
@@ -124,18 +133,6 @@ export function SlashCommands({ editor, isOpen, onClose, slashRange }: SlashComm
       },
       keywords: ['link', 'url', 'hyperlink', 'website']
     },
-    {
-      title: 'Image',
-      description: 'Insert an image',
-      icon: <Image size={16} />,
-              command: (editor) => {
-          const url = window.prompt('Enter image URL')
-          if (url) {
-            editor.chain().focus().setImage({ src: url, alt: 'User uploaded image' }).run()
-          }
-        },
-      keywords: ['image', 'img', 'picture', 'photo']
-    }
   ]
 
   const filteredCommands = commands.filter(command =>
@@ -176,14 +173,14 @@ export function SlashCommands({ editor, isOpen, onClose, slashRange }: SlashComm
           break
         case 'Escape':
           e.preventDefault()
-          onClose()
+          handleClose()
           break
       }
     }
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, selectedIndex, filteredCommands, executeCommand])
+  }, [isOpen, selectedIndex, filteredCommands, executeCommand, handleClose])
 
   useEffect(() => {
     if (listRef.current && selectedIndex >= 0) {
@@ -194,76 +191,105 @@ export function SlashCommands({ editor, isOpen, onClose, slashRange }: SlashComm
     }
   }, [selectedIndex])
 
+  // Handle click outside to close
+  useEffect(() => {
+    if (!isOpen) return
+
+    const handleClickOutside = (event: MouseEvent) => {
+      if (listRef.current && !listRef.current.contains(event.target as Node)) {
+        onClose()
+      }
+    }
+
+    document.addEventListener('click', handleClickOutside)
+    
+    return () => {
+      document.removeEventListener('click', handleClickOutside)
+    }
+  }, [isOpen, onClose])
+
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/5">
-      <div className="bg-background/95 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg w-56 max-h-64 overflow-hidden">
-        <div className="px-3 py-2 border-b border-border/30 bg-gradient-to-r from-background to-muted/20">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-primary/60 rounded-full"></div>
-            <input
-              type="text"
-              placeholder="Type to search..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="flex-1 px-2 py-1 text-xs bg-transparent border-none outline-none placeholder:text-muted-foreground/60"
-              autoFocus
-            />
-          </div>
+    <div 
+      className={cn(
+        "bg-background/95 backdrop-blur-sm border border-border/50 rounded-xl shadow-lg w-56 max-h-64 overflow-hidden transition-all duration-150",
+        isClosing 
+          ? "animate-out fade-out-0 zoom-out-95" 
+          : "animate-in fade-in-0 zoom-in-95"
+      )}
+      style={{
+        position: 'fixed',
+        left: position ? `${position.x}px` : '50%',
+        top: position ? `${position.y}px` : '50%',
+        transform: position ? 'none' : 'translate(-50%, -50%)',
+        zIndex: 1000
+      }}
+    >
+      <div className="px-3 py-2 border-b border-border/30 bg-gradient-to-r from-background to-muted/20">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 bg-primary/60 rounded-full"></div>
+          <input
+            type="text"
+            placeholder="Type to search..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-1 px-2 py-1 text-xs bg-transparent border-none outline-none placeholder:text-muted-foreground/60"
+            autoFocus
+          />
         </div>
-        
-        <div className="max-h-52 overflow-y-auto" ref={listRef}>
-          {filteredCommands.length === 0 ? (
-            <div className="px-3 py-4 text-center text-muted-foreground/70 text-xs">
-              <div className="w-8 h-8 mx-auto mb-2 rounded-full bg-muted/50 flex items-center justify-center">
-                <span className="text-muted-foreground/50">?</span>
-              </div>
-              No commands found
+      </div>
+      
+      <div className="max-h-52 overflow-y-auto" ref={listRef}>
+        {filteredCommands.length === 0 ? (
+          <div className="px-3 py-4 text-center text-muted-foreground/70 text-xs">
+            <div className="w-8 h-8 mx-auto mb-2 rounded-full bg-muted/50 flex items-center justify-center">
+              <span className="text-muted-foreground/50">?</span>
             </div>
-          ) : (
-            filteredCommands.map((command, index) => (
-              <button
-                key={command.title}
-                onClick={() => executeCommand(command)}
-                className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-accent/50 transition-all duration-150 group",
-                  index === selectedIndex && "bg-accent/50 border-l-2 border-l-primary"
-                )}
-              >
+            No commands found
+          </div>
+        ) : (
+          filteredCommands.map((command, index) => (
+            <button
+              key={command.title}
+              onClick={() => executeCommand(command)}
+              className={cn(
+                "w-full flex items-center gap-3 px-3 py-2.5 text-left hover:bg-accent/50 transition-all duration-150 group",
+                index === selectedIndex && "bg-accent/50 border-l-2 border-l-primary"
+              )}
+            >
+              <div className={cn(
+                "flex-shrink-0 w-5 h-5 rounded-md flex items-center justify-center transition-all duration-150",
+                index === selectedIndex 
+                  ? "bg-primary/20 text-primary" 
+                  : "bg-muted/50 text-muted-foreground group-hover:bg-muted group-hover:text-foreground"
+              )}>
+                {command.icon}
+              </div>
+              <div className="flex-1 min-w-0">
                 <div className={cn(
-                  "flex-shrink-0 w-5 h-5 rounded-md flex items-center justify-center transition-all duration-150",
+                  "font-medium text-xs transition-colors duration-150",
                   index === selectedIndex 
-                    ? "bg-primary/20 text-primary" 
-                    : "bg-muted/50 text-muted-foreground group-hover:bg-muted group-hover:text-foreground"
+                    ? "text-primary font-semibold" 
+                    : "text-foreground group-hover:text-foreground"
                 )}>
-                  {command.icon}
+                  {command.title}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className={cn(
-                    "font-medium text-xs transition-colors duration-150",
-                    index === selectedIndex 
-                      ? "text-primary font-semibold" 
-                      : "text-foreground group-hover:text-foreground"
-                  )}>
-                    {command.title}
-                  </div>
-                </div>
-                {index === selectedIndex && (
-                  <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></div>
-                )}
-              </button>
-            ))
-          )}
-        </div>
-        
-        <div className="px-3 py-2 border-t border-border/30 text-[10px] text-muted-foreground/50 text-center bg-gradient-to-r from-muted/10 to-transparent">
-          <span className="inline-flex items-center gap-1">
-            <span className="w-1 h-1 bg-primary/40 rounded-full"></span>
-            ↑↓ navigate • Enter select • Esc close
-            <span className="w-1 h-1 bg-primary/40 rounded-full"></span>
-          </span>
-        </div>
+              </div>
+              {index === selectedIndex && (
+                <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></div>
+              )}
+            </button>
+          ))
+        )}
+      </div>
+      
+      <div className="px-3 py-2 border-t border-border/30 text-[10px] text-muted-foreground/50 text-center bg-gradient-to-r from-muted/10 to-transparent">
+        <span className="inline-flex items-center gap-1">
+          <span className="w-1 h-1 bg-primary/40 rounded-full"></span>
+          ↑↓ navigate • Enter select • Esc close
+          <span className="w-1 h-1 bg-primary/40 rounded-full"></span>
+        </span>
       </div>
     </div>
   )
