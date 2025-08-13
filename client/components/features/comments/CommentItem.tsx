@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
-import { Edit3, Trash2, MoreVertical, Reply } from 'lucide-react'
+import { Edit3, Trash2, MoreVertical } from 'lucide-react'
 import { Button } from '@/components/ui/atoms/button'
 import { Input } from '@/components/ui/atoms/input'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/atoms/dropdown-menu'
@@ -46,14 +46,9 @@ export function CommentItem({ comment, currentUserId }: CommentItemProps) {
     }
   }
 
-  const handleReply = () => {
-    // TODO: Implement reply functionality
-    console.log('Reply to comment:', comment.id)
-  }
-
   return (
     <div className="group relative">
-      <div className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/30 transition-colors">
+      <div className="flex items-start gap-2 p-1 rounded-lg hover:bg-muted/10 transition-colors border border-transparent hover:border-border/20">
         {/* Avatar */}
         <div className="flex-shrink-0">
           <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-sm font-medium text-primary">
@@ -63,20 +58,27 @@ export function CommentItem({ comment, currentUserId }: CommentItemProps) {
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center justify-between mb-1">
             <span className="font-medium text-sm text-foreground">
               {comment.user?.name || comment.user?.email || 'Unknown User'}
             </span>
-            <span className="text-xs text-muted-foreground">
-              {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
-            </span>
-            {comment.updatedAt !== comment.createdAt && (
-              <span className="text-xs text-muted-foreground">(edited)</span>
-            )}
+            <div className="flex items-center gap-2">
+              {comment.updatedAt !== comment.createdAt && (
+                <span className="text-xs text-muted-foreground">(edited)</span>
+              )}
+              <span className="text-xs text-muted-foreground">
+                {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })
+                  .replace('about ', '')
+                  .replace('less than ', '<')
+                  .replace('almost ', '~')
+                  .replace('over ', '>')
+                }
+              </span>
+            </div>
           </div>
 
           {isEditing ? (
-            <div className="space-y-2">
+            <div className="space-y-1">
               <Input
                 value={editContent}
                 onChange={(e) => setEditContent(e.target.value)}
@@ -88,15 +90,16 @@ export function CommentItem({ comment, currentUserId }: CommentItemProps) {
                     handleCancel()
                   }
                 }}
-                className="text-sm"
+                className="text-sm h-8"
                 autoFocus
               />
-              <div className="flex gap-2">
+              <div className="flex gap-1">
                 <Button
                   onClick={handleSave}
                   disabled={isLoading || !editContent.trim()}
                   size="sm"
                   variant="default"
+                  className="h-6 px-2 text-xs"
                 >
                   Save
                 </Button>
@@ -105,29 +108,17 @@ export function CommentItem({ comment, currentUserId }: CommentItemProps) {
                   disabled={isLoading}
                   size="sm"
                   variant="ghost"
+                  className="h-6 px-2 text-xs"
                 >
                   Cancel
                 </Button>
               </div>
             </div>
           ) : (
-            <div className="text-sm text-foreground whitespace-pre-wrap">
+            <div className="text-sm text-foreground whitespace-pre-wrap leading-relaxed">
               {comment.content}
             </div>
           )}
-
-          {/* Reply button */}
-          <div className="mt-2">
-            <Button
-              onClick={handleReply}
-              variant="ghost"
-              size="sm"
-              className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
-            >
-              <Reply className="h-3 w-3 mr-1" />
-              Reply
-            </Button>
-          </div>
         </div>
 
         {/* Actions */}
@@ -135,7 +126,7 @@ export function CommentItem({ comment, currentUserId }: CommentItemProps) {
           <div className="flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                <Button variant="ghost" size="sm" className="h-5 w-5 p-0">
                   <MoreVertical className="h-3 w-3" />
                 </Button>
               </DropdownMenuTrigger>
@@ -157,19 +148,6 @@ export function CommentItem({ comment, currentUserId }: CommentItemProps) {
           </div>
         )}
       </div>
-
-      {/* Replies */}
-      {comment.replies && comment.replies.length > 0 && (
-        <div className="ml-11 mt-2 space-y-2">
-          {comment.replies.map((reply) => (
-            <CommentItem
-              key={reply.id}
-              comment={reply}
-              currentUserId={currentUserId}
-            />
-          ))}
-        </div>
-      )}
     </div>
   )
 } 

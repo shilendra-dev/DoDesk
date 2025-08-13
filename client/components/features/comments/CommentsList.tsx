@@ -40,12 +40,12 @@ export function CommentsList({ issueId, currentUserId }: CommentsListProps) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Comment Input */}
       <div className="space-y-3">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 pb-2 border-b border-border/20">
           <MessageSquare className="h-4 w-4 text-muted-foreground" />
-          <h3 className="font-semibold text-sm">Comments</h3>
+          <h3 className="font-medium text-sm text-foreground">Comments</h3>
         </div>
         
         <CommentInput
@@ -55,20 +55,27 @@ export function CommentsList({ issueId, currentUserId }: CommentsListProps) {
       </div>
 
       {/* Comments List */}
-      <div className="space-y-3">
+      <div className="space-y-0">
         {comments.length === 0 ? (
-          <div className="text-center py-8 text-sm text-muted-foreground">
-            <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-            <p>No comments yet. Be the first to comment!</p>
+          <div className="text-center py-6 text-sm text-muted-foreground">
+            <MessageSquare className="h-5 w-5 mx-auto mb-2 opacity-50" />
+            <p>No comments yet</p>
           </div>
         ) : (
-          comments.map((comment) => (
-            <CommentItem
-              key={comment.id}
-              comment={comment}
-              currentUserId={currentUserId}
-            />
-          ))
+          [...comments]
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .map((comment, index) => (
+              <div key={comment.id}>
+                <CommentItem
+                  comment={comment}
+                  currentUserId={currentUserId}
+                />
+                {/* Add separator between comments, but not after the last one */}
+                {index < comments.length - 1 && (
+                  <div className="h-px bg-border/20 my-1 ml-8"></div>
+                )}
+              </div>
+            ))
         )}
       </div>
     </div>

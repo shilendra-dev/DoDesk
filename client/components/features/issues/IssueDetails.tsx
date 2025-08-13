@@ -240,9 +240,9 @@ export function IssueDetails() {
         </div>
 
         {/* Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6 relative pr-6">
+          <div className="lg:col-span-3 space-y-6 lg:pr-6 lg:border-r lg:border-border/50">
             {/* Description & Notes */}
             <div className="space-y-3">
               <IssueNotes
@@ -250,24 +250,10 @@ export function IssueDetails() {
                 onUpdate={handleNotesUpdate}
               />
             </div>
-
-            {/* Horizontal Ruler */}
-            <div className="border-t border-border/70 my-6"></div>
-
-            {/* Comments Section */}
-            <CommentsList 
-              issueId={issue.id} 
-              currentUserId={currentUser?.id}
-            />
-
-            {/* Vertical Ruler - positioned within main content */}
-            <div className="hidden lg:block absolute right-0 top-0 bottom-0">
-              <div className="w-px h-full bg-border/70 -mr-3"></div>
-            </div>
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-4">
+          <div className="lg:col-span-2 space-y-6">
             {/* Labels */}
             <div className="bg-card rounded-lg border border-border/20 p-4">
               <h3 className="font-semibold mb-3 text-sm">Labels</h3>
@@ -285,6 +271,14 @@ export function IssueDetails() {
                   <span className="text-xs text-muted-foreground">No labels</span>
                 )}
               </div>
+            </div>
+
+            {/* Comments Section - clean design without card background */}
+            <div className="space-y-4">
+              <CommentsList 
+                issueId={issue.id} 
+                currentUserId={currentUser?.id}
+              />
             </div>
           </div>
         </div>
