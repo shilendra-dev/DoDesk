@@ -2,24 +2,26 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeft, Loader2, Edit3, Clock, Settings, MessageSquare } from 'lucide-react'
+import { ArrowLeft, Loader2, Edit3, Clock, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/atoms/button'
 import { Input } from '@/components/ui/atoms/input'
 import { useIssueStore } from '@/stores/issueStore'
 import { useWorkspaceStore } from '@/stores/workspaceStore'
+import { useAuth } from '@/providers/auth-provider'
 import { IssueNotes } from '@/components/features/issues/IssueNotes'
 import { DueDatePicker } from '@/components/ui/molecules/DueDatePicker'
 import { PriorityCell, StateCell, AssigneeCell } from '@/components/ui/atoms/rowElements'
+import { CommentsList } from '@/components/features/comments'
 
 export function IssueDetails() {
   const router = useRouter()
   const params = useParams()
   const { updateIssue, updateNotes, setSelectedIssue, fetchIssuesByWorkspace, isInitialized } = useIssueStore()
   const { currentWorkspace } = useWorkspaceStore()
+  const { user: currentUser } = useAuth()
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState(false)
-  const [comment, setComment] = useState('')
 
   // Get issue key from URL params
   const issueKey = params.issueKey as string
@@ -109,13 +111,7 @@ export function IssueDetails() {
     setEditingTitle(false)
   }
 
-  const handleCommentSubmit = async () => {
-    if (comment.trim() && issue) {
-      // TODO: Implement comment submission logic
-      console.log('Adding comment:', comment)
-      setComment('')
-    }
-  }
+
 
   if (loading) {
     return (
@@ -259,36 +255,10 @@ export function IssueDetails() {
             <div className="border-t border-border/70 my-6"></div>
 
             {/* Comments Section */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <MessageSquare className="h-4 w-4 text-muted-foreground" />
-                <h3 className="font-semibold text-sm">Comments</h3>
-              </div>
-              
-              {/* Comment Input */}
-              <div className="flex gap-2">
-                <Input
-                  value={comment}
-                  onChange={(e) => setComment(e.target.value)}
-                  placeholder="Add a comment..."
-                  className="flex-1"
-                />
-                <Button 
-                  onClick={handleCommentSubmit}
-                  disabled={!comment.trim()}
-                  size="sm"
-                >
-                  Comment
-                </Button>
-              </div>
-              
-              {/* Comments List */}
-              <div className="space-y-3">
-                <div className="text-xs text-muted-foreground text-center py-4">
-                  No comments yet. Be the first to comment!
-                </div>
-              </div>
-            </div>
+            <CommentsList 
+              issueId={issue.id} 
+              currentUserId={currentUser?.id}
+            />
 
             {/* Vertical Ruler - positioned within main content */}
             <div className="hidden lg:block absolute right-0 top-0 bottom-0">
