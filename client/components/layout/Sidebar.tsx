@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { signOut } from '@/lib/auth-client'
 import {
-  Inbox, Target, UserPlus,
+  Target, UserPlus,
   Search, Plus, LogOut,
   Users
 } from 'lucide-react'
@@ -106,7 +106,7 @@ export function Sidebar() {
           {/* Personal Section */}
           <div>
             <nav className="space-y-1">
-              <SidebarItem
+              {/* <SidebarItem
                 icon={<Inbox size={16} />}
                 label="Inbox"
                 isActive={isActive('/inbox')}
@@ -114,7 +114,7 @@ export function Sidebar() {
                   //handleMenuClick('inbox')
                   toast.error('This feature is coming soon')
                 }}
-              />
+              /> */}
               <SidebarItem
                 icon={<Target size={16} />}
                 label="My issues"
