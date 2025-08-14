@@ -5,7 +5,7 @@ import { useRouter, usePathname } from 'next/navigation'
 import { signOut } from '@/lib/auth-client'
 import {
   Target, UserPlus,
-  Search, Plus, LogOut,
+  Plus, LogOut,
   Users
 } from 'lucide-react'
 import { useWorkspaceStore } from '@/stores/workspaceStore'
@@ -18,7 +18,6 @@ import { TeamsSection } from './TeamSection'
 import { useTheme } from '@/providers/ThemeContext'
 import { useSession } from "@/lib/auth-client"
 import { useModalStore } from '@/stores/modalStore'
-import {toast} from 'react-hot-toast'
 
 export function Sidebar() {
   const router = useRouter()
@@ -78,7 +77,7 @@ export function Sidebar() {
           <div className="flex-1">
             <WorkspaceDropdown />
           </div>
-          <Button
+          {/* <Button
             variant="ghost"
             size="sm"
             className="p-1.5 h-auto"
@@ -88,7 +87,7 @@ export function Sidebar() {
             }}
           >
             <Search size={16} />
-          </Button>
+          </Button> */}
           <Button
             variant="outline"
             size="sm"
