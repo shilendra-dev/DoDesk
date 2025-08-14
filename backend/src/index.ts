@@ -18,6 +18,8 @@ app.use(cors({
     'https://dodesk.app',
     'http://dodesk.app',
     'https://api.dodesk.app',
+    'https://dodesk-server.onrender.com',
+    'https://do-desk.vercel.app',
     ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : [])
   ],
   credentials: true,
