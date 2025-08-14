@@ -1,4 +1,4 @@
-import type { Workspace, Team, TeamMember } from '../../generated/prisma';
+import type { Workspace, Team, TeamMember } from '@prisma/client';
 
 export interface CreateWorkspaceRequest {
   name: string;

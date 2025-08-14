@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import type { User } from '../../generated/prisma';
+import type { User } from '@prisma/client';
 
 // Base API Response Types
 export interface ApiResponse<T = any> {

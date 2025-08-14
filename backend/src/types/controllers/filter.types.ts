@@ -1,4 +1,4 @@
-import type { SavedFilter } from '../../generated/prisma';
+import type { SavedFilter } from '@prisma/client';
 
 export interface CreateSavedFilterRequest {
   name: string;

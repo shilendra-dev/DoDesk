@@ -1,4 +1,4 @@
-import type { Team, TeamMember } from '../../generated/prisma';
+import type { Team, TeamMember } from '@prisma/client';
 
 export interface CreateTeamRequest {
   name: string;

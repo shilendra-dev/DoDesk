@@ -1,4 +1,4 @@
-import type { Issue } from '../../generated/prisma';
+import type { Issue } from '@prisma/client';
 
 export interface CreateIssueRequest {
   title: string;

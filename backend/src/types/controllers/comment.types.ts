@@ -1,4 +1,4 @@
-import type { Comment } from '../../generated/prisma';
+import type { Comment } from '@prisma/client';
 
 export interface CreateCommentRequest {
   content: string;

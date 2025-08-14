@@ -1,4 +1,4 @@
-import type { User, Workspace } from '../../generated/prisma';
+import type { User, Workspace } from '@prisma/client';
 
 export interface CreateUserRequest {
   email: string;
