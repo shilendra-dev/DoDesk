@@ -1,7 +1,7 @@
 export { Sidebar } from './Sidebar'
 export { SidebarItem } from './SidebarItem'
 export { TeamDropdown } from './TeamDropdown'
-export { TeamSection } from './TeamSection'
+export { TeamsSection } from './TeamSection'
 export { WorkspaceDropdown } from './WorkspaceDropdown'
 export { CollapsibleSection } from './CollapsibleSection'
 export { CommonHeader } from './CommonHeader' 
