@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { ArrowLeft, Loader2, Edit3, Clock, Settings } from 'lucide-react'
+import { ArrowLeft, Loader2, Edit3, Clock } from 'lucide-react'
 import { Button } from '@/components/ui/atoms/button'
 import { Input } from '@/components/ui/atoms/input'
 import { useIssueStore } from '@/stores/issueStore'
@@ -12,6 +12,7 @@ import { IssueNotes } from '@/components/features/issues/IssueNotes'
 import { DueDatePicker } from '@/components/ui/molecules/DueDatePicker'
 import { PriorityCell, StateCell, AssigneeCell } from '@/components/ui/atoms/rowElements'
 import { CommentsList } from '@/components/features/comments'
+import { CommonHeader } from '@/components/layout/CommonHeader'
 
 export function IssueDetails() {
   const router = useRouter()
@@ -137,37 +138,20 @@ export function IssueDetails() {
   return (
     <div className="min-h-screen bg-background">
       {/* Floating Header */}
-      <div className="sticky top-0 z-20 bg-background/90 backdrop-blur-md border-b border-border/10">
-        <div className="max-w-7xl mx-auto px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button 
-                onClick={handleBack} 
-                variant="ghost" 
-                size="sm"
-                className="h-8 w-8 p-0 hover:bg-muted/50 rounded-full"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </Button>
-              <div className="flex items-center gap-2">
-                <span className="px-2 py-1 bg-muted/50 rounded-full text-xs font-medium text-muted-foreground">
-                  {issue.issueKey}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  by {issue.creator?.name || 'Unknown'}
-                </span>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" className="h-7 px-2 text-sm">
-                <Settings className="h-3 w-3 mr-1" />
-                Settings
-              </Button>
-            </div>
+      <CommonHeader
+        showBackButton={true}
+        onBack={handleBack}
+        leftContent={
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-1 bg-muted/50 rounded-full text-xs font-medium text-muted-foreground">
+              {issue.issueKey}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              by {issue.creator?.name || 'Unknown'}
+            </span>
           </div>
-        </div>
-      </div>
+        }
+      />
 
       {/* Content */}
       <div className="max-w-6xl mx-auto px-10 py-6">
@@ -255,7 +239,7 @@ export function IssueDetails() {
           {/* Sidebar */}
           <div className="lg:col-span-2 space-y-6">
             {/* Labels */}
-            <div className="bg-card rounded-lg border border-border/20 p-4">
+            <div className="bg-card rounded-lg border border-border/60 p-4">
               <h3 className="font-semibold mb-3 text-sm">Labels</h3>
               <div className="flex flex-wrap gap-1">
                 {issue.labels && issue.labels.length > 0 ? (

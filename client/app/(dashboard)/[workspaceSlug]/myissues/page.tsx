@@ -5,12 +5,10 @@ import { useWorkspaceStore } from '@/stores/workspaceStore'
 import { useIssueStore } from '@/stores/issueStore'
 import { IssueListView } from '@/components/features/issues/IssueListView'
 import { IssueBoardView } from '@/components/features/issues/IssueBoardView'
-// import { IssueDetails } from '@/components/features/issues/IssueDetails'
-// import { CreateIssueButton } from '@/components/features/issues/CreateIssueButton'
-// import { ViewToggle } from '@/components/features/issues/ViewToggle'
 import { LoadingSpinner } from '@/components/ui/atoms/loading-spinner'
-import { ViewHeader } from '@/components/ui/organisms/ViewHeader'
-import { User } from 'lucide-react'
+import { CommonHeader } from '@/components/layout/CommonHeader'
+import { ViewToggle } from '@/components/features/issues/ViewToggle'
+import { CreateIssueButton } from '@/components/features/issues/CreateIssueButton'
 import { use } from 'react'
 
 interface MyIssuesPageProps {
@@ -53,31 +51,29 @@ export default function MyIssuesPage({ params }: MyIssuesPageProps) {
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <ViewHeader
-        title="My Issues"
-        icon={<User size={20} className="text-muted-foreground" />}
-        showViewToggle={true}
-        view={view}
-        setView={setView}
-        showCreateIssue={showCreateIssue}
-        setShowCreateIssue={setShowCreateIssue}
-        workspaceId={currentWorkspace?.id}
+      <CommonHeader
+        leftContent={
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-1 bg-muted/50 rounded-full text-xs font-medium text-foreground">
+              My Issues
+            </span>
+            <span className="text-xs text-foreground">
+              Dashboard
+            </span>
+          </div>
+        }
+        rightContent={
+          <div className="flex items-center gap-1">
+            <ViewToggle view={view} setView={setView} />
+            <CreateIssueButton 
+              workspaceId={currentWorkspace?.id}
+              showCreateIssue={showCreateIssue}
+              setShowCreateIssue={setShowCreateIssue}
+              size="xs"
+            />
+          </div>
+        }
       />
-      {/* <div className="flex items-center justify-between pl-4 pr-4 pt-2 pb-2 border-b border-border">
-        <div>
-          <h1 className="text-lg font-bold text-foreground">My Issues</h1>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <ViewToggle view={view} setView={setView}/>
-          <CreateIssueButton 
-            workspaceId={currentWorkspace?.id}
-            showCreateIssue={showCreateIssue}
-            setShowCreateIssue={setShowCreateIssue}
-            size="xs"
-          />
-        </div>
-      </div> */}
 
       {/* Main Content */}
       <div className="flex-1">
@@ -87,15 +83,6 @@ export default function MyIssuesPage({ params }: MyIssuesPageProps) {
           <IssueBoardView issues={myIssues} workspaceSlug={workspaceSlug} />
         )}
       </div>
-
-      {/* Issue Details Sidebar */}
-      {/* {selectedIssueId && (
-        <IssueDetails 
-          key={`issue-details-${selectedIssueId}`}
-          issueId={selectedIssueId} 
-          onClose={() => setSelectedIssue(null)} 
-        />
-      )} */}
     </div>
   )
 }
