@@ -5,12 +5,11 @@ import { useWorkspaceStore } from '@/stores/workspaceStore'
 import { useIssueStore } from '@/stores/issueStore'
 import { IssueListView } from '@/components/features/issues/IssueListView'
 import { IssueBoardView } from '@/components/features/issues/IssueBoardView'
-// import { CreateIssueButton } from '@/components/features/issues/CreateIssueButton'
-// import { ViewToggle } from '@/components/features/issues/ViewToggle'
 import { LoadingSpinner } from '@/components/ui/atoms/loading-spinner'
+import { CommonHeader } from '@/components/layout/CommonHeader'
+import { ViewToggle } from '@/components/features/issues/ViewToggle'
+import { CreateIssueButton } from '@/components/features/issues/CreateIssueButton'
 import { use } from 'react'
-import { ViewHeader } from '@/components/ui/organisms/ViewHeader'
-import { Users } from 'lucide-react'
 
 interface TeamIssuesPageProps {
   params: Promise<{
@@ -70,17 +69,30 @@ export default function TeamIssuesPage({ params }: TeamIssuesPageProps) {
   return (
     <div className="flex flex-col h-full bg-background">
       {/* Header */}
-      <ViewHeader
-        title={`${currentTeam.name} Issues`}
-        icon={<Users size={20} className="text-muted-foreground" />}
-        color={currentTeam.color}
-        showViewToggle={true}
-        view={view}
-        setView={setView}
-        showCreateIssue={showCreateIssue}
-        setShowCreateIssue={setShowCreateIssue}
-        workspaceId={currentWorkspace?.id}
+      <CommonHeader
+        leftContent={
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-1 bg-muted/50 rounded-full text-xs font-medium text-foreground">
+              {currentTeam.name}
+            </span>
+            <span className="text-xs text-foreground">
+              Issues
+            </span>
+          </div>
+        }
+        rightContent={
+          <div className="flex items-center gap-1">
+            <ViewToggle view={view} setView={setView} />
+            <CreateIssueButton 
+              workspaceId={currentWorkspace?.id}
+              showCreateIssue={showCreateIssue}
+              setShowCreateIssue={setShowCreateIssue}
+              size="xs"
+            />
+          </div>
+        }
       />
+      
       {/* Main Content */}
       <div className="flex-1">
         {view === 'list' ? (

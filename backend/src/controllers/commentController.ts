@@ -123,7 +123,16 @@ const updateComment: ControllerFunction<UpdateCommentResponse> = async (req) => 
   try {
     const updated = await prisma.comment.update({
       where: { id },
-      data: { content, updatedAt: new Date() }
+      data: { content, updatedAt: new Date() },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      }
     });
 
     return {

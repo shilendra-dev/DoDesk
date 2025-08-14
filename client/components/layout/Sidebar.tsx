@@ -4,8 +4,8 @@ import React, { useState } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import { signOut } from '@/lib/auth-client'
 import {
-  Inbox, Target, UserPlus,
-  Search, Plus, LogOut,
+  Target, UserPlus,
+  Plus, LogOut,
   Users
 } from 'lucide-react'
 import { useWorkspaceStore } from '@/stores/workspaceStore'
@@ -18,7 +18,6 @@ import { TeamsSection } from './TeamSection'
 import { useTheme } from '@/providers/ThemeContext'
 import { useSession } from "@/lib/auth-client"
 import { useModalStore } from '@/stores/modalStore'
-import {toast} from 'react-hot-toast'
 
 export function Sidebar() {
   const router = useRouter()
@@ -78,7 +77,7 @@ export function Sidebar() {
           <div className="flex-1">
             <WorkspaceDropdown />
           </div>
-          <Button
+          {/* <Button
             variant="ghost"
             size="sm"
             className="p-1.5 h-auto"
@@ -88,7 +87,7 @@ export function Sidebar() {
             }}
           >
             <Search size={16} />
-          </Button>
+          </Button> */}
           <Button
             variant="outline"
             size="sm"
@@ -106,7 +105,7 @@ export function Sidebar() {
           {/* Personal Section */}
           <div>
             <nav className="space-y-1">
-              <SidebarItem
+              {/* <SidebarItem
                 icon={<Inbox size={16} />}
                 label="Inbox"
                 isActive={isActive('/inbox')}
@@ -114,7 +113,7 @@ export function Sidebar() {
                   //handleMenuClick('inbox')
                   toast.error('This feature is coming soon')
                 }}
-              />
+              /> */}
               <SidebarItem
                 icon={<Target size={16} />}
                 label="My issues"
