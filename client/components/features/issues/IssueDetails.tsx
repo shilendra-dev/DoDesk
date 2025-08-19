@@ -103,7 +103,7 @@ export function IssueDetails() {
   const handleTitleSave = async (newTitle: string) => {
     if (issue && newTitle.trim() !== issue.title) {
       try {
-        await updateIssue(issue.id, { title: newTitle.trim() })
+        await updateIssue(issue.id, {title: newTitle.trim()})
         // No need to update local state since we're using store directly
       } catch (error) {
         console.error('Failed to update title:', error)
