@@ -67,16 +67,6 @@ export function IssueCard({ issue, workspaceSlug }: IssueCardProps) {
         )}
       </div>
 
-      {/* --- Description ---
-      {issue.description && (
-        <div>
-          <span className="block text-xs text-muted-foreground font-medium mb-1">Description</span>
-          <p className="text-xs text-muted-foreground line-clamp-2">
-            {issue.description}
-          </p>
-        </div>
-      )} */}
-
       {/* --- Assignee --- */}
       <div className="flex items-center gap-2 mt-auto">
         <span className="block text-xs text-muted-foreground font-medium">Assignee:</span>
