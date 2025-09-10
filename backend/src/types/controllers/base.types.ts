@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import type { User } from '@prisma/client';
+import { auth } from "@/lib/auth.js";
 
 // Base API Response Types
 export interface ApiResponse<T = any> {
@@ -10,8 +10,12 @@ export interface ApiResponse<T = any> {
   type?: 'success' | 'error';
 }
 
+type SessionWithUser = Awaited<
+  ReturnType<typeof auth.api.getSession>
+>;
+
 export interface AuthenticatedRequest extends Request {
-  user: User;
+  user?: NonNullable<SessionWithUser>["user"];
 }
 
 export type ControllerFunction<T = any> = (
