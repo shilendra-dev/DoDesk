@@ -34,15 +34,15 @@ import './routes';
 app.use("/api", routes);
 
 // Health checks
-app.get("/", (req, res) => {
+app.get("/", (_req, res) => {
   res.status(200).send("OK");
 });
 
-app.get("/health", (req, res) => {
+app.get("/health", (_req, res) => {
   res.status(200).json({ status: "healthy" });
 });
 
-app.get("/test-db", async (req, res) => {
+app.get("/test-db", async (_req, res) => {
   try {
     const prisma = await import('./lib/prisma');
     await prisma.default.$queryRaw`SELECT NOW()`;
