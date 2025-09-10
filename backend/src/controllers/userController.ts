@@ -175,4 +175,4 @@ const getCurrentUser: ControllerFunction<GetCurrentUserResponse> = async (req) =
   }
 };
 
-createApi().get("/user").authSecure(getCurrentUser);
+// createApi().get("/user").authSecure(getCurrentUser); // Deprecated

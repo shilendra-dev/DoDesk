@@ -15,7 +15,7 @@ type SessionWithUser = Awaited<
 >;
 
 export interface AuthenticatedRequest extends Request {
-  user?: NonNullable<SessionWithUser>["user"];
+  user: NonNullable<SessionWithUser>["user"];
 }
 
 export type ControllerFunction<T = any> = (
