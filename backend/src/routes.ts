@@ -7,3 +7,6 @@ import './controllers/workspaceController';
 import './routes/me';
 import './controllers/teamController';
 import './controllers/issueController'; 
+
+// Import user routes
+import './resources/user/routes';
