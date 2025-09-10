@@ -1,13 +1,6 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import { auth } from "../lib/auth";
-
-type SessionWithUser = Awaited<
-  ReturnType<typeof auth.api.getSession>
->;
-
-export interface AuthenticatedRequest extends Request {
-  user?: NonNullable<SessionWithUser>["user"];
-}
+import { AuthenticatedRequest } from "../types/controllers/base.types";
 
 export const requireAuth = async (
   req: AuthenticatedRequest,
