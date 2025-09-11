@@ -65,8 +65,8 @@ const createWorkspace: ControllerFunction<CreateWorkspaceResponse> = async (req)
         }
       },
       include: {
-        teams: { 
-          include: { 
+        teams: {
+          include: {
             members: {
               include: {
                 user: {
@@ -77,13 +77,14 @@ const createWorkspace: ControllerFunction<CreateWorkspaceResponse> = async (req)
                   }
                 }
               }
-            } 
-          } 
+            }
+          }
         }
       }
     });
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
+
     if (!user?.lastActiveWorkspaceId) {
       await prisma.user.update({
         where: { id: userId },
@@ -104,7 +105,7 @@ const createWorkspace: ControllerFunction<CreateWorkspaceResponse> = async (req)
     };
   }
 };
-createApi().post("/workspace").authSecure(createWorkspace);
+// createApi().post("/workspace").authSecure(createWorkspace); //Deprecated
 
 // GET ALL WORKSPACES OF A USER
 const getUserWorkspaces: ControllerFunction<GetUserWorkspacesResponse> = async (req) => {
@@ -143,7 +144,7 @@ const getUserWorkspaces: ControllerFunction<GetUserWorkspacesResponse> = async (
     };
   }
 };
-createApi().get("/workspaces").authSecure(getUserWorkspaces);
+// createApi().get("/workspaces").authSecure(getUserWorkspaces); //Deprecated
 
 // INVITE MEMBERS TO WORKSPACE
 const inviteMember: ControllerFunction<InviteMemberResponse> = async (req) => {
